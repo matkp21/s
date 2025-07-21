@@ -1,4 +1,3 @@
-
 // src/components/homepage/hero-widgets.tsx
 "use client";
 
@@ -11,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from "@/lib/utils";
 import { format, isSameDay } from "date-fns";
 import { CalendarDays, Clock, Dot } from "lucide-react";
-import { ClockWidget } from './clock-widget'; 
+import { ClockWidget } from '../homepage/clock-widget'; 
 import { useToast } from '@/hooks/use-toast'; 
 
 export interface HeroTask {
@@ -44,13 +43,11 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
   return (
     <div 
       className={cn(
-        "relative mt-4 flex w-full max-w-md mx-auto items-center justify-between gap-2 md:gap-4 py-2 px-3 rounded-xl shadow-lg", // Added relative
+        "relative mt-4 flex w-full max-w-md mx-auto items-center justify-between gap-2 md:gap-4 py-2 px-3 rounded-xl shadow-lg",
         "bg-card border border-border/60" 
       )}
       aria-label="Date and Time Information Panel"
     >
-       {/* Underglow Element */}
-      {/* <div className="hero-widget-underglow" aria-hidden="true" /> This class was not defined anywhere so removing it */}
 
       {/* Left Side: Compact Functional Calendar - Apple Theme */}
       <Popover open={isCalendarPopoverOpen} onOpenChange={setIsCalendarPopoverOpen}>
