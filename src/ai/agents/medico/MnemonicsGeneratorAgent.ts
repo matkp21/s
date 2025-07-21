@@ -1,7 +1,8 @@
-
+// src/ai/agents/medico/MnemonicsGeneratorAgent.ts
 'use server';
 /**
  * @fileOverview A Genkit flow for generating mnemonics for medical topics for medico users.
+ * This flow now generates both text and an optional accompanying image, with graceful error handling.
  *
  * - generateMnemonic - A function that handles mnemonic generation.
  * - MedicoMnemonicsGeneratorInput - The input type.
@@ -78,10 +79,11 @@ const mnemonicsGeneratorFlow = ai.defineFlow(
         throw new Error('Failed to generate mnemonic text. The AI model did not return the expected output.');
       }
       
-      // Step 2: Generate an image based on the generated mnemonic text
+      // Step 2: Attempt to generate an image based on the generated mnemonic text
       let imageUrl: string | undefined = undefined;
       try {
         const imageGenPrompt = `Create a simple, clear, and memorable visual diagram or cartoon that illustrates the medical mnemonic: "${textOutput.mnemonic}". The style should be like a clean, modern medical textbook illustration with clear, simple labels if necessary. Focus on making the visual connection to the mnemonic's words obvious.`;
+        
         const { media } = await generate({
             model: 'googleai/gemini-2.0-flash-preview-image-generation',
             prompt: imageGenPrompt,
@@ -89,12 +91,19 @@ const mnemonicsGeneratorFlow = ai.defineFlow(
                 responseModalities: ['IMAGE'],
             },
         });
-        imageUrl = media.url;
+        
+        // Ensure media and media.url exist before assigning
+        if (media && media.url) {
+            imageUrl = media.url;
+        }
+
       } catch (imageError) {
         console.warn(`Could not generate diagram for mnemonic on "${input.topic}":`, imageError);
-        // We can proceed without an image if it fails
+        // If image generation fails, we proceed without an image.
+        // The imageUrl will remain undefined.
       }
 
+      // Return the final combined output
       return {
         ...textOutput,
         imageUrl,
