@@ -9,7 +9,7 @@ import { HeartPulse, BookHeart, BriefcaseMedical, Sparkles } from "lucide-react"
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProMode } from '@/contexts/pro-mode-context';
-// Removed HeroWidgets import as it's no longer used here
+import { HeroWidgets, type HeroTask } from './hero-widgets';
 
 const greetings = [
   { lang: "en", text: "Hello," },
@@ -17,6 +17,12 @@ const greetings = [
   { lang: "ml", text: "നമസ്കാരം," },
   { lang: "es", text: "Hola," },
   { lang: "fr", text: "Bonjour," },
+];
+
+const sampleTasks: HeroTask[] = [
+    { id: '1', date: new Date(), title: 'Follow up with Mr. Smith', description: 'Check lab results and adjust medication.' },
+    { id: '2', date: new Date(), title: 'Prepare for ward rounds', description: 'Review cases for Ward 5B.' },
+    { id: '3', date: new Date(new Date().setDate(new Date().getDate() + 1)), title: 'Cardiology Clinic', description: 'Afternoon clinic session.' },
 ];
 
 export function HeroSection() {
@@ -162,6 +168,8 @@ export function HeroSection() {
             </Link>
           </Button>
         </motion.div>
+        
+        <HeroWidgets tasks={sampleTasks} />
       </div>
     </section>
   );
