@@ -383,7 +383,6 @@ export const MedicoNoteStructurerOutputSchema = z.object({
 });
 export type MedicoNoteStructurerOutput = z.infer<typeof MedicoNoteStructurerOutputSchema>;
 
-
 // Schema for Guided Study Orchestrator
 export const GuidedStudyInputSchema = z.object({
   topic: z.string().min(3).describe('The broad medical topic for the guided study session.'),

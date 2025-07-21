@@ -32,34 +32,47 @@ const guidedStudyFlow = ai.defineFlow(
     try {
       console.log(`Starting guided study session for: ${input.topic}`);
       
-      // Step 1: Generate Study Notes
-      const notes = await generateStudyNotes({ topic: input.topic, answerLength: '10-mark' });
+      // Run all agent calls in parallel for efficiency
+      const [notesResult, mcqsResult, flashcardsResult] = await Promise.allSettled([
+        generateStudyNotes({
+          topic: input.topic,
+          answerLength: '10-mark',
+        }),
+        generateMCQs({
+          topic: input.topic,
+          count: 3, // A small number for a quick check
+          difficulty: 'medium',
+          examType: 'university',
+        }),
+        generateFlashcards({
+          topic: input.topic,
+          count: 5, // A few key flashcards
+          difficulty: 'medium',
+          examType: 'university',
+        }),
+      ]);
+
+      // Process results, handling potential failures gracefully
+      const studyNotes = notesResult.status === 'fulfilled' ? notesResult.value : null;
+      const mcqs = mcqsResult.status === 'fulfilled' ? mcqsResult.value : null;
+      const flashcards = flashcardsResult.status === 'fulfilled' ? flashcardsResult.value : null;
       
-      // Step 2: Generate MCQs based on the same topic
-      const mcqs = await generateMCQs({
-        topic: input.topic,
-        count: 3, // A small number for a quick check
-        difficulty: 'medium',
-        examType: 'university',
-      });
-      
-      // Step 3: Generate Flashcards for reinforcement
-      const flashcards = await generateFlashcards({
-        topic: input.topic,
-        count: 5, // A few key flashcards
-        difficulty: 'medium',
-        examType: 'university',
-      });
+      if (notesResult.status === 'rejected') console.error("Notes generation failed:", notesResult.reason);
+      if (mcqsResult.status === 'rejected') console.error("MCQ generation failed:", mcqsResult.reason);
+      if (flashcardsResult.status === 'rejected') console.error("Flashcards generation failed:", flashcardsResult.reason);
+
+      if (!studyNotes || !mcqs || !flashcards) {
+        throw new Error("One or more sub-agents failed to generate content for the comprehensive review.");
+      }
 
       console.log(`Guided study session for "${input.topic}" generated successfully.`);
 
-      // Step 4: Assemble the final output package
+      // Assemble the final output package
       return {
         topic: input.topic,
-        notes,
+        notes: studyNotes,
         mcqs,
         flashcards,
-        // We can create a new set of 'nextSteps' for the whole package
         nextSteps: [
           {
             title: "Try a Case Simulation",

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 export type ActiveToolId =
   | 'guided-study' // New orchestrator tool
   | 'q-bank'
-  | 'theorycoach-generator'
+  | 'notes-generator' // Corrected ID
   | 'topics'
   | 'flowcharts'
   | 'flashcards'
@@ -27,7 +27,7 @@ export type ActiveToolId =
   | 'pharmagenie'
   | 'micromate'
   | 'diagnobot'
-  | 'smart-search' // New Smart Search tool
+  | 'smart-search'
   | null;
 
 export interface MedicoTool {
