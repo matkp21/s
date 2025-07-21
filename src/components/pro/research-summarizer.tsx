@@ -10,7 +10,7 @@ import { Library, Lightbulb, Search, Loader2, FileText, BookOpen } from 'lucide-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { retrieveGuidelines, type GuidelineRetrievalInput, type GuidelineRetrievalOutput } from '@/ai/agents/GuidelineRetrievalAgent';
+import { retrieveGuidelines, type GuidelineRetrievalInput, type GuidelineRetrievalOutput, type GuidelineItem } from '@/ai/agents/GuidelineRetrievalAgent';
 import { useToast } from '@/hooks/use-toast';
 
 export function ResearchSummarizer() {
@@ -34,7 +34,7 @@ export function ResearchSummarizer() {
       if (!result.results || result.results.length === 0) {
         toast({ title: "No relevant articles found", description: `Could not find literature for "${searchTerm}".`, variant: "default" });
       } else {
-        toast({ title: "Summaries Retrieved", description: `Found and summarized ${result.results.length} article(s).` });
+         toast({ title: "Summaries Retrieved", description: `Found and summarized ${result.results.length} article(s).` });
       }
     } catch (error) {
        console.error("Research summarization error:", error);
@@ -71,7 +71,7 @@ export function ResearchSummarizer() {
                     value={searchTerm} 
                     onChange={e => setSearchTerm(e.target.value)} 
                     placeholder="e.g., Best treatment for early-stage diabetic nephropathy" 
-                    className="rounded-lg flex-grow"
+                    className="rounded-lg flex-grow border-border/70 focus:border-primary"
                     onKeyDown={(e) => e.key === 'Enter' && handleSearchAndSummarize()}
                 />
                 <Button onClick={handleSearchAndSummarize} disabled={isLoading} className="rounded-lg">
@@ -120,9 +120,9 @@ export function ResearchSummarizer() {
         <div className="text-center py-10 text-muted-foreground bg-card p-6 rounded-xl shadow-md">
           <FileText className="h-12 w-12 mx-auto mb-3 text-primary/50" />
           <p className="font-semibold">No articles found for "{searchTerm}".</p>
-          <p className="text-sm">Try refining your search query.</p>
+          <p className="text-sm">Try refining your search term or check the spelling.</p>
         </div>
-      )}
+      ): null}
     </div>
   );
 }

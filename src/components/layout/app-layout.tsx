@@ -155,6 +155,15 @@ export function AppLayout({ children }: { children: ReactNode }) {
     return 'Guest';
   };
   
+  const pathname = usePathname();
+  const isProRoute = pathname.startsWith('/pro');
+  const isMedicoRoute = pathname.startsWith('/medico');
+
+  // Do not render the full AppLayout for Pro or Medico pages, they have their own.
+  if (isProRoute || isMedicoRoute) {
+    return <>{children}</>;
+  }
+
   return (
     <SidebarProvider defaultOpen={true}>
       <Sidebar
