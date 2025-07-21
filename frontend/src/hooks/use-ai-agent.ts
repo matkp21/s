@@ -1,55 +1,57 @@
-
+// src/hooks/use-ai-agent.ts
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
 
 // T is the input type of the agent function, R is the return type
 type AgentFunction<T, R> = (input: T) => Promise<R>;
 
-interface UseAiAgentResult<T, R> {
-  execute: (input: T) => Promise<void>;
-  data: R | null;
-  isLoading: boolean;
-  error: string | null;
-  reset: () => void;
+interface UseAiAgentOptions<T, R> {
+  onSuccess?: (data: R, input: T) => void;
+  onError?: (error: string, input: T) => void;
+  successMessage?: string;
 }
 
 export function useAiAgent<T, R>(
   agentFunction: AgentFunction<T, R>,
-  options?: {
-    onSuccess?: (data: R, input: T) => void;
-    onError?: (error: string) => void;
-    successMessage?: string;
-  }
-): UseAiAgentResult<T, R> {
-  const [data, setData] = useState<R | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // We can pass the Zod schema for response validation
+  responseSchema?: z.ZodType<R>,
+  options?: UseAiAgentOptions<T, R>
+): UseMutationResult<R, Error, T> {
   const { toast } = useToast();
 
-  const execute = useCallback(async (input: T) => {
-    setIsLoading(true);
-    setError(null);
-    // Do not clear previous data here to prevent UI flicker
-    // setData(null); 
-
-    try {
+  return useMutation<R, Error, T>({
+    mutationFn: async (input: T) => {
       const result = await agentFunction(input);
-      setData(result);
+      // Validate the response against the Zod schema if provided
+      if (responseSchema) {
+        const validation = responseSchema.safeParse(result);
+        if (!validation.success) {
+          console.error("Zod validation failed for AI agent response:", validation.error);
+          throw new Error("The AI returned data in an unexpected format. Please try again.");
+        }
+        return validation.data;
+      }
+      return result;
+    },
+    
+    onSuccess: (data, variables) => {
       if (options?.onSuccess) {
-        options.onSuccess(result, input);
+        options.onSuccess(data, variables);
       } else if (options?.successMessage) {
         toast({
-            title: "Success!",
-            description: options.successMessage,
-        })
+          title: "Success!",
+          description: options.successMessage,
+        });
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-      setError(errorMessage);
+    },
+    
+    onError: (error, variables) => {
+      const errorMessage = error.message || "An unknown error occurred.";
       if (options?.onError) {
-        options.onError(errorMessage);
+        options.onError(errorMessage, variables);
       } else {
         toast({
           title: "An Error Occurred",
@@ -57,16 +59,6 @@ export function useAiAgent<T, R>(
           variant: "destructive",
         });
       }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [agentFunction, options, toast]);
-
-  const reset = useCallback(() => {
-    setData(null);
-    setError(null);
-    setIsLoading(false);
-  }, []);
-
-  return { execute, data, isLoading, error, reset };
+    },
+  });
 }
