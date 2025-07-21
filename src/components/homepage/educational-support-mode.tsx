@@ -16,7 +16,7 @@ import Link from 'next/link';
 const dailyTopic = {
   title: "Topic of the Day: Myocardial Infarction",
   description: "Understand the pathophysiology, diagnosis, and management of acute myocardial infarction.",
-  toolId: "theorycoach-generator",
+  toolId: "notes-generator",
   prefilledTopic: "Myocardial Infarction"
 };
 
