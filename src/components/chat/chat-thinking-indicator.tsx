@@ -1,4 +1,3 @@
-
 // src/components/chat/chat-thinking-indicator.tsx
 "use client";
 
@@ -16,7 +15,9 @@ export function ChatThinkingIndicator() {
       </Avatar>
       <div className="max-w-xs lg:max-w-md rounded-xl p-3 shadow-md bg-secondary text-secondary-foreground rounded-bl-none">
         <div className="flex items-center justify-center space-x-1 h-6">
-            <HeartPulse className="h-5 w-5 text-primary animate-ecg-beat" />
+             <div className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.3s]"></div>
+             <div className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.15s]"></div>
+             <div className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse"></div>
         </div>
       </div>
     </div>

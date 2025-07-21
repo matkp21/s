@@ -1,31 +1,55 @@
-
 // src/components/chat/chat-interface.tsx
 "use client";
 
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import React, { useState, useEffect, useRef, type ReactNode } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SendHorizonal, HeartPulse, Mic, MicOff, Volume2, VolumeX, ArrowDownCircle, BookCopy, FileQuestion } from 'lucide-react';
+import { SendHorizonal, Mic, MicOff, Volume2, VolumeX, ArrowDownCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { processChatMessage, type ChatMessageInput } from '@/ai/agents/ChatAgent';
-import { generateStudyNotes, type StudyNotesGeneratorInput, type StudyNotesGeneratorOutput } from '@/ai/agents/medico/StudyNotesAgent';
-import { generateMCQs, type MedicoMCQGeneratorInput, type MedicoMCQGeneratorOutput, type MCQSchema as SingleMCQ } from '@/ai/agents/medico/MCQGeneratorAgent';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { TypewriterText } from './typewriter-text';
-import { cn } from '@/lib/utils';
 import { useProMode } from '@/contexts/pro-mode-context';
+import { ChatMessage, type Message } from './chat-message';
+import { ChatThinkingIndicator } from './chat-thinking-indicator';
+import type { MedicoMCQGeneratorOutput } from '@/ai/agents/medico/MCQGeneratorAgent';
+import type { StudyNotesGeneratorOutput } from '@/ai/agents/medico/StudyNotesAgent';
+import { MarkdownRenderer } from '../markdown/markdown-renderer';
+import { SolvedQuestionPapersViewerComponent } from '../medico/solved-question-papers-viewer';
+import type { SymptomAnalyzerOutput } from '@/ai/agents/SymptomAnalyzerAgent';
+import { SymptomAnalysisResultCard } from './symptom-analysis-result-card';
 
-interface Message {
-  id: string;
-  content: ReactNode; // Can be string or JSX for rich content
-  sender: 'user' | 'bot';
-  timestamp: Date;
-  isCommandResponse?: boolean; // To style medico tool responses differently
-  isErrorResponse?: boolean; // To style error messages from the bot
-}
+
+const formatToolResponse = (toolName: string, output: any): ReactNode => {
+    switch (toolName) {
+      case 'mcqGenerator': {
+        const data = output as MedicoMCQGeneratorOutput;
+        return (
+          <SolvedQuestionPapersViewerComponent
+            content={{ mcqs: data.mcqs, topicGenerated: data.topicGenerated, essays: [] }}
+            title={`MCQs for: ${data.topicGenerated}`}
+            description="Here are the questions you requested."
+          />
+        );
+      }
+      case 'studyNotesGenerator': {
+        const data = output as StudyNotesGeneratorOutput;
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold text-base">Study Notes for: {data.topicGenerated}</h4>
+            <MarkdownRenderer content={data.notes} />
+          </div>
+        );
+      }
+      case 'symptomAnalyzer': {
+        const data = output as SymptomAnalyzerOutput;
+        return <SymptomAnalysisResultCard result={data} />;
+      }
+      default:
+        return <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(output, null, 2)}</pre>;
+    }
+  };
+
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,6 +79,7 @@ export function ChatInterface() {
         recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
           const transcript = event.results[event.results.length - 1][0].transcript.trim();
           setInputValue(transcript);
+          handleSendMessage(transcript);
           setIsListening(false);
         };
 
@@ -69,7 +94,7 @@ export function ChatInterface() {
         };
 
         recognitionRef.current.onend = () => {
-          // setIsListening(false) handled by onresult/onerror
+           setIsListening(false);
         };
       }
     } else {
@@ -78,114 +103,57 @@ export function ChatInterface() {
   }, [toast]);
 
   const speakText = (text: string) => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && text) {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && text && isVoiceOutputEnabled) {
       speechSynthesis.cancel(); 
       const utterance = new SpeechSynthesisUtterance(text);
       speechSynthesis.speak(utterance);
-    } else if (!text) {
-      console.warn("SpeakText: No text to speak.");
-    }
-     else {
-      console.warn("Speech Synthesis API not supported or no text provided.");
     }
   };
 
   useEffect(() => {
     if (messages.length === 0 && !isLoading) {
-      let welcomeText = "Welcome to MediAssistant Chat! I'm here to assist with your queries. How can I help you today?";
-      if (userRole === 'medico') {
-        welcomeText += "\nAs a medico user, you can try commands like `/notes <topic>` or `/mcq <topic> <number_of_questions>`."
-      }
+      const welcomeText = "Welcome to MediAssistant Chat! How can I help you today?";
       const welcomeMessage: Message = {
         id: `welcome-bot-${Date.now()}`,
-        content: <TypewriterText text={welcomeText} speed={50} />, // Adjusted speed
+        content: welcomeText,
         sender: 'bot',
         timestamp: new Date(),
       };
       setMessages([welcomeMessage]);
-      if (isVoiceOutputEnabled) {
-        speakText(welcomeText);
-      }
+      speakText(welcomeText);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userRole]); 
+  }, []); 
 
   const toggleListening = async () => {
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
-      if (hasMicPermission === null) {
+       if (hasMicPermission === null || hasMicPermission === false) {
         try {
           await navigator.mediaDevices.getUserMedia({ audio: true });
           setHasMicPermission(true);
-          toast({ title: "Microphone access granted." });
-          recognitionRef.current?.start();
-          setIsListening(true);
         } catch (err) {
           setHasMicPermission(false);
-          toast({
-            variant: "destructive",
-            title: "Microphone Access Denied",
-            description: "Please enable microphone permissions for voice input.",
-          });
-          console.error("Mic permission error:", err);
+          toast({ variant: "destructive", title: "Microphone Access Denied", description: "Please enable microphone permissions." });
+          return;
         }
-      } else if (hasMicPermission) {
-        recognitionRef.current?.start();
-        setIsListening(true);
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Microphone Access Required",
-          description: "Microphone permission was previously denied. Enable it in browser settings.",
-        });
       }
+      recognitionRef.current?.start();
+      setIsListening(true);
     }
   };
-
-  const formatMCQResponse = (mcqData: MedicoMCQGeneratorOutput): ReactNode => {
-    return (
-      <div className="space-y-3">
-        <h4 className="font-semibold text-base">MCQs for: {mcqData.topicGenerated}</h4>
-        {mcqData.mcqs.map((mcq: SingleMCQ, index: number) => (
-          <Card key={index} className="p-3 bg-card/70 shadow-sm">
-            <p className="font-medium mb-1">Q{index + 1}: {mcq.question}</p>
-            <ul className="list-disc list-inside ml-4 text-sm space-y-0.5">
-              {mcq.options.map((opt, optIndex) => (
-                <li key={optIndex} className={cn(opt.isCorrect && "text-green-600 dark:text-green-400 font-semibold")}>
-                  {String.fromCharCode(65 + optIndex)}. {opt.text}
-                </li>
-              ))}
-            </ul>
-            {mcq.explanation && <p className="text-xs mt-1.5 text-muted-foreground italic">Explanation: {mcq.explanation}</p>}
-          </Card>
-        ))}
-      </div>
-    );
-  };
-
-  const formatStudyNotesResponse = (notesData: StudyNotesGeneratorOutput, topic: string): ReactNode => {
-     return (
-      <div className="space-y-3">
-        <h4 className="font-semibold text-base">Study Notes for: {topic}</h4>
-        <div className="text-sm whitespace-pre-wrap bg-card/70 p-3 rounded-md shadow-sm prose prose-sm dark:prose-invert max-w-none">{notesData.notes}</div>
-        {notesData.summaryPoints && notesData.summaryPoints.length > 0 && (
-          <div className="mt-2">
-            <h5 className="font-medium text-sm mb-1">Key Summary Points:</h5>
-            <ul className="list-disc list-inside ml-4 text-sm space-y-0.5">
-              {notesData.summaryPoints.map((point, i) => <li key={i}>{point}</li>)}
-            </ul>
-          </div>
-        )}
-      </div>
-    );
-  }
-
 
   const handleSendMessage = async (messageContent?: string) => {
     const currentMessage = (typeof messageContent === 'string' ? messageContent : inputValue).trim();
     if (currentMessage === '') return;
+
+    const historyForAgent = messages.map(m => ({
+        role: m.sender,
+        content: typeof m.content === 'string' ? m.content : `[Structured Content: ${m.toolName || 'response'}]`,
+    })).filter(m => !m.content.startsWith('[Structured Content'));
+
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -199,91 +167,81 @@ export function ChatInterface() {
     }
     setIsLoading(true);
 
-    let botResponseContent: ReactNode | string = "Sorry, I couldn't process that.";
-    let isCommandResp = false;
-    let isErrorRespFlag = false;
+    let botResponseText = '';
+    const botMessageId = `bot-${Date.now()}`;
+    const newBotMessage: Message = {
+        id: botMessageId,
+        content: '',
+        sender: 'bot',
+        timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, newBotMessage]);
 
     try {
-      if (userRole === 'medico' && currentMessage.startsWith('/')) {
-        const [command, ...args] = currentMessage.split(' ');
-        const fullArgs = args.join(' ').trim();
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            body: JSON.stringify({
+                input: {
+                    message: currentMessage,
+                    history: historyForAgent,
+                },
+            }),
+        });
 
-        if (command === '/notes') {
-          isCommandResp = true;
-          const topic = fullArgs;
-          if (!topic) {
-            botResponseContent = "Please provide a topic for notes. Usage: `/notes <topic>` (e.g., `/notes Diabetes Mellitus`)";
-            isErrorRespFlag = true;
-          } else {
-            const notesInput: StudyNotesGeneratorInput = { topic, answerLength: '10-mark' }; // Default to 10-mark for chat
-            const result = await generateStudyNotes(notesInput);
-            botResponseContent = formatStudyNotesResponse(result, topic);
-            if (isVoiceOutputEnabled && typeof result.notes === 'string') speakText(`Generated study notes for ${topic}. Please check the chat for details.`);
-          }
-        } else if (command === '/mcq') {
-          isCommandResp = true;
-          // Regex to separate topic from an optional count at the end
-          const mcqArgsMatch = fullArgs.match(/^(.*?)(?:\s+(\d+))?$/);
-          const topic = mcqArgsMatch?.[1]?.trim();
-          const countStr = mcqArgsMatch?.[2];
-          const count = countStr ? parseInt(countStr, 10) : 5; // Default to 5 MCQs
-          
-          if (!topic) {
-            botResponseContent = "Please provide a topic for MCQs. Usage: `/mcq <topic> [number_of_questions]` (e.g., `/mcq Cardiology 5`)";
-             isErrorRespFlag = true;
-          } else if (isNaN(count) || count < 1 || count > 10) {
-            botResponseContent = "Invalid number of questions. Please provide a number between 1 and 10.";
-             isErrorRespFlag = true;
-          }
-          else {
-            const mcqInput: MedicoMCQGeneratorInput = { topic, count, difficulty: 'medium', examType: 'university' };
-            const result = await generateMCQs(mcqInput);
-            botResponseContent = formatMCQResponse(result);
-            if (isVoiceOutputEnabled) speakText(`Generated ${result.mcqs.length} MCQs for ${topic}. Check the chat for details.`);
-          }
-        } else {
-           botResponseContent = `Unknown medico command: ${command}. Try /notes <topic> or /mcq <topic> [count]. For general chat, just type your message.`;
-           isErrorRespFlag = true;
+        if (!response.body) {
+            throw new Error('Streaming response not available.');
         }
-      } else {
-        const chatInput: ChatMessageInput = { message: userMessage.content as string };
-        const result = await processChatMessage(chatInput);
-        botResponseContent = result.response;
-        if (isVoiceOutputEnabled && typeof botResponseContent === 'string') speakText(botResponseContent);
-      }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let toolOutput: any = null;
+        let toolName = '';
 
-      const botMessage: Message = {
-        id: (Date.now() + Math.random()).toString(),
-        content: typeof botResponseContent === 'string' ? <TypewriterText text={botResponseContent} speed={50} /> : botResponseContent,
-        sender: 'bot',
-        timestamp: new Date(),
-        isCommandResponse: isCommandResp,
-        isErrorResponse: isErrorRespFlag,
-      };
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n').filter(line => line.trim());
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const jsonStr = line.substring(6);
+                    const data = JSON.parse(jsonStr);
+                    
+                    if (data.content) { // This is a text chunk
+                        botResponseText += data.content;
+                        setMessages(prev => prev.map(m => m.id === botMessageId ? {...m, content: botResponseText } : m));
+                    }
+                    if (data.tool_code) { // This is tool output
+                        toolName = data.tool_code.name;
+                        toolOutput = data.tool_code.output;
+                    }
+                }
+            }
+        }
+        
+        // Finalize message with tool output if present
+        setMessages(prev => prev.map(m => {
+            if (m.id === botMessageId) {
+                return {
+                    ...m,
+                    content: toolOutput ? formatToolResponse(toolName, toolOutput) : botResponseText,
+                    toolName: toolName || undefined,
+                    isCommandResponse: !!toolOutput,
+                };
+            }
+            return m;
+        }));
+        speakText(botResponseText);
 
     } catch (error) {
-      console.error("Chat processing error:", error);
-      isErrorRespFlag = true;
-      const errorMessageText = error instanceof Error ? error.message : "An unknown error occurred.";
-      
-      const errorBotResponse: Message = {
-        id: (Date.now() + Math.random() + 1).toString(),
-        content: <TypewriterText text={`Sorry, I encountered an error: ${errorMessageText}`} speed={50} />,
-        sender: 'bot',
-        timestamp: new Date(),
-        isErrorResponse: true,
-      };
-      setMessages((prevMessages) => [...prevMessages, errorBotResponse]);
-      toast({
-        variant: "destructive",
-        title: "Chat Error",
-        description: errorMessageText,
-      });
+        console.error("Chat processing error:", error);
+        const errorMessageText = error instanceof Error ? error.message : "An unknown error occurred.";
+        setMessages(prev => prev.map(m => m.id === botMessageId ? {...m, content: errorMessageText, isErrorResponse: true } : m));
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
     if (viewportRef.current) {
@@ -323,61 +281,9 @@ export function ChatInterface() {
         <ScrollArea className="flex-grow p-4" viewportRef={viewportRef} ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex items-end gap-2 fade-in ${
-                  message.sender === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.sender === 'bot' && (
-                  <Avatar className="h-8 w-8 self-start flex-shrink-0">
-                    <AvatarImage src="/placeholder-bot.jpg" alt="Bot Avatar" data-ai-hint="robot avatar" />
-                     <AvatarFallback className="bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 glowing-ring-firebase">
-                      <HeartPulse className="h-4 w-4 text-white" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                <div
-                  className={cn(
-                    "max-w-xs lg:max-w-md rounded-xl p-3 shadow-md transition-all duration-300",
-                     message.sender === 'user' 
-                      ? 'bg-primary text-primary-foreground rounded-br-none' 
-                      : message.isErrorResponse 
-                        ? 'bg-destructive/20 border border-destructive/50 text-destructive-foreground rounded-bl-none animate-error-highlight' 
-                        : message.isCommandResponse 
-                          ? "bg-gradient-to-tr from-accent/20 via-accent/30 to-accent/40 border border-accent/60 text-accent-foreground rounded-bl-none shadow-accent/20"
-                          : 'bg-secondary text-secondary-foreground rounded-bl-none shadow-secondary/20'
-                  )}
-                >
-                  {message.content}
-                  <p className="mt-1 text-xs opacity-70 text-right">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-                {message.sender === 'user' && (
-                  <Avatar className="h-8 w-8 self-start flex-shrink-0">
-                    <AvatarImage src="https://picsum.photos/id/237/100/100" alt="User Avatar" data-ai-hint="person doctor" />
-                    <AvatarFallback>DR</AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
+              <ChatMessage key={message.id} message={message} />
             ))}
-            {isLoading && (
-              <div className="flex items-end gap-2 fade-in justify-start">
-                <Avatar className="h-8 w-8 self-start flex-shrink-0">
-                  <AvatarImage src="/placeholder-bot.jpg" alt="Bot Avatar" data-ai-hint="robot avatar" />
-                   <AvatarFallback className="bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 glowing-ring-firebase">
-                      <HeartPulse className="h-4 w-4 text-white" />
-                    </AvatarFallback>
-                </Avatar>
-                <div
-                  className="max-w-xs lg:max-w-md rounded-xl p-3 shadow-md bg-secondary text-secondary-foreground flex items-center space-x-2 rounded-bl-none"
-                >
-                  <HeartPulse className="h-5 w-5 text-primary animate-ecg-beat" />
-                  <p className="text-sm italic">MediAssistant is thinking...</p>
-                </div>
-              </div>
-            )}
+            {isLoading && <ChatThinkingIndicator />}
           </div>
         </ScrollArea>
          {showScrollToBottom && (
@@ -396,18 +302,8 @@ export function ChatInterface() {
         {hasMicPermission === false && (
              <Alert variant="destructive" className="mb-2">
               <AlertTitle>Microphone Access Denied</AlertTitle>
-              <AlertDescription>
-                Voice input is disabled. Please enable microphone permissions in your browser settings.
-              </AlertDescription>
-            </Alert>
-        )}
-        {typeof window !== 'undefined' && !('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (
-          <Alert variant="destructive" className="mb-2">
-            <AlertTitle>Voice Input Not Supported</AlertTitle>
-            <AlertDescription>
-              Your browser does not support voice input. Try a different browser like Chrome or Edge.
-            </AlertDescription>
-          </Alert>
+              <AlertDescription className="text-xs">Voice input is disabled. Please enable microphone permissions in your browser settings.</AlertDescription>
+             </Alert>
         )}
         <div className="flex items-center gap-2">
           <Button
@@ -420,36 +316,23 @@ export function ChatInterface() {
           >
             {isListening ? <MicOff className="h-5 w-5 text-destructive" /> : <Mic className="h-5 w-5 text-primary" />}
           </Button>
-          <div className="relative flex-1">
-            <Textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              className="w-full resize-none pr-3 rounded-xl border-border/70 focus:border-primary input-focus-glow" 
-              rows={1}
-              placeholder={isListening ? "Listening..." : ""} 
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              disabled={isLoading || isListening}
-              aria-label="Message input"
-            />
-             {inputValue === '' && !isListening && (
-              <div
-                className="absolute top-1/2 left-3 transform -translate-y-1/2 text-muted-foreground pointer-events-none flex items-center"
-                aria-hidden="true"
-              >
-                <span>Type your message {userRole === 'medico' && "or /command"}</span>
-                <span className="animate-pulse-medical ml-1.5">
-                  <HeartPulse size={14} className="inline-block text-primary/80" />
-                </span>
-              </div>
-            )}
-          </div>
+          <Textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            className="w-full resize-none pr-3 rounded-xl border-border/70 focus:border-primary" 
+            rows={1}
+            placeholder={isListening ? "Listening..." : "Type your message or /command..."} 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+            disabled={isLoading || isListening}
+            aria-label="Message input"
+          />
           <Button onClick={() => handleSendMessage()} size="icon" aria-label="Send message" disabled={isLoading || inputValue.trim() === ''} className="rounded-full">
-            {isLoading ? <HeartPulse className="h-5 w-5 animate-ecg-beat text-primary-foreground" /> : <SendHorizonal className="h-5 w-5" />}
+             <SendHorizonal className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"
@@ -462,15 +345,7 @@ export function ChatInterface() {
             {isVoiceOutputEnabled ? <Volume2 className="h-5 w-5 text-primary" /> : <VolumeX className="h-5 w-5 text-muted-foreground" />}
           </Button>
         </div>
-        {userRole === 'medico' && (
-          <div className="mt-2 text-xs text-muted-foreground flex items-center gap-x-4 gap-y-1 flex-wrap">
-            <p className="flex items-center gap-1"><BookCopy size={12} /> Try: <code className="bg-muted px-1 py-0.5 rounded">/notes &lt;topic&gt;</code></p>
-            <p className="flex items-center gap-1"><FileQuestion size={12} /> Try: <code className="bg-muted px-1 py-0.5 rounded">/mcq &lt;topic&gt; [num]</code></p>
-          </div>
-        )}
       </div>
     </Card>
   );
 }
-
-    

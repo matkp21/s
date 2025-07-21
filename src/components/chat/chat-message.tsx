@@ -14,6 +14,7 @@ export interface Message {
   timestamp: Date;
   isCommandResponse?: boolean;
   isErrorResponse?: boolean;
+  toolName?: string;
 }
 
 interface ChatMessageProps {
@@ -37,17 +38,17 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message }) => {
       )}
       <div
         className={cn(
-          "max-w-xs lg:max-w-md rounded-xl p-3 shadow-md transition-all duration-300",
+          "max-w-xs lg:max-w-2xl rounded-xl p-3 shadow-md transition-all duration-300",
           message.sender === 'user'
             ? 'bg-primary text-primary-foreground rounded-br-none'
             : message.isErrorResponse
               ? 'bg-destructive/20 border border-destructive/50 text-destructive-foreground rounded-bl-none animate-error-highlight'
               : message.isCommandResponse
-                ? "bg-gradient-to-tr from-accent/20 via-accent/30 to-accent/40 border border-accent/60 text-accent-foreground rounded-bl-none shadow-accent/20"
+                ? "bg-gradient-to-tr from-accent/10 via-accent/20 to-accent/30 border border-accent/40 text-accent-foreground rounded-bl-none shadow-accent/20 w-full"
                 : 'bg-secondary text-secondary-foreground rounded-bl-none shadow-secondary/20'
         )}
       >
-        {message.content}
+        {typeof message.content === 'string' ? <div className="whitespace-pre-wrap">{message.content}</div> : message.content}
         <p className="mt-1 text-xs opacity-70 text-right">
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
