@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 export function Footer() {
   return (
     <footer className={cn(
-        "bg-secondary/50 dark:bg-secondary/20 text-secondary-foreground border-t border-border/50 py-8 px-4 md:px-8 fade-in fade-in-delay-10"
+        "bg-secondary/50 dark:bg-secondary/20 text-secondary-foreground border-t border-border/50 py-8 px-4 md:px-8"
       )}
     >
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
