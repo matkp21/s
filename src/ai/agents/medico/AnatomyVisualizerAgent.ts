@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for providing descriptions of anatomical structures for medico users.
@@ -73,14 +74,14 @@ const anatomyVisualizerFlow = ai.defineFlow(
       const { output } = await anatomyVisualizerPrompt(input);
 
       if (!output || !output.description) {
-        console.error('MedicoAnatomyVisualizerPrompt did not return a valid description for:', input.anatomicalStructure);
-        throw new Error('Failed to get anatomy description. The AI model did not return the expected output.');
+        console.error('AnatomyVisualizerPrompt did not return a valid description for:', input.anatomicalStructure);
+        throw new Error('Failed to get anatomy description. The AI model did not return the expected output. Please try a different structure name.');
       }
       
       return output;
     } catch (err) {
       console.error(`[AnatomyVisualizerAgent] Error: ${err instanceof Error ? err.message : String(err)}`);
-      throw new Error('An unexpected error occurred while fetching the anatomy description. Please try again.');
+      throw new Error('An unexpected error occurred while fetching the anatomy description. Please check your connection and try again.');
     }
   }
 );

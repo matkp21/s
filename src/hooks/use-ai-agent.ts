@@ -1,10 +1,8 @@
-
 // src/hooks/use-ai-agent.ts
 "use client";
 
 import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { z } from 'zod';
 
 // T is the input type of the agent function, R is the return type
 type AgentFunction<T, R> = (input: T) => Promise<R>;
