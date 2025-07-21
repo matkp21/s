@@ -26,31 +26,19 @@ export function SymptomAnalysisMode() {
   const [error, setError] = useState<string | null>(null);
   const { isProMode } = useProMode();
 
-  const handleAnalysisComplete = async (result: SymptomAnalyzerOutput | null, err?: string, rawInput?: SymptomAnalyzerInput) => {
-    if (err) {
-      setError(err);
-      setAnalysisResult(null);
-      setIsLoading(false);
-      return;
-    }
+  const handleAnalysisStart = async (rawInput: SymptomAnalyzerInput) => {
+    setIsLoading(true);
+    setError(null);
+    setAnalysisResult(null);
 
-    if (rawInput) { 
-        setIsLoading(true);
-        setError(null);
-        setAnalysisResult(null);
-        try {
-            const agentResult = await analyzeSymptoms(rawInput);
-            setAnalysisResult(agentResult);
-        } catch (agentError) {
-             const errorMessage = agentError instanceof Error ? agentError.message : "An unknown error occurred.";
-             setError(errorMessage);
-        } finally {
-            setIsLoading(false);
-        }
-    } else { 
-        setAnalysisResult(result);
-        setError(err || null);
-        setIsLoading(false);
+    try {
+      const result = await analyzeSymptoms(rawInput);
+      setAnalysisResult(result);
+    } catch (agentError) {
+      const errorMessage = agentError instanceof Error ? agentError.message : "An unknown error occurred.";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -64,7 +52,7 @@ export function SymptomAnalysisMode() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SymptomForm onAnalysisComplete={handleAnalysisComplete} setIsLoading={setIsLoading} isLoading={isLoading}/>
+          <SymptomForm onAnalysisStart={handleAnalysisStart} setIsLoading={setIsLoading} isLoading={isLoading}/>
         </CardContent>
       </Card>
 

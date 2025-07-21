@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import type { SymptomAnalyzerOutput, SymptomAnalyzerInput } from '@/ai/agents/SymptomAnalyzerAgent';
+import type { SymptomAnalyzerInput } from '@/ai/agents/SymptomAnalyzerAgent';
 import { useToast } from '@/hooks/use-toast';
 import { Send } from 'lucide-react';
 import { Input } from '../ui/input';
@@ -17,12 +17,12 @@ import type { z } from 'zod';
 type SymptomFormValues = z.infer<typeof SymptomAnalyzerInputSchema>;
 
 interface SymptomFormProps {
-  onAnalysisComplete: (result: SymptomAnalyzerOutput | null, error?: string, rawInput?: SymptomAnalyzerInput) => void;
+  onAnalysisStart: (rawInput: SymptomAnalyzerInput) => void;
   setIsLoading: (loading: boolean) => void;
   isLoading: boolean;
 }
 
-export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: SymptomFormProps) {
+export function SymptomForm({ onAnalysisStart, setIsLoading, isLoading }: SymptomFormProps) {
   const { toast } = useToast();
   const form = useForm<SymptomFormValues>({
     resolver: zodResolver(SymptomAnalyzerInputSchema),
@@ -37,7 +37,6 @@ export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: Sym
   });
 
   const onSubmit: SubmitHandler<SymptomFormValues> = async (data) => {
-    // setIsLoading is now handled by the parent component that calls the agent
     const analysisInput: SymptomAnalyzerInput = {
       symptoms: data.symptoms,
       patientContext: {
@@ -46,7 +45,7 @@ export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: Sym
         history: data.patientContext?.history || undefined,
       }
     };
-    onAnalysisComplete(null, undefined, analysisInput); // Pass the raw input to the parent
+    onAnalysisStart(analysisInput);
   };
 
   return (

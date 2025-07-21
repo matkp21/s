@@ -10,7 +10,6 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { SymptomAnalyzerInputSchema, SymptomAnalyzerOutputSchema } from '../schemas/symptom-analyzer-schemas';
-import { guidelineRetrievalTool } from '../tools/guideline-retrieval-tool';
 
 // Export types for use in other modules
 export type { SymptomAnalyzerInput, SymptomAnalyzerOutput, DiagnosisItem, InvestigationItem } from '../schemas/symptom-analyzer-schemas';
@@ -23,13 +22,10 @@ const prompt = ai.definePrompt({
   name: 'symptomAnalyzerPrompt',
   input: {schema: SymptomAnalyzerInputSchema},
   output: {schema: SymptomAnalyzerOutputSchema},
-  tools: [guidelineRetrievalTool],
-  prompt: `You are an expert medical AI assistant. Based on the symptoms and patient context provided, your first step is to generate a list of potential differential diagnoses.
-For each diagnosis, include a 'name', 'confidence' level ('High', 'Medium', 'Low', 'Possible'), and a 'rationale'.
+  prompt: `You are an expert medical AI assistant. Your primary task is to generate a list of potential differential diagnoses based on the provided symptoms and patient context.
+For each diagnosis, include a 'name', a 'confidence' level ('High', 'Medium', 'Low', 'Possible'), and a 'rationale'.
 
-After identifying the single most likely diagnosis, your second step is to use the 'guidelineRetriever' tool to find its standard investigations and management guidelines.
-- Use the name of the most likely diagnosis as the 'query' for the tool.
-- Populate the 'suggestedInvestigations' and 'suggestedManagement' fields in your final output using the information returned by the tool.
+Also provide a list of suggested initial investigations and management steps based on the overall clinical picture presented.
 
 Symptoms: {{{symptoms}}}
 {{#if patientContext.age}}Patient Age: {{{patientContext.age}}}{{/if}}
