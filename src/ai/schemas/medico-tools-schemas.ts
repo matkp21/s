@@ -1,3 +1,4 @@
+
 // src/ai/schemas/medico-tools-schemas.ts
 
 /**
@@ -130,7 +131,7 @@ export type MedicoFlashcardGeneratorOutput = z.infer<typeof MedicoFlashcardGener
 
 // Schema for Mnemonics Generator
 export const MedicoMnemonicsGeneratorInputSchema = z.object({
-  topic: z.string().min(3).describe('The medical topic for which to generate a mnemonic.'),
+  topic: z.string().min(3, { message: "Topic must be at least 3 characters." }).max(150, { message: "Topic too long."}),
 });
 export type MedicoMnemonicsGeneratorInput = z.infer<typeof MedicoMnemonicsGeneratorInputSchema>;
 
@@ -396,3 +397,41 @@ export const ComprehensiveReviewOutputSchema = z.object({
   flowchart: MedicoFlowchartCreatorOutputSchema.optional(),
 });
 export type ComprehensiveReviewOutput = z.infer<typeof ComprehensiveReviewOutputSchema>;
+
+
+// MBBS Study Agent (MedGemma powered)
+export const MbbsStudyInputSchema = z.object({
+  topic: z.string(),
+  subject: z.enum(subjects),
+  year: z.string().optional(),
+  examType: z.string().optional(),
+  marks: z.string().optional(),
+});
+
+export const MbbsStudyOutputSchema = z.object({
+  enhancedContent: z.object({
+    summary: z.string(),
+    bulletPoints: z.array(z.string()),
+    headings: z.array(
+      z.object({
+        title: z.string(),
+        content: z.string(),
+      })
+    ),
+    diagramUrl: z.string().url().optional(),
+  }),
+  references: z.array(z.string()),
+  nextSteps: z.array(NextStepSchema),
+});
+
+export const GuidedStudyInputSchema = z.object({
+  topic: z.string(),
+});
+
+export const GuidedStudyOutputSchema = z.object({
+  topic: z.string(),
+  notes: StudyNotesGeneratorOutputSchema,
+  mcqs: MedicoMCQGeneratorOutputSchema,
+  flashcards: MedicoFlashcardGeneratorOutputSchema,
+  nextSteps: z.array(NextStepSchema).optional(),
+});

@@ -1,3 +1,4 @@
+
 // src/components/medico/mnemonics-generator.tsx
 "use client";
 
@@ -10,23 +11,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Lightbulb, Wand2, Image as ImageIcon, Save, ArrowRight, ChevronDown } from 'lucide-react';
+import { Loader2, Lightbulb, Wand2, Image as ImageIcon } from 'lucide-react';
 import { generateMnemonic } from '@/ai/agents/medico/MnemonicsGeneratorAgent';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { useAiAgent } from '@/hooks/use-ai-agent';
 import { useProMode } from '@/contexts/pro-mode-context';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
-import Link from 'next/link';
-import React from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import React, { useEffect } from 'react';
+import { MedicoMnemonicsGeneratorInputSchema } from '@/ai/schemas/medico-tools-schemas';
+import { NextStepsDisplay } from './next-steps-display';
 
-const formSchema = z.object({
-  topic: z.string().min(3, { message: "Topic must be at least 3 characters." }).max(150, { message: "Topic too long."}),
-});
-
-type MnemonicFormValues = z.infer<typeof formSchema>;
+type MnemonicFormValues = z.infer<typeof MedicoMnemonicsGeneratorInputSchema>;
 
 interface MnemonicGeneratorProps {
   initialTopic?: string | null;
@@ -36,7 +33,7 @@ export function MnemonicsGenerator({ initialTopic }: MnemonicGeneratorProps) {
   const { toast } = useToast();
   const { user } = useProMode();
 
-  const { execute: runGenerateMnemonic, data: generatedMnemonic, isLoading, error, reset } = useAiAgent(generateMnemonic, {
+  const { mutate: runGenerateMnemonic, data: generatedMnemonic, isPending: isLoading, error, reset } = useAiAgent(generateMnemonic, {
     onSuccess: (data, input) => {
       if (!data?.mnemonic || !data.topicGenerated) {
         toast({
@@ -55,11 +52,11 @@ export function MnemonicsGenerator({ initialTopic }: MnemonicGeneratorProps) {
 
 
   const form = useForm<MnemonicFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(MedicoMnemonicsGeneratorInputSchema),
     defaultValues: { topic: initialTopic || "" },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialTopic) {
       form.setValue('topic', initialTopic);
     }
@@ -143,9 +140,9 @@ export function MnemonicsGenerator({ initialTopic }: MnemonicGeneratorProps) {
       </Form>
 
       {error && (
-        <Alert variant="destructive" className="rounded-lg">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+        <Alert variant="destructive" className="rounded-lg my-4">
+          <AlertTitle>Error Generating Mnemonic</AlertTitle>
+          <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
@@ -195,30 +192,12 @@ export function MnemonicsGenerator({ initialTopic }: MnemonicGeneratorProps) {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="p-4 border-t flex items-center justify-between">
-              <Button onClick={handleSaveToLibrary} disabled={!user}>
-                <Save className="mr-2 h-4 w-4"/> Save to Library
-              </Button>
-              {generatedMnemonic.nextSteps && generatedMnemonic.nextSteps.length > 0 && (
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline">
-                        Next Steps <ChevronDown className="ml-2 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Recommended Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {generatedMnemonic.nextSteps.map((step, index) => (
-                        <DropdownMenuItem key={index} asChild className="cursor-pointer">
-                          <Link href={`/medico/${step.toolId}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
-                            {step.cta}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                )}
+          <CardFooter className="p-4 border-t">
+              <NextStepsDisplay 
+                nextSteps={generatedMnemonic.nextSteps}
+                onSaveToLibrary={handleSaveToLibrary}
+                isUserLoggedIn={!!user}
+              />
           </CardFooter>
         </Card>
       )}
