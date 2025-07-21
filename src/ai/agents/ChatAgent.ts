@@ -1,262 +1,108 @@
-// src/components/chat/chat-interface.tsx
-"use client";
+// src/ai/agents/ChatAgent.ts
+'use server';
+/**
+ * @fileOverview Defines a Genkit flow for handling chat interactions.
+ * This flow can respond to general conversation and use tools like symptom analysis.
+ *
+ * - chatFlow - The main flow for chat.
+ * - ChatMessageInput - Input type for user messages.
+ * - ChatMessageOutput - Output type for bot responses.
+ */
 
-import React, { useState, useEffect, useRef, type ReactNode } from 'react';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { SendHorizonal, Mic, MicOff, Volume2, VolumeX, ArrowDownCircle } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useProMode } from '@/contexts/pro-mode-context';
-import { ChatMessage, type Message } from './chat-message';
-import { ChatThinkingIndicator } from './chat-thinking-indicator';
-import { model } from '@/lib/firebase'; // Import the model from firebase.ts
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+import { symptomAnalyzerTool } from '@/ai/tools/symptom-analyzer-tool';
+import { studyNotesTool, mcqGeneratorTool } from '@/ai/tools/medico-tools';
+import { callGeminiApiDirectly } from '@/ai/utils/direct-gemini-call';
 
-export function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-  const { userRole } = useProMode();
+// Define input schema for a chat message
+const ChatMessageInputSchema = z.object({
+  message: z.string().describe('The user message in the chat conversation.'),
+  // Future: Add conversation history, user ID, etc.
+});
+export type ChatMessageInput = z.infer<typeof ChatMessageInputSchema>;
 
-  const [isListening, setIsListening] = useState(false);
-  const [isVoiceOutputEnabled, setIsVoiceOutputEnabled] = useState(false);
-  const [hasMicPermission, setHasMicPermission] = useState<boolean | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const chatSessionRef = useRef(model.startChat({ history: [] }));
+// Define output schema for a chat message response
+const ChatMessageOutputSchema = z.object({
+  response: z.string().describe('The AI assistant s response to the user message.'),
+  toolResponse: z.any().optional().describe('Structured output from any tool that was called.'),
+  toolName: z.string().optional().describe('The name of the tool that was called.'),
+});
+export type ChatMessageOutput = z.infer<typeof ChatMessageOutputSchema>;
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = false;
-        recognitionRef.current.interimResults = false;
-        recognitionRef.current.lang = 'en-US';
 
-        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
-          const transcript = event.results[event.results.length - 1][0].transcript.trim();
-          setInputValue(transcript);
-          handleSendMessage(transcript);
-          setIsListening(false);
-        };
-
-        recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
-          console.error('Speech recognition error:', event.error);
-          toast({
-            variant: 'destructive',
-            title: 'Voice Input Error',
-            description: `Could not recognize speech: ${event.error}`,
-          });
-          setIsListening(false);
-        };
-
-        recognitionRef.current.onend = () => {
-           setIsListening(false);
-        };
-      }
-    } else {
-      console.warn("Speech Recognition API not supported in this browser.");
-    }
-  }, [toast]);
-
-  const speakText = (text: string) => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && text && isVoiceOutputEnabled) {
-      speechSynthesis.cancel(); 
-      const utterance = new SpeechSynthesisUtterance(text);
-      speechSynthesis.speak(utterance);
-    }
-  };
-
-  useEffect(() => {
-    if (messages.length === 0 && !isLoading) {
-      const welcomeText = "Welcome to MediAssistant Chat! How can I help you today?";
-      const welcomeMessage: Message = {
-        id: `welcome-bot-${Date.now()}`,
-        content: welcomeText,
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-      setMessages([welcomeMessage]);
-      speakText(welcomeText);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
-
-  const toggleListening = async () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    } else {
-       if (hasMicPermission === null || hasMicPermission === false) {
-        try {
-          await navigator.mediaDevices.getUserMedia({ audio: true });
-          setHasMicPermission(true);
-        } catch (err) {
-          setHasMicPermission(false);
-          toast({ variant: "destructive", title: "Microphone Access Denied", description: "Please enable microphone permissions." });
-          return;
-        }
-      }
-      recognitionRef.current?.start();
-      setIsListening(true);
-    }
-  };
-
-  const handleSendMessage = async (messageContent?: string) => {
-    const currentMessage = (typeof messageContent === 'string' ? messageContent : inputValue).trim();
-    if (currentMessage === '') return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: currentMessage,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-    if (typeof messageContent !== 'string') { 
-        setInputValue('');
-    }
-    setIsLoading(true);
-
+export async function processChatMessage(input: ChatMessageInput): Promise<ChatMessageOutput> {
+  try {
+    // Try Genkit flow first
+    const genkitResponse = await chatFlow(input);
+    return genkitResponse;
+  } catch (genkitError: any) {
+    console.warn("Genkit chatFlow failed, attempting direct Gemini API call as fallback:", genkitError.message || genkitError);
     try {
-        const result = await chatSessionRef.current.sendMessage(currentMessage);
-        const botResponseText = result.response.text();
-        
-        const botMessage: Message = {
-            id: `bot-${Date.now()}`,
-            content: botResponseText,
-            sender: 'bot',
-            timestamp: new Date(),
-        };
-
-        setMessages(prev => [...prev, botMessage]);
-        speakText(botResponseText);
-
-    } catch (error) {
-        console.error("Chat processing error:", error);
-        const errorMessageText = error instanceof Error ? error.message : "An unknown error occurred.";
-        const botErrorMessage: Message = {
-            id: `bot-error-${Date.now()}`,
-            content: `Sorry, an error occurred: ${errorMessageText}`,
-            sender: 'bot',
-            timestamp: new Date(),
-            isErrorResponse: true,
-        };
-        setMessages(prev => [...prev, botErrorMessage]);
-    } finally {
-        setIsLoading(false);
+      // Construct a simplified prompt for the direct call.
+      // This fallback will NOT use tools or the full context of the original chatPrompt.
+      const directPrompt = `You are MediAssistant, a helpful and friendly AI medical assistant. The user says: "${input.message}". Respond conversationally and helpfully.`;
+      const fallbackResponseText = await callGeminiApiDirectly(directPrompt);
+      return { response: fallbackResponseText };
+    } catch (fallbackError: any) {
+      console.error("Direct Gemini API call (fallback) also failed:", fallbackError.message || fallbackError);
+      // Return a generic error if both fail
+      return { response: "I'm currently experiencing technical difficulties and cannot process your request. Please try again later." };
     }
-};
-
-  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
-    if (viewportRef.current) {
-      viewportRef.current.scrollTo({ top: viewportRef.current.scrollHeight, behavior });
-    }
-  };
-  
-  useEffect(() => {
-    scrollToBottom('auto');
-  }, [messages]);
-
-
-  const handleScroll = () => {
-    if (viewportRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
-      const atBottom = scrollHeight - scrollTop <= clientHeight + 5; 
-      setShowScrollToBottom(!atBottom && scrollTop < scrollHeight - clientHeight - 50);
-    }
-  };
-
-  useEffect(() => {
-    const currentViewport = viewportRef.current;
-    if (currentViewport) {
-      currentViewport.addEventListener('scroll', handleScroll);
-    }
-    return () => {
-      if (currentViewport) {
-        currentViewport.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, []);
-
-
-  return (
-    <Card className="chat-glow-container flex-1 flex flex-col shadow-lg rounded-xl h-full relative bg-gradient-to-br from-card via-card to-secondary/10 dark:from-card dark:via-card dark:to-secondary/5">
-      <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
-        <ScrollArea className="flex-grow p-4" viewportRef={viewportRef} ref={scrollAreaRef}>
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
-            ))}
-            {isLoading && <ChatThinkingIndicator />}
-          </div>
-        </ScrollArea>
-         {showScrollToBottom && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute bottom-20 right-4 h-10 w-10 rounded-full bg-background/70 backdrop-blur-sm shadow-lg hover:bg-primary/20 z-10" 
-            onClick={() => scrollToBottom()}
-            aria-label="Scroll to bottom"
-          >
-            <ArrowDownCircle className="h-5 w-5 text-primary" />
-          </Button>
-        )}
-      </CardContent>
-      <div className="border-t p-4 bg-background/80 backdrop-blur-sm">
-        {hasMicPermission === false && (
-             <Alert variant="destructive" className="mb-2">
-              <AlertTitle>Microphone Access Denied</AlertTitle>
-              <AlertDescription className="text-xs">Voice input is disabled. Please enable microphone permissions in your browser settings.</AlertDescription>
-             </Alert>
-        )}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleListening}
-            disabled={hasMicPermission === false || !(typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window))}
-            aria-label={isListening ? "Stop voice input" : "Start voice input"}
-            className="hover:bg-primary/10"
-          >
-            {isListening ? <MicOff className="h-5 w-5 text-destructive" /> : <Mic className="h-5 w-5 text-primary" />}
-          </Button>
-          <Textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="w-full resize-none pr-3 rounded-xl border-border/70 focus:border-primary" 
-            rows={1}
-            placeholder={isListening ? "Listening..." : "Type your message or /command..."} 
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            disabled={isLoading || isListening}
-            aria-label="Message input"
-          />
-          <Button onClick={() => handleSendMessage()} size="icon" aria-label="Send message" disabled={isLoading || inputValue.trim() === ''} className="rounded-full">
-             <SendHorizonal className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsVoiceOutputEnabled(prev => !prev)}
-            aria-label={isVoiceOutputEnabled ? "Disable voice output" : "Enable voice output"}
-            disabled={!(typeof window !== 'undefined' && 'speechSynthesis' in window)}
-            className="hover:bg-primary/10"
-          >
-            {isVoiceOutputEnabled ? <Volume2 className="h-5 w-5 text-primary" /> : <VolumeX className="h-5 w-5 text-muted-foreground" />}
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
+  }
 }
+
+const chatPrompt = ai.definePrompt({
+  name: 'chatPrompt',
+  input: { schema: ChatMessageInputSchema },
+  output: { schema: ChatMessageOutputSchema },
+  tools: [symptomAnalyzerTool, studyNotesTool, mcqGeneratorTool],
+  prompt: `You are MediAssistant, a helpful and friendly AI medical assistant.
+  Your primary goal is to assist users with their medical queries.
+
+  User's message: {{{message}}}
+
+  Instructions:
+  1. If the user's message clearly describes medical symptoms they are experiencing (e.g., "I have a fever and a cough", "My symptoms are headache and nausea"), use the 'symptomAnalyzer' tool to analyze these symptoms.
+     - When presenting the results, clearly state that these are potential considerations and not a diagnosis, and advise consulting a medical professional.
+     - Format the potential diagnoses from the tool in a clear, readable way (e.g., a list).
+  2. If the user's message is a command for a medico tool, use the appropriate tool.
+     - For "/notes <topic>", use the 'generateStudyNotes' tool.
+     - For "/mcq <topic> [count]", use the 'generateMCQs' tool, extracting the topic and optional count.
+  3. If the user's message is a general question, a greeting, or anything not describing specific medical symptoms for analysis or a medico command, respond conversationally and helpfully without using a tool.
+  4. Be empathetic and maintain a professional tone.
+  5. If a tool returns no specific results, inform the user that no specific information could be determined based on the input.
+  `,
+  config: {
+    temperature: 0.5, 
+  }
+});
+
+
+const chatFlow = ai.defineFlow(
+  {
+    name: 'chatFlow',
+    inputSchema: ChatMessageInputSchema,
+    outputSchema: ChatMessageOutputSchema,
+  },
+  async (input) => {
+    const llmResponse = await chatPrompt(input);
+    const output = llmResponse.output();
+    
+    if (!output) {
+      throw new Error("Genkit flow did not produce an output.");
+    }
+    
+    // Check if a tool was used and include its output and name in the response
+    const toolRequest = llmResponse.history[llmResponse.history.length - 2];
+    if (toolRequest?.role === 'model' && toolRequest.content[0].toolRequest) {
+        const toolResponse = llmResponse.history[llmResponse.history.length - 1];
+        if (toolResponse?.role === 'tool' && toolResponse.content[0].toolResponse) {
+             output.toolName = toolRequest.content[0].toolRequest.name;
+             output.toolResponse = toolResponse.content[0].toolResponse.output;
+        }
+    }
+    
+    return output;
+  }
+);

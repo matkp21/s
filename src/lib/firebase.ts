@@ -4,7 +4,6 @@ import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 import { getFunctions, type Functions } from "firebase/functions";
-import { getAI, getGenerativeModel } from "firebase/ai";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -28,9 +27,4 @@ const firestore: Firestore = getFirestore(app);
 const storage: FirebaseStorage = getStorage(app);
 const functions: Functions = getFunctions(app);
 
-// Initialize Firebase AI
-const ai = getAI(app);
-const model = getGenerativeModel(ai, { model: "gemini-pro" });
-
-
-export { app, auth, firestore, storage, functions, model };
+export { app, auth, firestore, storage, functions };

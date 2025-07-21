@@ -12,7 +12,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { ChatMessage, type Message } from './chat-message';
 import { ChatThinkingIndicator } from './chat-thinking-indicator';
-import { model } from '@/lib/firebase'; // Import the model from firebase.ts
+import type { SymptomAnalyzerOutput } from '@/ai/agents/SymptomAnalyzerAgent';
+import type { MedicoMCQGeneratorOutput } from '@/ai/agents/medico/MCQGeneratorAgent';
+import { SymptomAnalysisResultCard } from './symptom-analysis-result-card';
+import { ChatCommands } from './chat-commands';
+import { MCQResultCard } from './mcq-result-card';
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -28,7 +32,6 @@ export function ChatInterface() {
   const [hasMicPermission, setHasMicPermission] = useState<boolean | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const chatSessionRef = useRef(model.startChat({ history: [] }));
 
   useEffect(() => {
     if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
@@ -125,21 +128,45 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
-        const result = await chatSessionRef.current.sendMessage(currentMessage);
-        const botResponseText = result.response.text();
-        
-        const botMessage: Message = {
-            id: `bot-${Date.now()}`,
-            content: botResponseText,
-            sender: 'bot',
-            timestamp: new Date(),
-        };
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: currentMessage }),
+      });
 
-        setMessages(prev => [...prev, botMessage]);
-        speakText(botResponseText);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      let botResponse: ReactNode = result.response;
+      let isCommandResponse = false;
+      
+      if (result.toolName === 'symptomAnalyzer' && result.toolResponse) {
+        botResponse = <SymptomAnalysisResultCard result={result.toolResponse as SymptomAnalyzerOutput}/>;
+        isCommandResponse = true;
+      } else if (result.toolName === 'generateMCQs' && result.toolResponse) {
+        botResponse = <MCQResultCard result={result.toolResponse as MedicoMCQGeneratorOutput} />;
+        isCommandResponse = true;
+      } else if (result.toolName && result.toolResponse) {
+        // Fallback for other tools (like notes)
+        botResponse = <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(result.toolResponse, null, 2)}</pre>;
+        isCommandResponse = true;
+      }
+
+      const botMessage: Message = {
+        id: `bot-${Date.now()}`,
+        content: botResponse,
+        sender: 'bot',
+        timestamp: new Date(),
+        toolName: result.toolName,
+        isCommandResponse,
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+      speakText(result.response);
 
     } catch (error) {
-        console.error("Chat processing error:", error);
         const errorMessageText = error instanceof Error ? error.message : "An unknown error occurred.";
         const botErrorMessage: Message = {
             id: `bot-error-${Date.now()}`,
@@ -210,6 +237,7 @@ export function ChatInterface() {
         )}
       </CardContent>
       <div className="border-t p-4 bg-background/80 backdrop-blur-sm">
+        {userRole === 'medico' && <ChatCommands onSendMessage={handleSendMessage} />}
         {hasMicPermission === false && (
              <Alert variant="destructive" className="mb-2">
               <AlertTitle>Microphone Access Denied</AlertTitle>
