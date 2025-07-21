@@ -1,4 +1,4 @@
-
+// src/ai/agents/medico/VideoSummarizerAgent.ts
 'use server';
 /**
  * @fileOverview A Genkit flow for summarizing YouTube videos.
@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { YoutubeTranscript } from 'youtube-transcript';
-import { generate } from '@genkit-ai/googleai';
+import { generate } from 'genkit/ai';
 
 // Input schema for the summarizer flow
 export const VideoSummarizerInputSchema = z.object({
