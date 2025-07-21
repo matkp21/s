@@ -21,7 +21,9 @@ interface NextStepsDisplayProps {
 }
 
 const correctToolId = (toolId: string) => {
-    if (toolId === 'theorycoach-generator') {
+    // This is a temporary fix to align agent outputs with component IDs.
+    // In a future refactor, agent `toolId` outputs should be consistent with page/component routes.
+    if (toolId === 'theorycoach-generator' || toolId === 'notes-generator') {
         return 'notes-generator';
     }
     return toolId;

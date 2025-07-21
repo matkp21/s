@@ -37,7 +37,7 @@ interface McqGeneratorProps {
 export function McqGenerator({ initialTopic }: McqGeneratorProps) {
   const { toast } = useToast();
   const { user } = useProMode();
-  const { mutate: runGenerateMcqs, data: generatedMcqs, isPending: isLoading, error, reset } = useAiAgent(generateMCQs, {
+  const { mutate: runGenerateMcqs, data: generatedMcqs, isPending: isLoading, error, reset } = useAiAgent<MedicoMCQGeneratorInput, MedicoMCQGeneratorOutput>(generateMCQs, {
      onSuccess: async (data, input) => {
       if (!data?.mcqs || !data.topicGenerated) {
         toast({
@@ -53,17 +53,10 @@ export function McqGenerator({ initialTopic }: McqGeneratorProps) {
       });
       
       try {
-        const progressResult = await trackProgress({
+        await trackProgress({
             activityType: 'mcq_session',
             topic: input.topic,
-            // A mock score since we don't have an interactive quiz yet.
-            // In a real quiz, this score would be calculated based on user answers.
-            score: Math.floor(Math.random() * 41) + 60, // Simulate a decent score (60-100)
-        });
-         toast({
-          title: "Practice Session Logged!",
-          description: progressResult.progressUpdateMessage,
-          duration: 5000,
+            score: undefined
         });
       } catch (progressError) {
           console.warn("Could not track progress for MCQ generation:", progressError);
@@ -320,12 +313,12 @@ export function McqGenerator({ initialTopic }: McqGeneratorProps) {
             </ScrollArea>
           </CardContent>
           <CardFooter className="p-4 border-t">
-            <NextStepsDisplay 
+              <NextStepsDisplay
                 nextSteps={generatedMcqs.nextSteps}
                 onSaveToLibrary={handleSaveToLibrary}
                 isUserLoggedIn={!!user}
               />
-          </CardFooter>
+            </CardFooter>
         </Card>
       )}
     </div>

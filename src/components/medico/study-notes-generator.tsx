@@ -21,9 +21,8 @@ import { trackProgress } from '@/ai/agents/medico/ProgressTrackerAgent';
 import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
-import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { StudyNotesGeneratorInputSchema } from '@/ai/schemas/medico-tools-schemas';
+import { NextStepsDisplay } from './next-steps-display';
 
 const subjects = ["Anatomy", "Physiology", "Biochemistry", "Pathology", "Pharmacology", "Microbiology", "Forensic Medicine", "Community Medicine", "Ophthalmology", "ENT", "General Medicine", "General Surgery", "Obstetrics & Gynaecology", "Pediatrics", "Other"] as const;
 const systems = ["Cardiovascular", "Respiratory", "Gastrointestinal", "Neurological", "Musculoskeletal", "Endocrine", "Genitourinary", "Integumentary", "Hematological", "Immunological", "Other"] as const;
@@ -208,7 +207,12 @@ export function StudyNotesGenerator({ initialTopic }: StudyNotesGeneratorProps) 
         </div>
       </div>
 
-      {error && <Alert variant="destructive" className="rounded-lg"><AlertTitle>Error</AlertTitle><AlertDescription>{error.message}</AlertDescription></Alert>}
+      {error && (
+        <Alert variant="destructive" className="rounded-lg my-4">
+            <AlertTitle>Error Generating Notes</AlertTitle>
+            <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+      )}
 
       {generatedAnswer && (
         <Card className="shadow-md rounded-xl mt-6 border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 relative">
@@ -257,40 +261,12 @@ export function StudyNotesGenerator({ initialTopic }: StudyNotesGeneratorProps) 
               </div>
             </div>
           </CardContent>
-           <CardFooter className="p-4 border-t flex items-center justify-between">
-              <Button onClick={handleSaveToLibrary} disabled={!user}>
-                <Save className="mr-2 h-4 w-4"/> Save to Library
-              </Button>
-               {generatedAnswer.nextSteps && generatedAnswer.nextSteps.length > 0 && (
-                <div className="flex rounded-md border">
-                  <Button asChild className="flex-grow rounded-r-none border-r-0 font-semibold">
-                    <Link href={`/medico/${generatedAnswer.nextSteps[0].toolId}?topic=${encodeURIComponent(generatedAnswer.nextSteps[0].prefilledTopic)}`}>
-                      {generatedAnswer.nextSteps[0].cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                  {generatedAnswer.nextSteps.length > 1 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="rounded-l-none">
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>More Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {generatedAnswer.nextSteps.slice(1).map((step, index) => (
-                          <DropdownMenuItem key={index} asChild className="cursor-pointer">
-                            <Link href={`/medico/${step.toolId}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
-                              {step.cta}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-                )}
+           <CardFooter className="p-4 border-t">
+              <NextStepsDisplay
+                nextSteps={generatedAnswer.nextSteps}
+                onSaveToLibrary={handleSaveToLibrary}
+                isUserLoggedIn={!!user}
+              />
             </CardFooter>
         </Card>
       )}
