@@ -119,3 +119,4 @@ async def analyze_symptoms_endpoint(request: SymptomAnalysisRequest):
             status_code=500, 
             detail=f"An unexpected error occurred: {str(e)}"
         )
+
