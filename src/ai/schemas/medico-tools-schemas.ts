@@ -108,10 +108,10 @@ export type MedicoStudyTimetableOutput = z.infer<typeof MedicoStudyTimetableOutp
 
 // Schema for Flashcard Generator
 export const MedicoFlashcardGeneratorInputSchema = z.object({
-  topic: z.string().min(3, { message: "Topic must be at least 3 characters long." }).max(100, { message: "Topic too long." }),
-  count: z.coerce.number().int().min(1, { message: "Minimum 1 flashcard." }).max(20, { message: "Maximum 20 flashcards." }).default(10),
-  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
-  examType: z.enum(['university', 'neet-pg', 'usmle']).default('university'),
+  topic: z.string().min(3, { message: "Topic must be at least 3 characters." }).describe('The medical topic for flashcards.'),
+  count: z.number().int().min(1).max(20).default(10).describe('Number of flashcards to generate (1-20).'),
+  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium').describe('The difficulty level of the flashcards.'),
+  examType: z.enum(['university', 'neet-pg', 'usmle']).default('university').describe('The style of exam to pattern the flashcards after.'),
 });
 export type MedicoFlashcardGeneratorInput = z.infer<typeof MedicoFlashcardGeneratorInputSchema>;
 
@@ -383,17 +383,16 @@ export const MedicoNoteStructurerOutputSchema = z.object({
 });
 export type MedicoNoteStructurerOutput = z.infer<typeof MedicoNoteStructurerOutputSchema>;
 
-// Schema for Guided Study Orchestrator
-export const GuidedStudyInputSchema = z.object({
-  topic: z.string().min(3).describe('The broad medical topic for the guided study session.'),
-});
-export type GuidedStudyInput = z.infer<typeof GuidedStudyInputSchema>;
-
-export const GuidedStudyOutputSchema = z.object({
+// Schema for Comprehensive Topic Review orchestrator
+export const ComprehensiveReviewInputSchema = z.object({
   topic: z.string(),
-  notes: StudyNotesGeneratorOutputSchema.describe('The comprehensive study notes generated for the topic.'),
-  mcqs: MedicoMCQGeneratorOutputSchema.describe('A set of practice questions on the topic.'),
-  flashcards: MedicoFlashcardGeneratorOutputSchema.describe('A set of key flashcards for revision.'),
-  nextSteps: z.array(NextStepSchema).describe('Suggested next actions after completing the guided session.'),
 });
-export type GuidedStudyOutput = z.infer<typeof GuidedStudyOutputSchema>;
+export type ComprehensiveReviewInput = z.infer<typeof ComprehensiveReviewInputSchema>;
+
+export const ComprehensiveReviewOutputSchema = z.object({
+  topic: z.string(),
+  studyNotes: StudyNotesGeneratorOutputSchema.optional(),
+  mcqs: MedicoMCQGeneratorOutputSchema.optional(),
+  flowchart: MedicoFlowchartCreatorOutputSchema.optional(),
+});
+export type ComprehensiveReviewOutput = z.infer<typeof ComprehensiveReviewOutputSchema>;

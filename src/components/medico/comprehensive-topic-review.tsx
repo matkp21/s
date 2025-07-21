@@ -9,12 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Book, Wand2 } from 'lucide-react';
+import { Loader2, Book, Wand2, FileQuestion, Workflow } from 'lucide-react';
 import { useAiAgent } from '@/hooks/use-ai-agent';
 import { getComprehensiveReview } from '@/ai/agents/medico/ComprehensiveTopicReviewAgent';
 import { ComprehensiveReviewOutputSchema } from '@/ai/schemas/medico-tools-schemas';
-import { SolvedQuestionPapersViewer } from './solved-question-papers-viewer';
+import { SolvedQuestionPapersViewerComponent } from './solved-question-papers-viewer';
 import { MermaidRenderer } from '../markdown/mermaid-renderer';
+import { MarkdownRenderer } from '../markdown/markdown-renderer';
+import { ScrollArea } from '../ui/scroll-area';
 
 const formSchema = z.object({
   topic: z.string().min(3, { message: "Topic must be at least 3 characters." }),
@@ -22,8 +24,8 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function ComprehensiveTopicReview() {
-  const { execute: runReview, data: reviewData, isLoading, error, reset } = useAiAgent(getComprehensiveReview, ComprehensiveReviewOutputSchema);
+export function ComprehensiveTopicReview() {
+  const { mutate: runReview, data: reviewData, isPending: isLoading, error, reset } = useAiAgent(getComprehensiveReview);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -68,7 +70,7 @@ export default function ComprehensiveTopicReview() {
       {error && (
         <Alert variant="destructive" className="rounded-lg">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
@@ -77,15 +79,20 @@ export default function ComprehensiveTopicReview() {
           <h2 className="text-2xl font-bold">Comprehensive Review for: {reviewData.topic}</h2>
           
           {reviewData.studyNotes && (
-             <SolvedQuestionPapersViewer 
-                content={{ enhancedContent: reviewData.studyNotes }}
-                title="Generated Study Notes"
-                description="Key points and summary for your topic."
-            />
+             <Card>
+                <CardHeader><CardTitle className="flex items-center gap-2"><BookOpen/> Study Notes</CardTitle></CardHeader>
+                <CardContent>
+                    <ScrollArea className="h-[400px] p-1 border rounded-lg">
+                        <div className="p-4">
+                            <MarkdownRenderer content={reviewData.studyNotes.notes} />
+                        </div>
+                    </ScrollArea>
+                </CardContent>
+            </Card>
           )}
 
           {reviewData.mcqs && (
-            <SolvedQuestionPapersViewer
+            <SolvedQuestionPapersViewerComponent
                 content={reviewData.mcqs}
                 title="Practice MCQs"
                 description="Test your knowledge with these questions."
@@ -94,9 +101,7 @@ export default function ComprehensiveTopicReview() {
 
           {reviewData.flowchart && (
              <Card className="shadow-md rounded-xl">
-                <CardHeader>
-                    <CardTitle>Generated Flowchart</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Workflow/> Generated Flowchart</CardTitle></CardHeader>
                 <CardContent>
                     <MermaidRenderer chart={reviewData.flowchart.nodes.map(n => `  ${n.id}["${n.data.label}"]`).join('\n') + '\n' + reviewData.flowchart.edges.map(e => `  ${e.source} --> ${e.target}`).join('\n')} />
                 </CardContent>

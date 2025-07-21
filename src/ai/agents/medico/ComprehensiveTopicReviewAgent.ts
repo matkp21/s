@@ -1,4 +1,3 @@
-
 // src/ai/agents/medico/ComprehensiveTopicReviewAgent.ts
 'use server';
 /**
@@ -8,7 +7,7 @@
 
 import { ai } from '@/ai/genkit';
 import { generateMCQs } from '@/ai/agents/medico/MCQGeneratorAgent';
-import { generateStudyNotes } from '@/ai/agents/medico/MbbsStudyAgent';
+import { generateStudyNotes } from '@/ai/agents/medico/StudyNotesAgent';
 import { createFlowchart } from '@/ai/agents/medico/FlowchartCreatorAgent';
 import {
   ComprehensiveReviewInputSchema,
@@ -35,7 +34,7 @@ const comprehensiveReviewFlow = ai.defineFlow(
       const [notesResult, mcqsResult, flowchartResult] = await Promise.allSettled([
         generateStudyNotes({
           topic: input.topic,
-          subject: 'General Medicine', // Using a sensible default
+          answerLength: '10-mark', 
         }),
         generateMCQs({
           topic: input.topic,
