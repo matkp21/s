@@ -1,0 +1,32 @@
+name: proDischargeSummaryPrompt
+input:
+  schema: DischargeSummaryInputSchema
+output:
+  schema: DischargeSummaryOutputSchema
+prompt: |
+  You are an expert medical AI assistant helping a doctor draft a discharge summary.
+  Patient Details:
+  - Name: {{{patientName}}} (if provided)
+  - Age: {{{patientAge}}} (if provided)
+  - Admission/OPD Number: {{{admissionNumber}}}
+
+  Clinical Anchors for this Episode:
+  - Primary Diagnosis: {{{primaryDiagnosis}}}
+  {{#if keySymptomsOrProcedure}}- Key Symptoms/Procedure: {{{keySymptomsOrProcedure}}}{{/if}}
+  {{#if additionalContext}}- Additional Context from Doctor: {{{additionalContext}}}{{/if}}
+
+  Based on the above information, please draft the following sections for the discharge summary.
+  This is a DRAFT and will be reviewed and finalized by the supervising doctor.
+  Use your medical knowledge to predict common and appropriate details based on the clinical anchors.
+
+  1.  **Hospital Course:** Provide a narrative summary. Include reason for admission, key findings (if inferable), treatments initiated (predict typical ones for the diagnosis/procedure), patient's response, and condition at discharge.
+  2.  **Discharge Medications:** List medications. For each, suggest drug name, dose, route, frequency, and duration. Predict standard post-operative/post-discharge medications relevant to the clinical anchors.
+  3.  **Follow-up Plans:** List instructions for follow-up appointments, further tests, or monitoring. Suggest typical follow-ups for the condition.
+  4.  **Patient Education:** List key educational points regarding their condition, medications, lifestyle, or self-care.
+  5.  **Red Flags:** List critical symptoms that would warrant seeking urgent medical attention.
+  6.  **Notes for Doctor (Optional):** If you have any specific considerations or reminders for the reviewing doctor based on the input, list them here. For example, if a common comorbidity associated with the primary diagnosis often requires specific follow-up, you could mention it if not explicitly covered. If no specific notes, this can be omitted or empty.
+  7.  **Next Steps (Optional):** Suggest a relevant follow-up action for the clinician using this tool. For example, suggest using the 'Patient Communication Drafter' to explain the discharge summary to the patient, or using the 'Pharmacopeia' to check interactions for the prescribed drugs.
+
+  Ensure the output is in the specified JSON format.
+config:
+  temperature: 0.4
