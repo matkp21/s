@@ -12,44 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { ChatMessage, type Message } from './chat-message';
 import { ChatThinkingIndicator } from './chat-thinking-indicator';
-import type { MedicoMCQGeneratorOutput } from '@/ai/agents/medico/MCQGeneratorAgent';
-import type { StudyNotesGeneratorOutput } from '@/ai/agents/medico/StudyNotesAgent';
-import { MarkdownRenderer } from '../markdown/markdown-renderer';
-import { SolvedQuestionPapersViewerComponent } from '../medico/solved-question-papers-viewer';
-import type { SymptomAnalyzerOutput } from '@/ai/agents/SymptomAnalyzerAgent';
-import { SymptomAnalysisResultCard } from './symptom-analysis-result-card';
-
-
-const formatToolResponse = (toolName: string, output: any): ReactNode => {
-    switch (toolName) {
-      case 'mcqGenerator': {
-        const data = output as MedicoMCQGeneratorOutput;
-        return (
-          <SolvedQuestionPapersViewerComponent
-            content={{ mcqs: data.mcqs, topicGenerated: data.topicGenerated, essays: [] }}
-            title={`MCQs for: ${data.topicGenerated}`}
-            description="Here are the questions you requested."
-          />
-        );
-      }
-      case 'studyNotesGenerator': {
-        const data = output as StudyNotesGeneratorOutput;
-        return (
-          <div className="space-y-2">
-            <h4 className="font-semibold text-base">Study Notes for: {data.topicGenerated}</h4>
-            <MarkdownRenderer content={data.notes} />
-          </div>
-        );
-      }
-      case 'symptomAnalyzer': {
-        const data = output as SymptomAnalyzerOutput;
-        return <SymptomAnalysisResultCard result={data} />;
-      }
-      default:
-        return <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(output, null, 2)}</pre>;
-    }
-  };
-
+import { model } from '@/lib/firebase'; // Import the model from firebase.ts
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -65,7 +28,7 @@ export function ChatInterface() {
   const [hasMicPermission, setHasMicPermission] = useState<boolean | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-
+  const chatSessionRef = useRef(model.startChat({ history: [] }));
 
   useEffect(() => {
     if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
@@ -149,12 +112,6 @@ export function ChatInterface() {
     const currentMessage = (typeof messageContent === 'string' ? messageContent : inputValue).trim();
     if (currentMessage === '') return;
 
-    const historyForAgent = messages.map(m => ({
-        role: m.sender,
-        content: typeof m.content === 'string' ? m.content : `[Structured Content: ${m.toolName || 'response'}]`,
-    })).filter(m => !m.content.startsWith('[Structured Content'));
-
-
     const userMessage: Message = {
       id: Date.now().toString(),
       content: currentMessage,
@@ -167,77 +124,31 @@ export function ChatInterface() {
     }
     setIsLoading(true);
 
-    let botResponseText = '';
-    const botMessageId = `bot-${Date.now()}`;
-    const newBotMessage: Message = {
-        id: botMessageId,
-        content: '',
-        sender: 'bot',
-        timestamp: new Date(),
-    };
-    setMessages(prev => [...prev, newBotMessage]);
-
     try {
-        const response = await fetch('/api/chat', {
-            method: 'POST',
-            body: JSON.stringify({
-                input: {
-                    message: currentMessage,
-                    history: historyForAgent,
-                },
-            }),
-        });
-
-        if (!response.body) {
-            throw new Error('Streaming response not available.');
-        }
+        const result = await chatSessionRef.current.sendMessage(currentMessage);
+        const botResponseText = result.response.text();
         
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let toolOutput: any = null;
-        let toolName = '';
+        const botMessage: Message = {
+            id: `bot-${Date.now()}`,
+            content: botResponseText,
+            sender: 'bot',
+            timestamp: new Date(),
+        };
 
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n').filter(line => line.trim());
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    const jsonStr = line.substring(6);
-                    const data = JSON.parse(jsonStr);
-                    
-                    if (data.content) { // This is a text chunk
-                        botResponseText += data.content;
-                        setMessages(prev => prev.map(m => m.id === botMessageId ? {...m, content: botResponseText } : m));
-                    }
-                    if (data.tool_code) { // This is tool output
-                        toolName = data.tool_code.name;
-                        toolOutput = data.tool_code.output;
-                    }
-                }
-            }
-        }
-        
-        // Finalize message with tool output if present
-        setMessages(prev => prev.map(m => {
-            if (m.id === botMessageId) {
-                return {
-                    ...m,
-                    content: toolOutput ? formatToolResponse(toolName, toolOutput) : botResponseText,
-                    toolName: toolName || undefined,
-                    isCommandResponse: !!toolOutput,
-                };
-            }
-            return m;
-        }));
+        setMessages(prev => [...prev, botMessage]);
         speakText(botResponseText);
 
     } catch (error) {
         console.error("Chat processing error:", error);
         const errorMessageText = error instanceof Error ? error.message : "An unknown error occurred.";
-        setMessages(prev => prev.map(m => m.id === botMessageId ? {...m, content: errorMessageText, isErrorResponse: true } : m));
+        const botErrorMessage: Message = {
+            id: `bot-error-${Date.now()}`,
+            content: `Sorry, an error occurred: ${errorMessageText}`,
+            sender: 'bot',
+            timestamp: new Date(),
+            isErrorResponse: true,
+        };
+        setMessages(prev => [...prev, botErrorMessage]);
     } finally {
         setIsLoading(false);
     }
