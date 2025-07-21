@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for simulating virtual patient rounds for medico users.
@@ -47,7 +46,7 @@ Example for 'nextSteps' on completion:
   {
     "title": "Review Topic",
     "description": "Generate study notes for the case topic to consolidate your learning.",
-    "toolId": "theorycoach-generator",
+    "toolId": "notes-generator",
     "prefilledTopic": "{{{patientFocus}}}",
     "cta": "Generate Notes"
   },

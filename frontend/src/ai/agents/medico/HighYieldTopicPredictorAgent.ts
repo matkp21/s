@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for predicting high-yield medical topics for medico users.
@@ -34,7 +33,7 @@ Example for 'nextSteps':
   {
     "title": "Generate Study Notes for [First Topic]",
     "description": "Create detailed notes for one of the predicted topics to start studying.",
-    "toolId": "theorycoach-generator",
+    "toolId": "notes-generator",
     "prefilledTopic": "[The First Topic from predictedTopics list]",
     "cta": "Generate Notes"
   },

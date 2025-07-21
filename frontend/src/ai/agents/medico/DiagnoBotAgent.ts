@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview The DiagnoBot agent, for interpreting clinical data.
@@ -42,7 +41,7 @@ Example for 'nextSteps':
   {
     "title": "Generate Study Notes",
     "description": "Create structured study notes for one of the differential diagnoses.",
-    "toolId": "theorycoach-generator",
+    "toolId": "notes-generator",
     "prefilledTopic": "[One of the likely differentials]",
     "cta": "Generate Notes"
   }

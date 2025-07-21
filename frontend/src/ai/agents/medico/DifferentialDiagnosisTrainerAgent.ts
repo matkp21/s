@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for helping medico users practice differential diagnosis through an interactive, iterative questioning process.
@@ -56,7 +55,7 @@ Example for 'nextSteps' on completion:
   {
     "title": "Review Related Topic",
     "description": "Generate study notes for a key differential to solidify your knowledge.",
-    "toolId": "theorycoach-generator",
+    "toolId": "notes-generator",
     "prefilledTopic": "[A key differential from the case]",
     "cta": "Generate Notes"
   },

@@ -4,7 +4,8 @@ import type { ReactNode } from 'react';
 export type ActiveToolId =
   | 'guided-study' // New orchestrator tool
   | 'q-bank'
-  | 'theorycoach-generator'
+  | 'notes-generator' // Corrected ID
+  | 'advanced-notes'
   | 'topics'
   | 'flowcharts'
   | 'flashcards'
@@ -27,6 +28,8 @@ export type ActiveToolId =
   | 'pharmagenie'
   | 'micromate'
   | 'diagnobot'
+  | 'smart-search'
+  | 'comprehensive-review' // New tool ID
   | null;
 
 export interface MedicoTool {
@@ -34,7 +37,7 @@ export interface MedicoTool {
   title: string;
   description: string;
   icon: React.ElementType;
-  component?: React.ElementType; 
+  component?: React.ComponentType<{ initialTopic?: string | null }>; // Accept initialTopic prop
   href?: string; 
   comingSoon?: boolean;
   isFrequentlyUsed?: boolean; // Added for dashboard layout

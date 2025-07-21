@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for generating gamified clinical case challenges for medico users.
@@ -46,7 +45,7 @@ Example for 'nextSteps' on a case about "Appendicitis":
   {
     "title": "Review the Topic",
     "description": "Generate comprehensive study notes on Acute Appendicitis to solidify your understanding.",
-    "toolId": "theorycoach-generator",
+    "toolId": "notes-generator",
     "prefilledTopic": "Acute Appendicitis",
     "cta": "Generate Notes"
   },
