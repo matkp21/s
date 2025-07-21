@@ -1,4 +1,4 @@
-
+// src/ai/agents/medico/MbbsStudyAgent.ts
 'use server';
 /**
  * @fileOverview A comprehensive study agent for MBBS students, now powered by MedGemma.
@@ -17,6 +17,7 @@ import {
   MbbsStudyOutputSchema,
   StudyNotesGeneratorOutputSchema,
   StudyNotesGeneratorInputSchema,
+  NextStepSchema,
 } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
 import { generate } from '@genkit-ai/googleai';
@@ -26,11 +27,8 @@ import { functions } from '@/lib/firebase';
 export type MbbsStudyInput = z.infer<typeof MbbsStudyInputSchema>;
 export type MbbsStudyOutput = z.infer<typeof MbbsStudyOutputSchema>;
 
-export type StudyNotesGeneratorInput = z.infer<typeof StudyNotesGeneratorInputSchema>;
-export type StudyNotesGeneratorOutput = z.infer<typeof StudyNotesGeneratorOutputSchema>;
-
-// This function remains for tool-use compatibility in the chat agent.
-export async function generateStudyNotes(input: StudyNotesGeneratorInput): Promise<StudyNotesGeneratorOutput> {
+// This function is kept for tool-use compatibility in the chat agent.
+export async function generateStudyNotes(input: z.infer<typeof StudyNotesGeneratorInputSchema>): Promise<z.infer<typeof StudyNotesGeneratorOutputSchema>> {
   const result = await mbbsStudyFlow({
     ...input,
     subject: input.subject || 'General Medicine' // Provide a default if subject is optional
@@ -38,8 +36,8 @@ export async function generateStudyNotes(input: StudyNotesGeneratorInput): Promi
   return {
       notes: result.enhancedContent.summary,
       summaryPoints: result.enhancedContent.bulletPoints,
-      topicGenerated: input.topic,
-      diagramUrl: result.enhancedContent.diagramUrl, // Pass diagram URL through
+      diagram: result.enhancedContent.diagramUrl, // Pass diagram URL as a string (Mermaid component can handle URLs)
+      nextSteps: result.nextSteps,
   };
 }
 
@@ -48,6 +46,13 @@ export async function generateComprehensiveNotes(
 ): Promise<MbbsStudyOutput> {
   return mbbsStudyFlow(input);
 }
+
+// Define the schema for the text-only output from the first LLM call
+const MedGemmaTextOutputSchema = MbbsStudyOutputSchema.extend({
+    enhancedContent: MbbsStudyOutputSchema.shape.enhancedContent.extend({
+        diagramUrl: z.string().url().optional().describe("This will be populated in a later step."),
+    }),
+});
 
 
 const mbbsStudyFlow = ai.defineFlow(
@@ -58,57 +63,69 @@ const mbbsStudyFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      // Step 1: Generate text content using MedGemma via Firebase Function
-      const medGemmaPrompt = `
-        You are MedGemma, a medical AI expert. Generate structured study material for the topic "${input.topic}".
-        The subject is ${input.subject}.
-        Consider this is for a ${input.year || 'general'} medical student, studying for a ${input.examType || 'university'} style exam.
-        The question depth should be suitable for ${input.marks || 10} marks.
+      // Step 1: Concurrently generate text content using MedGemma and an image with Gemini
+      console.log(`[MbbsStudyAgent] Starting multi-agent generation for topic: "${input.topic}"`);
+      
+      const [textResult, imageResult] = await Promise.allSettled([
+        // Agent 1: MedGemma for expert text generation
+        (async () => {
+            const medGemmaPrompt = `
+                You are MedGemma, a medical AI expert. Generate structured study material for the topic "${input.topic}".
+                The subject is ${input.subject}.
+                Consider this is for a ${input.year || 'general'} medical student, studying for a ${input.examType || 'university'} style exam.
+                The question depth should be suitable for ${input.marks || 10} marks.
+                Return a JSON object that strictly adheres to the provided schema, excluding the 'diagramUrl' field in the 'enhancedContent' for now.
+                Focus on providing detailed headings, bullet points, a concise summary, and textbook references.
+                Generate at least two relevant nextSteps.
+            `;
+            console.log(`[MbbsStudyAgent] Invoking MedGemma for text generation...`);
+            const invokeMedGemma = httpsCallable(functions, 'invokeMedGemma');
+            const result = await invokeMedGemma({ prompt: medGemmaPrompt });
+            const responseData = (result.data as any)?.responseText;
+            if (!responseData) throw new Error("MedGemma function returned an empty response.");
+            
+            const jsonString = responseData.substring(responseData.indexOf('{'), responseData.lastIndexOf('}') + 1);
+            const parsedJson = JSON.parse(jsonString);
+            const validation = MedGemmaTextOutputSchema.safeParse(parsedJson);
+            if (!validation.success) {
+                console.error("Zod validation failed for MedGemma (MbbsStudyAgent):", validation.error.flatten());
+                throw new Error("MedGemma output did not match the expected schema.");
+            }
+            console.log(`[MbbsStudyAgent] MedGemma text generation successful.`);
+            return validation.data;
+        })(),
 
-        Return a JSON object that strictly adheres to the MbbsStudyOutputSchema, excluding the 'diagramUrl' field in the 'enhancedContent' for now.
-        Focus on providing detailed headings, bullet points, a concise summary, and textbook references.
-      `;
+        // Agent 2: Gemini for image generation
+        (async () => {
+             const imageGenPrompt = `Create a simple, clear educational diagram for a medical student about "${input.topic}". The style should be like a clean, modern medical textbook illustration with clear labels.`;
+             console.log(`[MbbsStudyAgent] Invoking Gemini for image generation...`);
+             const { media } = await generate({
+                model: 'googleai/gemini-2.0-flash-preview-image-generation',
+                prompt: imageGenPrompt,
+                config: { responseModalities: ['IMAGE'] },
+            });
+            console.log(`[MbbsStudyAgent] Gemini image generation successful.`);
+            return media;
+        })()
+      ]);
 
-      const invokeMedGemma = httpsCallable(functions, 'invokeMedGemma');
-      const result = await invokeMedGemma({ prompt: medGemmaPrompt });
-      const responseData = (result.data as any)?.responseText;
-
-      if (!responseData) {
-        throw new Error("MedGemma function returned an empty response for study notes.");
-      }
-
-      let textOutput: MbbsStudyOutput;
-      try {
-        const jsonString = responseData.substring(responseData.indexOf('{'), responseData.lastIndexOf('}') + 1);
-        const parsedJson = JSON.parse(jsonString);
-        const validation = MbbsStudyOutputSchema.safeParse(parsedJson);
-        if (!validation.success) {
-            console.error("Zod validation failed for MedGemma (Study Notes):", validation.error.flatten());
-            throw new Error("MedGemma output for study notes did not match the expected schema.");
-        }
-        textOutput = validation.data;
-      } catch (e) {
-        console.error("Failed to parse JSON from MedGemma (Study Notes):", e, "Raw:", responseData);
-        throw new Error("MedGemma returned data in an unexpected format for study notes.");
+      if (textResult.status === 'rejected') {
+          console.error("[MbbsStudyAgent] MedGemma text generation failed:", textResult.reason);
+          throw textResult.reason; // If the main content fails, we must throw the error.
       }
       
-      // Step 2: Generate an image based on the topic using a different model
-      const imageGenPrompt = `Create a simple, clear educational diagram for a medical student about "${input.topic}". The style should be like a clean, modern medical textbook illustration with clear labels.`;
-      
-      try {
-        const { media } = await generate({
-          model: 'googleai/gemini-2.0-flash-preview-image-generation',
-          prompt: imageGenPrompt,
-          config: {
-            responseModalities: ['TEXT', 'IMAGE'],
-          },
-        });
-        textOutput.enhancedContent.diagramUrl = media.url;
-      } catch (imageError) {
-        console.warn(`Could not generate diagram for study notes on "${input.topic}":`, imageError);
+      const finalOutput = textResult.value;
+
+      if (imageResult.status === 'fulfilled' && imageResult.value.url) {
+        finalOutput.enhancedContent.diagramUrl = imageResult.value.url;
+        console.log(`[MbbsStudyAgent] Diagram successfully attached to the output.`);
+      } else {
+        console.warn(`[MbbsStudyAgent] Could not generate diagram for "${input.topic}":`, imageResult.status === 'rejected' ? imageResult.reason : "No URL returned");
+        // Proceed without a diagram if image generation fails
       }
       
-      return textOutput;
+      console.log(`[MbbsStudyAgent] Final study package assembled successfully.`);
+      return finalOutput;
 
     } catch (err) {
       const errorMessage =
