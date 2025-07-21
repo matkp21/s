@@ -1,10 +1,8 @@
-
 // src/app/chat/page.tsx
 "use client"; 
 
 import { useState, useEffect } from 'react'; 
 import { ChatInterface } from '@/components/chat/chat-interface';
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { ChatInterfaceAnimation } from '@/components/chat/chat-interface-animation'; 
 import { Loader2 } from 'lucide-react';
 
@@ -26,11 +24,12 @@ export default function ChatPage() {
 
   if (!isClient) {
     return (
-      <PageWrapper title="Loading Chat..." className="flex-1 flex flex-col h-full p-0 sm:p-0">
+      <div className="flex-1 flex flex-col h-full items-center justify-center p-4">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">Loading Chat...</h1>
         <div className="flex-1 flex flex-col h-full items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
-      </PageWrapper>
+      </div>
     );
   }
 
@@ -39,10 +38,8 @@ export default function ChatPage() {
   }
 
   return (
-    <PageWrapper title="MediAssistant Chat" className="flex-1 flex flex-col h-[calc(100vh-var(--header-height,4rem)-var(--footer-height,0rem))] p-0 sm:p-0">
-      <div className="flex-1 flex flex-col h-full p-2 sm:p-4">
+      <div className="flex-1 flex flex-col h-[calc(100vh-var(--header-height,4rem)-var(--footer-height,0rem))] p-2 sm:p-4">
          <ChatInterface />
       </div>
-    </PageWrapper>
   );
 }

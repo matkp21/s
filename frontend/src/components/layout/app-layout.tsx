@@ -301,6 +301,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
                                 <Stethoscope className="h-4 w-4 text-green-500" />
                                 <span className={cn(userRole === 'diagnosis' && "firebase-gradient-text-active-role font-semibold")}>Patient/User</span>
                             </DropdownMenuRadioItem>
+                             <DropdownMenuRadioItem value="" className="flex items-center gap-2 cursor-pointer">
+                                <UserCircle className="h-4 w-4 text-muted-foreground" />
+                                <span className={cn(userRole === null && "firebase-gradient-text-active-role font-semibold")}>Guest</span>
+                            </DropdownMenuRadioItem>
                         </DropdownMenuRadioGroup>
                         </DropdownMenuSubContent>
                     </DropdownMenuPortal>
@@ -314,7 +318,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </header>
         <main className="flex-1 flex flex-col overflow-auto relative">
-          {children}
+          <div className="container mx-auto flex-grow py-6 sm:py-10">
+            {children}
+          </div>
         </main>
         <Footer />
       </SidebarInset>

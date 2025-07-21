@@ -1,6 +1,5 @@
 // src/app/pro/layout.tsx
 import type { ReactNode } from 'react';
-import { AppLayout } from '@/components/layout/app-layout';
 
 export default function ProLayout({
   children,
@@ -8,8 +7,10 @@ export default function ProLayout({
   children: ReactNode;
 }) {
   return (
-    <AppLayout>
-      {children}
-    </AppLayout>
+    <div className="flex flex-col min-h-screen">
+      <div className="container mx-auto flex-grow py-6 sm:py-10">
+        {children}
+      </div>
+    </div>
   );
 }

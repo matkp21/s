@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { MedicationForm } from '@/components/medications/medication-form';
 import { MedicationListItem, type SampleDrugInfo, type DosAndDontsItem } from '@/components/medications/medication-list-item';
 import { DrugInteractionChecker } from '@/components/medications/drug-interaction-checker';
@@ -263,11 +262,10 @@ export default function MedicationManagementPage() {
 
   if (!isClient) {
     return (
-      <PageWrapper title="Loading Medications..." className="flex-1 flex flex-col h-full p-0 sm:p-0">
-        <div className="flex-1 flex flex-col h-full items-center justify-center">
+        <div className="flex-1 flex flex-col h-full items-center justify-center p-4">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">Loading Medications...</h1>
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
-      </PageWrapper>
     );
   }
 
@@ -276,7 +274,8 @@ export default function MedicationManagementPage() {
   }
 
   return (
-    <PageWrapper title="Medication Management" className="pb-16">
+    <>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">Medication Management</h1>
       <div className="flex justify-between items-center mb-6">
         <p className="text-muted-foreground">Log and manage your prescribed medications, schedules, and adherence.</p>
         <Button onClick={openAddMedicationModal} className="rounded-lg group">
@@ -458,7 +457,6 @@ export default function MedicationManagementPage() {
             </CardContent>
         </Card>
       </div>
-
-    </PageWrapper>
+    </>
   );
 }

@@ -1,13 +1,13 @@
 // src/app/patient-management/page.tsx
 "use client";
 
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { PatientTabs } from '@/components/patient-management/patient-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PatientManagementPage() {
   return (
-    <PageWrapper title="Patient Management Suite">
+    <>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">Patient Management Suite</h1>
       <Card className="shadow-md rounded-xl">
         <CardHeader>
           <CardTitle>Patient Records & Tools</CardTitle>
@@ -17,6 +17,6 @@ export default function PatientManagementPage() {
           <PatientTabs />
         </CardContent>
       </Card>
-    </PageWrapper>
+    </>
   );
 }

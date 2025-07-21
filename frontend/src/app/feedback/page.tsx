@@ -1,12 +1,11 @@
-
 // src/app/feedback/page.tsx
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { FeedbackForm } from '@/components/feedback/feedback-form';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function FeedbackPage() {
   return (
-    <PageWrapper title="Submit Feedback">
+    <>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">Submit Feedback</h1>
       <div className="max-w-3xl mx-auto">
         <Card className="shadow-lg rounded-xl overflow-hidden">
           <CardHeader className="bg-muted/30">
@@ -19,6 +18,6 @@ export default function FeedbackPage() {
             <FeedbackForm />
         </Card>
       </div>
-    </PageWrapper>
+    </>
   );
 }

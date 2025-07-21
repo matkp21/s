@@ -5,9 +5,9 @@ import { MedicoDashboard } from '@/components/medico/medico-dashboard';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Loader2 } from 'lucide-react';
 import { MedicoHubAnimation } from '@/components/medico/medico-hub-animation'; 
+import { AppLayout } from '@/components/layout/app-layout';
 
 export default function MedicoPage() {
   const { userRole, loading: authLoading } = useProMode();
@@ -36,22 +36,18 @@ export default function MedicoPage() {
 
   if (!isClient || authLoading) {
     return (
-      <PageWrapper>
-        <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+        <div className="flex justify-center items-center min-h-screen">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
-      </PageWrapper>
     );
   }
   
   if (userRole !== 'medico') {
     return (
-      <PageWrapper>
         <div className="text-center p-8">
           <p className="text-lg">You must be in Medico mode to access this page.</p>
           <p className="text-sm text-muted-foreground">Redirecting to homepage...</p>
         </div>
-      </PageWrapper>
     );
   }
 

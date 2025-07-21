@@ -5,12 +5,11 @@ import { ProModeDashboard } from '@/components/pro/pro-dashboard';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Loader2 } from 'lucide-react';
 import { ProSuiteAnimation } from '@/components/pro/pro-suite-animation'; 
 
 export default function ProPage() {
-  const { userRole } = useProMode();
+  const { userRole, loading: authLoading } = useProMode();
   const router = useRouter();
   const [isLoadingRole, setIsLoadingRole] = useState(true);
   const [showProAnimation, setShowProAnimation] = useState(false);
@@ -32,22 +31,18 @@ export default function ProPage() {
 
   if (isLoadingRole) {
     return (
-      <PageWrapper>
         <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
-      </PageWrapper>
     );
   }
 
   if (userRole !== 'pro') { 
     return (
-      <PageWrapper>
         <div className="text-center">
           <p className="text-lg">You must be in Professional mode to access this page.</p>
           <p className="text-sm text-muted-foreground">Redirecting to homepage...</p>
         </div>
-      </PageWrapper>
     );
   }
 

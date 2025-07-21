@@ -58,7 +58,8 @@ export default function VideoLibraryPage() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto py-6">
+        <div className="max-w-7xl mx-auto">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">Video Lecture Library</h1>
             <Card className="shadow-lg rounded-xl border-border/50 mb-6">
                 <CardHeader>
                     <CardTitle className="text-2xl flex items-center gap-2">

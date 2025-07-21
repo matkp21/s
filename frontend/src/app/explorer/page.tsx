@@ -1,6 +1,4 @@
-
 // src/app/explorer/page.tsx
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { ModelSelectionCard } from '@/components/explorer/model-selection-card';
 import { interactiveModelsList } from '@/config/interactive-models-config';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -8,7 +6,8 @@ import { Orbit, Info } from 'lucide-react';
 
 export default function ExplorerHubPage() {
   return (
-    <PageWrapper title="3D Interactive Explorer Hub" className="max-w-7xl mx-auto">
+    <>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">3D Interactive Explorer Hub</h1>
       <Alert variant="default" className="mb-8 border-primary/30 bg-primary/5">
         <Orbit className="h-5 w-5 text-primary" />
         <AlertTitle className="font-semibold text-primary">Explore Medical Concepts in 3D</AlertTitle>
@@ -31,6 +30,6 @@ export default function ExplorerHubPage() {
               <p className="text-sm">Please check back later for new additions.</p>
         </div>
       )}
-    </PageWrapper>
+    </>
   );
 }

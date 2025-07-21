@@ -1,7 +1,5 @@
-
 "use client";
 
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -257,7 +255,8 @@ export default function ARViewerPage() {
   };
 
   return (
-    <PageWrapper title="Augmented Reality Viewer" className="flex flex-col h-[calc(100vh-var(--header-height,8rem))]">
+    <div className="flex flex-col h-[calc(100vh-var(--header-height,8rem))]">
+       <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">Augmented Reality Viewer</h1>
        <Alert variant="default" className="mb-4 border-amber-500/50 bg-amber-500/10">
         <Info className="h-5 w-5 text-amber-600" />
         <AlertTitleComponent className="font-semibold text-amber-700 dark:text-amber-500">AR Viewer Functionality</AlertTitleComponent>
@@ -475,6 +474,6 @@ export default function ARViewerPage() {
           <DialogFooter className="mt-6"><DialogClose asChild><Button type="button" variant="outline" className="rounded-md">Close</Button></DialogClose></DialogFooter>
         </DialogContent>
       </Dialog>
-    </PageWrapper>
+    </div>
   );
 }
