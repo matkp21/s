@@ -1,4 +1,3 @@
-
 // src/components/homepage/mode-switcher.tsx
 "use client";
 
