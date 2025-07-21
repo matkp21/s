@@ -15,28 +15,39 @@ MediAssistant offers tailored experiences through different user modes:
     *   Health & Wellness Tracking (Conceptual)
     *   Curated Health Library (Conceptual: OpenFDA, MedlinePlus Genetics, WHO ICD-10 integration)
     *   **AR Features (Conceptual):** AR Body Explorer, AR Condition Visualizer, Medication Effects Viewer, AR Child Health Educator.
-*   **Medico (Medical Student) Mode:** An interconnected ecosystem designed to streamline the study process. Tools are centered around the **Knowledge Hub (Study Library)**, where all generated content is saved and can be used to contextually launch other tools.
-    *   **Medico Dashboard:** The central command center featuring a **Schedule Overview** (calendar & clock widget) and one-click access to all study tools. The layout is customizable.
-    *   **Knowledge Hub (Study Library):** A personal repository for all generated content. From any saved item (e.g., notes on "Cardiology"), you can directly launch another tool (e.g., "Generate MCQs") with the topic pre-filled.
-    *   **Video Lecture Library:** Search and find curated medical lectures from YouTube.
-    *   **Core Study Aids (AI-Powered):**
-        *   **Mock Exam Suite:** Generate full-length mock exams with MCQs and essays.
-        *   **Gamified Case Challenges:** Solve timed diagnostic challenges and compete on leaderboards.
-        *   **Study Notes Generator:** Creates structured, detailed notes on any medical topic.
-        *   **MCQ Generator:** Produces high-quality multiple-choice questions for practice.
-        *   **Previous Question Papers:** Simulates past exam papers with relevant questions.
-        *   **Flowchart Creator:** Interactive drag-and-drop canvas to build or AI-generate medical algorithms and pathways.
-        *   **Flashcard Generator:** Instantly creates flashcards from a topic.
-        *   **Mnemonic Generator:** Generates memory aids with AI-created visual mnemonics.
-        *   **Smart Note Summarizer:** Upload text or image files to get AI-powered summaries.
-    *   **Planning & Interactive Learning:**
-        *   **Study Timetable Creator:** Generates personalized study plans based on exams, subjects, and weak areas.
-        *   **Clinical Case Simulator:** Interactive patient scenarios that evolve based on your decisions.
-        *   **Differential Diagnosis Trainer:** Iterative Q&A to hone diagnostic reasoning.
-        *   **Interactive Anatomy Visualizer:** Explore anatomical structures with detailed descriptions.
-        *   **Drug Dosage Calculator:** An educational tool for practicing dosage calculations.
-        *   **Smart Dictation:** Voice-to-text with AI suggestions for structuring notes.
-    *   **Progress Tracking:** Gamified feedback system that logs your activity across all tools and provides motivational updates.
+
+*   **Medico (Medical Student) Mode:**
+    The Medico Hub is designed from the ground up to be more than just a collection of tools; it's an intelligent, interconnected ecosystem built to mirror and enhance the natural cycle of medical study: **Learn → Test → Reinforce → Plan.**
+
+    *   **The Knowledge Hub (Your Study Library):**
+        *   **What it is:** The Knowledge Hub is your personal, cloud-synced library where every piece of content you generate or save is stored. This includes study notes, MCQs, flashcards, case summaries, flowcharts, etc.
+        *   **Core Function:** It acts as the central memory for your study sessions. Every item is tagged with its topic (e.g., "Myocardial Infarction," "Anatomy of the Brachial Plexus").
+        *   **The Interconnection:** This is the most critical part. From any item in your Knowledge Hub, you can contextually launch another tool. For example, after opening saved notes on "Acute Appendicitis," you'll see "Next Step" actions to "Generate MCQs on this topic" or "Create Flashcards," pre-filling the topic in the new tool for a seamless workflow.
+
+    *   **Core Learning Tools (Create Content):**
+        *   **Study Notes Generator:** Provide a topic, and the AI generates comprehensive, structured notes in a university exam format (Definition, Etiology, Pathophysiology, Clinical Features, Management, etc.). The generated notes can be immediately saved to the Knowledge Hub.
+        *   **MCQ Generator:** Creates high-quality multiple-choice questions on any topic, complete with correct answers and explanations. You can specify the difficulty and exam style (e.g., USMLE, NEET-PG).
+        *   **Flashcard Generator:** Instantly creates digital flashcards (front/back) from a topic for quick-recall practice.
+        *   **Mnemonic Generator:** Creates creative mnemonics for complex lists or concepts, which can be saved as a note.
+
+    *   **Active Learning & Application Tools:**
+        *   **Clinical Case Simulator:** Interactive patient scenarios that evolve based on your decisions. Completed case summaries, along with AI feedback, can be saved to the Knowledge Hub.
+        *   **Differential Diagnosis Trainer:** A focused, iterative Q&A session where you ask questions to narrow down a diagnosis, receiving feedback on your reasoning.
+        *   **Gamified Case Challenges:** Solve timed diagnostic puzzles based on a short clinical vignette and compete on a leaderboard for quick feedback and fun.
+
+    *   **Planning & Strategy Tools:**
+        *   **Study Timetable Creator:** You input your exam date, subjects, and weak areas. The AI generates a personalized, prioritized study schedule.
+        *   **High-Yield Topic Predictor:** Based on the exam type, the AI predicts a list of the most important, high-yield topics to focus on.
+
+    *   **Example Interconnected Workflow:**
+        1.  **Plan:** A student uses the **High-Yield Topic Predictor** for their exam; "Cardiology" is listed as a key area.
+        2.  **Learn:** They open the **Study Notes Generator** for "Stable Angina." The AI generates detailed notes, which they save to their **Knowledge Hub**.
+        3.  **Test:** From the saved note in the Hub, they click a "Next Step" button: "Generate 5 MCQs." This launches the **MCQ Generator**, pre-filled with the topic.
+        4.  **Identify Weakness:** After the MCQs, they realize they are weak in "pharmacological management."
+        5.  **Reinforce:** They open **PharmaGenie** (another tool) to look up "Nitroglycerin," saving the drug profile to their Hub.
+        6.  **Apply:** Feeling more confident, they launch the **Clinical Case Simulator** for "Chest Pain" to apply their knowledge.
+        7.  **Review:** Later, they use the **Flashcard Generator** to create a deck from their "Stable Angina" notes for quick revision.
+
 *   **Professional (Clinician) Mode:**
     *   **Clinical Decision Support:**
         *   **Smart Triage & Referral:** A coordinator agent that analyzes symptoms and automatically drafts a referral summary if a high-confidence diagnosis is found.
