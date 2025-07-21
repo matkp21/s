@@ -20,14 +20,16 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MedicoAnatomyVisualizerInputSchema } from '@/ai/schemas/medico-tools-schemas';
+import { NextStepsDisplay } from './next-steps-display';
 
-const formSchema = z.object({
-  anatomicalStructure: z.string().min(3, { message: "Structure name must be at least 3 characters." }).max(100, { message: "Structure name too long."}),
-});
+type AnatomyFormValues = z.infer<typeof MedicoAnatomyVisualizerInputSchema>;
 
-type AnatomyFormValues = z.infer<typeof formSchema>;
+interface AnatomyVisualizerProps {
+  initialTopic?: string | null;
+}
 
-export function AnatomyVisualizer() {
+export function AnatomyVisualizer({ initialTopic }: AnatomyVisualizerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [anatomyData, setAnatomyData] = useState<MedicoAnatomyVisualizerOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,9 +37,9 @@ export function AnatomyVisualizer() {
   const { user } = useProMode();
 
   const form = useForm<AnatomyFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(MedicoAnatomyVisualizerInputSchema),
     defaultValues: {
-      anatomicalStructure: "",
+      anatomicalStructure: initialTopic || "",
     },
   });
 
@@ -130,8 +132,8 @@ ${anatomyData.relatedStructures?.map(s => `- ${s}`).join('\n') || 'N/A'}
       </Form>
 
       {error && (
-        <Alert variant="destructive" className="rounded-lg">
-          <AlertTitle>Error</AlertTitle>
+        <Alert variant="destructive" className="rounded-lg my-4">
+          <AlertTitle>Error Fetching Description</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -170,40 +172,12 @@ ${anatomyData.relatedStructures?.map(s => `- ${s}`).join('\n') || 'N/A'}
               </div>
             </ScrollArea>
           </CardContent>
-           <CardFooter className="p-4 border-t flex items-center justify-between">
-            <Button onClick={handleSaveToLibrary} disabled={!user}>
-              <Save className="mr-2 h-4 w-4"/> Save to Library
-            </Button>
-            {anatomyData.nextSteps && anatomyData.nextSteps.length > 0 && (
-              <div className="flex rounded-md border">
-                <Button asChild className="flex-grow rounded-r-none border-r-0 font-semibold">
-                  <Link href={`/medico/${anatomyData.nextSteps[0].toolId}?topic=${encodeURIComponent(anatomyData.nextSteps[0].prefilledTopic)}`}>
-                    {anatomyData.nextSteps[0].cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                {anatomyData.nextSteps.length > 1 && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" className="rounded-l-none">
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>More Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {anatomyData.nextSteps.slice(1).map((step, index) => (
-                        <DropdownMenuItem key={index} asChild className="cursor-pointer">
-                          <Link href={`/medico/${step.toolId}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
-                            {step.cta}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            )}
+           <CardFooter className="p-4 border-t">
+              <NextStepsDisplay 
+                nextSteps={anatomyData.nextSteps}
+                onSaveToLibrary={handleSaveToLibrary}
+                isUserLoggedIn={!!user}
+              />
           </CardFooter>
         </Card>
       )}

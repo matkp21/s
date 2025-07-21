@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, BookCopy, Wand2, Save, ArrowRight, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAiAgent } from '@/hooks/use-ai-agent';
@@ -17,17 +16,82 @@ import { generateExamPaper, type MedicoExamPaperInput, type MedicoExamPaperOutpu
 import { useProMode } from '@/contexts/pro-mode-context';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '../markdown/markdown-renderer';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MedicoExamPaperInputSchema } from '@/ai/schemas/medico-tools-schemas';
+import { NextStepsDisplay } from './next-steps-display';
 
-const formSchema = z.object({
-  examType: z.string().min(3, { message: "Exam type must be at least 3 characters." }).max(100),
-  year: z.string().optional(),
-  count: z.coerce.number().int().min(1, "At least 1 MCQ.").max(20, "Max 20 MCQs.").default(10),
-});
-type ExamPaperFormValues = z.infer<typeof formSchema>;
+type ExamPaperFormValues = z.infer<typeof MedicoExamPaperInputSchema>;
+
+interface SolvedQuestionPapersViewerProps {
+    content: MedicoExamPaperOutput;
+    title: string;
+    description: string;
+    children?: React.ReactNode;
+}
+
+export const SolvedQuestionPapersViewerComponent: React.FC<SolvedQuestionPapersViewerProps> = ({ content, title, description, children }) => {
+    return (
+        <Card className="shadow-md rounded-xl mt-6 border-green-500/30 bg-gradient-to-br from-card to-green-500/5 relative">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <BookCopy className="h-6 w-6 text-green-600" />
+              {title}
+            </CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[500px] p-1 border bg-background rounded-lg">
+              <div className="p-4 space-y-6">
+                {content.mcqs && content.mcqs.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Multiple Choice Questions</h3>
+                    <div className="space-y-4">
+                      {content.mcqs.map((mcq, index) => (
+                        <Card key={index} className="p-3 bg-card/80 shadow-sm rounded-lg">
+                          <p className="font-semibold mb-2 text-foreground text-sm">Q{index + 1}: {mcq.question}</p>
+                          <ul className="space-y-1.5 text-xs">
+                            {mcq.options.map((opt, optIndex) => (
+                              <li key={optIndex} className={cn("p-2 border rounded-md transition-colors", opt.isCorrect ? "border-green-500 bg-green-500/10 text-green-700 dark:text-green-400 font-medium" : "border-border")}>
+                                {String.fromCharCode(65 + optIndex)}. {opt.text}
+                              </li>
+                            ))}
+                          </ul>
+                          {mcq.explanation && (
+                            <div className="text-xs mt-2 text-muted-foreground italic border-t pt-2">
+                              <MarkdownRenderer content={`**Explanation:** ${mcq.explanation}`} />
+                            </div>
+                          )}
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {content.essays && content.essays.length > 0 && (
+                   <div>
+                    <h3 className="font-semibold text-lg mb-2">Essay Questions</h3>
+                     <div className="space-y-4">
+                      {content.essays.map((essay, index) => (
+                        <Card key={`essay-${index}`} className="p-3 bg-card/80 shadow-sm rounded-lg">
+                          <p className="font-semibold mb-2 text-foreground text-sm">Essay Q{index + 1}: {essay.question}</p>
+                          <div className="text-xs mt-2 text-muted-foreground italic border-t pt-2">
+                             <MarkdownRenderer content={`**Answer Outline:** ${essay.answer_outline}`} />
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+          {children && <CardFooter className="p-4 border-t">{children}</CardFooter>}
+        </Card>
+    )
+}
 
 export function SolvedQuestionPapersViewer() {
   const { toast } = useToast();
@@ -50,18 +114,18 @@ export function SolvedQuestionPapersViewer() {
   });
 
   const form = useForm<ExamPaperFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(MedicoExamPaperInputSchema),
     defaultValues: { examType: "", year: "", count: 10 },
   });
 
   const onSubmit: SubmitHandler<ExamPaperFormValues> = async (data) => {
     await runGenerateExam(data as MedicoExamPaperInput);
   };
-
+  
   const handleReset = () => {
     form.reset();
     reset();
-  };
+  }
 
   const handleSaveToLibrary = async () => {
     if (!examData || !user) {
@@ -88,12 +152,12 @@ export function SolvedQuestionPapersViewer() {
     <div className="space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-1">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="examType"
               render={({ field }) => (
-                <FormItem className="sm:col-span-3">
+                <FormItem className="sm:col-span-2">
                   <FormLabel htmlFor="examType-gen" className="text-base">Exam Name / Type</FormLabel>
                   <FormControl>
                     <Input id="examType-gen" placeholder="e.g., Final MBBS Prof, USMLE Step 1" {...field} className="rounded-lg text-base py-2.5" />
@@ -147,89 +211,22 @@ export function SolvedQuestionPapersViewer() {
       {error && (
         <Alert variant="destructive" className="rounded-lg">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
       {examData && (
-        <Card className="shadow-md rounded-xl mt-6 border-green-500/30 bg-gradient-to-br from-card to-green-500/5 relative">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <BookCopy className="h-6 w-6 text-green-600" />
-              Generated Paper: {examData.topicGenerated}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[500px] p-1 border bg-background rounded-lg">
-              <div className="p-4 space-y-6">
-                {examData.mcqs && examData.mcqs.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Multiple Choice Questions</h3>
-                    <div className="space-y-4">
-                      {examData.mcqs.map((mcq, index) => (
-                        <Card key={index} className="p-3 bg-card/80 shadow-sm rounded-lg">
-                          <p className="font-semibold mb-2 text-foreground text-sm">Q{index + 1}: {mcq.question}</p>
-                          <ul className="space-y-1.5 text-xs">
-                            {mcq.options.map((opt, optIndex) => (
-                              <li key={optIndex} className={cn("p-2 border rounded-md transition-colors", opt.isCorrect ? "border-green-500 bg-green-500/10 text-green-700 dark:text-green-400 font-medium" : "border-border")}>
-                                {String.fromCharCode(65 + optIndex)}. {opt.text}
-                              </li>
-                            ))}
-                          </ul>
-                          {mcq.explanation && (
-                            <div className="text-xs mt-2 text-muted-foreground italic border-t pt-2">
-                              <MarkdownRenderer content={`**Explanation:** ${mcq.explanation}`} />
-                            </div>
-                          )}
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {examData.essays && examData.essays.length > 0 && (
-                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Essay Questions</h3>
-                     <div className="space-y-4">
-                      {examData.essays.map((essay, index) => (
-                        <Card key={`essay-${index}`} className="p-3 bg-card/80 shadow-sm rounded-lg">
-                          <p className="font-semibold mb-2 text-foreground text-sm">Essay Q{index + 1}: {essay.question}</p>
-                          <div className="text-xs mt-2 text-muted-foreground italic border-t pt-2">
-                             <MarkdownRenderer content={`**Answer Outline:** ${essay.answer_outline}`} />
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </CardContent>
-          <CardFooter className="p-4 border-t flex items-center justify-between">
-            <Button onClick={handleSaveToLibrary} disabled={!user}>
-              <Save className="mr-2 h-4 w-4"/> Save to Library
-            </Button>
-            {examData.nextSteps && examData.nextSteps.length > 0 && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline">
-                        Next Steps <ChevronDown className="ml-2 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Recommended Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {examData.nextSteps.map((step, index) => (
-                        <DropdownMenuItem key={index} asChild className="cursor-pointer">
-                          <Link href={`/medico/${step.toolId}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
-                            {step.cta}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-          </CardFooter>
-        </Card>
+        <SolvedQuestionPapersViewerComponent
+          content={examData}
+          title={`Generated Paper: ${examData.topicGenerated}`}
+          description="Review the AI-generated questions and structured answers below."
+        >
+          <NextStepsDisplay 
+            nextSteps={examData.nextSteps}
+            onSaveToLibrary={handleSaveToLibrary}
+            isUserLoggedIn={!!user}
+          />
+        </SolvedQuestionPapersViewerComponent>
       )}
     </div>
   );

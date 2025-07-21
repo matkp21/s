@@ -1,4 +1,3 @@
-
 // src/components/medico/next-steps-display.tsx
 "use client";
 
@@ -6,7 +5,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ArrowRight, ChevronDown, Save } from 'lucide-react';
-import type { NextStep } from '@/ai/schemas/medico-tools-schemas';
+
+interface NextStep {
+  title: string;
+  description: string;
+  toolId: string;
+  prefilledTopic: string;
+  cta: string;
+}
 
 interface NextStepsDisplayProps {
   nextSteps: NextStep[];
@@ -62,4 +68,3 @@ export const NextStepsDisplay: React.FC<NextStepsDisplayProps> = ({ nextSteps, o
     </div>
   );
 };
-
