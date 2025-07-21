@@ -1,45 +1,58 @@
 ---
 name: proGenerateSuggestionsPrompt
-model: googleai/gemini-1.5-flash-preview
 input:
   schema:
-    $ref: SystemDiagnosticInputSchema
-output:
-  schema:
-    $ref: ImprovementSuggestionsOutputSchema
+    type: object
+    properties:
+      overallStatus:
+        type: string
+        description: The overall health status of the system (e.g., 'ok', 'error').
+      checks:
+        type: object
+        description: An object where keys are check names and values are diagnostic results.
+        additionalProperties:
+          type: object
+          properties:
+            status:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
 ---
-You are a senior site reliability engineer (SRE) for a complex medical web application.
-You have been provided with a JSON object representing the results of a full system diagnostic check.
+You are a senior DevOps engineer analyzing a system health report. Your task is to provide actionable improvement suggestions based on the diagnostic data provided.
 
-Your task is to analyze these results and generate a concise, helpful, and actionable summary for the on-call developer.
+**Diagnostics Report:**
+- **Overall Status:** {{overallStatus}}
+- **Timestamp:** {{timestamp}}
 
-**Diagnostic Data:**
+**Detailed Checks:**
 ```json
-{{{json anaconda=true pretty=true this}}}
+{{#each checks}}
+- {{ @key }}: 
+  - Status: {{ this.status }}
+  - Message: {{ this.message }}
+{{/each}}
 ```
 
 **Instructions:**
-1. Review the `overallStatus` and the status of each individual `check`.
-2. If the `overallStatus` is 'ok' and all checks passed, provide a brief, reassuring message confirming that all systems are operational.
-3. If any check has a status of 'error', you must:
-   a. Clearly state which service failed.
-   b. Look at the `details` field for that check to understand the specific error message.
-   c. Provide a likely root cause for the failure.
-   d. Suggest 1-2 concrete, actionable steps the developer should take to resolve the issue. For example, if a Firebase connection failed, suggest checking Firebase service status and security rules. If an API key is missing for an external service, suggest checking the environment variables configuration.
-4. Format your response as a single Markdown string in the `suggestions` field of the output JSON.
+1.  **Analyze the Failures:** Look at any checks with a status of 'error'.
+2.  **Provide Suggestions:** For each failed check, provide a clear, concise, and actionable suggestion for how a developer could fix it. Frame your suggestions positively and helpfully.
+3.  **Acknowledge Success:** If all checks are 'ok', provide a positive confirmation message and perhaps suggest monitoring improvements.
+4.  **Format Output:** Present your suggestions as a bulleted list in Markdown.
 
-**Example output for a failure:**
+Your output should be a JSON object with a single key "suggestions", containing your analysis in a Markdown formatted string.
+
+**Example Output for a failed API check:**
 ```json
 {
-  "suggestions": "### System Diagnostics Report\n\n**Overall Status: ERROR**\n\n- **Firebase Services**: ✅ OK\n- **Genkit AI Backend**: ❌ **ERROR** - The Genkit backend is unreachable.\n  - **Details**: `Health check returned non-ok status`\n  - **Suggestion**: This likely means the Genkit server process has crashed or is not running. Please check the server logs and restart the Genkit service (`pnpm run genkit:watch`)."
+  "suggestions": "### Improvement Suggestions\n\nOverall system health is good, but there's an issue with a critical API:\n\n- **HIPAASpace ICD-10 API:** The check failed, which can impact clinical coding tools. \n  - **Suggestion:** Verify that the `hipaaspace.key` is correctly configured in the Firebase Functions environment variables. Check the HIPAASpace API status page for any ongoing outages."
 }
 ```
 
-**Example output for success:**
+**Example Output for all-OK status:**
 ```json
 {
-  "suggestions": "### System Diagnostics Report\n\n**Overall Status: OK**\n\nAll systems are operational. \n\n- ✅ Firebase Services\n- ✅ Genkit AI Backend\n- ✅ External APIs\n- ✅ MedGemma Vertex AI Endpoint"
+  "suggestions": "### System Health: OK\n\nAll diagnostic checks passed successfully. The system appears to be fully operational.\n\n- **Recommendation:** Continue monitoring all systems. Consider adding automated alerting for any future 'error' statuses to ensure rapid response."
 }
 ```
-
-Now, analyze the provided diagnostic data and generate your suggestions.
