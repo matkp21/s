@@ -1,3 +1,4 @@
+
 // src/ai/agents/medico/StudyNotesAgent.ts
 'use server';
 /**
@@ -53,6 +54,8 @@ Example for 'nextSteps':
 **Instructions for notes generation:**
 Topic/Question: {{{topic}}}
 Desired Answer Length: {{{answerLength}}}
+{{#if subject}}Subject: {{{subject}}}{{/if}}
+{{#if system}}System: {{{system}}}{{/if}}
 
 1.  **'notes' field**: Generate comprehensive notes on the topic. Strictly follow this 11-point format, using Markdown headings (e.g., '## 1. Definition'):
     1.  **Definition**: Provide a clear, concise definition.
@@ -95,7 +98,7 @@ const studyNotesFlow = ai.defineFlow(
       return output;
     } catch (err) {
       console.error(`[StudyNotesAgent] Error: ${err instanceof Error ? err.message : String(err)}`);
-      throw new Error('An unexpected error occurred while generating study notes. Please try again.');
+      throw new Error('An unexpected error occurred while generating study notes. Please check your connection and try again.');
     }
   }
 );

@@ -1,3 +1,4 @@
+
 // src/ai/agents/medico/MCQGeneratorAgent.ts
 'use server';
 /**
@@ -92,7 +93,7 @@ const mcqGeneratorFlow = ai.defineFlow(
       return {...output, topicGenerated: input.topic };
     } catch (err) {
       console.error(`[MCQGeneratorAgent] Error: ${err instanceof Error ? err.message : String(err)}`);
-      throw new Error('An unexpected error occurred while generating MCQs. Please try again.');
+      throw new Error('An unexpected error occurred while generating MCQs. Please check your connection and try again.');
     }
   }
 );
