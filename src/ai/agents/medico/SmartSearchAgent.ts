@@ -1,4 +1,3 @@
-
 // src/ai/agents/medico/SmartSearchAgent.ts
 'use server';
 /**
@@ -7,11 +6,11 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { smartSearchRetriever } from '@/ai/retrievers/smart-search-retriever';
-import { generate } from '@genkit-ai/googleai';
+import { generate } from 'genkit/ai';
 
 // Input schema for the search query
 const SmartSearchInputSchema = z.object({
-  query: z.string().describe('The user\'s question about a medical topic.'),
+  query: z.string().describe("The user's question about a medical topic."),
 });
 type SmartSearchInput = z.infer<typeof SmartSearchInputSchema>;
 

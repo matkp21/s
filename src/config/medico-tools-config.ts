@@ -2,7 +2,7 @@
 import type { MedicoTool, ActiveToolId } from '@/types/medico-tools';
 import {
   NotebookText, FileQuestion, CalendarClock, Layers, CaseUpper, Lightbulb, BookCopy,
-  Users, Eye, Brain, TrendingUp, Calculator, Workflow, Award, Star, Settings, CheckSquare, GripVertical, FileText, Youtube, Mic, FlaskConical, Microscope, TestTubeDiagonal, Swords, Library, Trophy, PackageCheck
+  Users, Eye, Brain, TrendingUp, Calculator, Workflow, Award, Star, Settings, CheckSquare, GripVertical, FileText, Youtube, Mic, FlaskConical, Microscope, TestTubeDiagonal, Swords, Library, Trophy, PackageCheck, Search
 } from 'lucide-react';
 
 // Component Imports
@@ -28,7 +28,8 @@ import { ProgressTracker } from '@/components/medico/progress-tracker';
 import { SmartDictation } from '@/components/medico/smart-dictation';
 import { GamifiedCaseChallenges } from '@/components/medico/gamified-case-challenges';
 import { MockExamSuite } from '@/components/medico/mock-exam-suite';
-import { GuidedStudyFlow } from '@/components/medico/guided-study-flow'; // Import new component
+import { GuidedStudyFlow } from '@/components/medico/guided-study-flow';
+import SmartSearch from '@/components/medico/smart-search';
 
 // Define the full list of tools
 export const allMedicoToolsList: MedicoTool[] = [
@@ -37,7 +38,8 @@ export const allMedicoToolsList: MedicoTool[] = [
   { id: 'mcq', title: 'MCQ Generator', description: 'Create multiple-choice questions for exam practice.', icon: FileQuestion, component: McqGenerator, isFrequentlyUsed: true },
   { id: 'flashcards', title: 'Flashcard Generator', description: 'Create digital flashcards for quick revision.', icon: Layers, component: FlashcardGenerator, isFrequentlyUsed: true },
   { id: 'challenges', title: 'Gamified Case Challenges', description: 'Solve timed diagnostic challenges and compete on leaderboards.', icon: Swords, component: GamifiedCaseChallenges, isFrequentlyUsed: true },
-  { id: 'library', title: 'Knowledge Hub', description: 'Your personal library of notes, MCQs, and community content.', icon: Library, href: '/medico/library', isFrequentlyUsed: true },
+  { id: 'smart-search', title: 'Smart Search (RAG)', description: 'Ask questions and get grounded answers from your knowledge base.', icon: Search, component: SmartSearch, isFrequentlyUsed: true },
+  { id: 'library', title: 'Knowledge Hub', description: 'Your personal library of notes, MCQs, and community content.', icon: Library, href: '/medico/library', isFrequentlyUsed: false },
   { id: 'q-bank', title: 'Exam Paper Generator', description: "Generate mock exam papers simulating previous years, with MCQs and essay questions.", icon: BookCopy, component: SolvedQuestionPapersViewer },
   { id: 'mnemonics', title: 'Mnemonic Generator', description: 'Create memory aids with AI-generated visuals.', icon: Lightbulb, component: MnemonicsGenerator },
   { id: 'pathomind', title: 'PathoMind', description: 'Explain any disease pathophysiology with diagrams.', icon: Brain, component: PathoMindExplainer },

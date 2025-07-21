@@ -27,6 +27,7 @@ export type ActiveToolId =
   | 'pharmagenie'
   | 'micromate'
   | 'diagnobot'
+  | 'smart-search' // New Smart Search tool
   | null;
 
 export interface MedicoTool {

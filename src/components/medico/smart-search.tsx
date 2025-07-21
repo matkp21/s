@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Search, Wand2, BookCheck, HelpCircle } from 'lucide-react';
+import { Loader2, Search, BookCheck, HelpCircle } from 'lucide-react';
 import { useAiAgent } from '@/hooks/use-ai-agent';
 import { searchAndSummarize } from '@/ai/agents/medico/SmartSearchAgent';
 import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
@@ -26,7 +26,7 @@ export default function SmartSearch() {
   const [isIndexing, setIsIndexing] = useState(true);
   const [indexingError, setIndexingError] = useState<string | null>(null);
 
-  const { execute: runSearch, data: searchResult, isLoading, error } = useAiAgent(searchAndSummarize);
+  const { mutate: runSearch, data: searchResult, isPending: isLoading, error } = useAiAgent(searchAndSummarize);
 
   const form = useForm<SearchFormValues>({
     resolver: zodResolver(formSchema),
@@ -103,7 +103,7 @@ export default function SmartSearch() {
       {error && (
         <Alert variant="destructive" className="rounded-lg">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
