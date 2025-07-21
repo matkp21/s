@@ -1,4 +1,3 @@
-
 // src/ai/schemas/pro-schemas.ts
 /**
  * @fileOverview Defines Zod schemas for Professional Mode specific tools.
@@ -68,3 +67,29 @@ export const OnCallHandoverOutputSchema = z.object({
   summaryText: z.string().describe("A structured handover summary in Markdown format."),
 });
 export type OnCallHandoverOutput = z.infer<typeof OnCallHandoverOutputSchema>;
+
+// Schema for Pro Dashboard Data
+export const TaskItemSchema = z.object({
+    id: z.string(),
+    text: z.string(),
+    category: z.enum(['Lab Review', 'Follow-up', 'Patient Alert', 'Schedule']),
+    dueDate: z.string().optional(),
+    priority: z.enum(['High', 'Medium', 'Low']).optional(),
+    completed: z.boolean(),
+});
+export type TaskItem = z.infer<typeof TaskItemSchema>;
+
+
+export const RecentActivityItemSchema = z.object({
+    id: z.string(),
+    text: z.string(),
+    timestamp: z.string(),
+});
+export type RecentActivityItem = z.infer<typeof RecentActivityItemSchema>;
+
+
+export const ProDashboardDataSchema = z.object({
+    tasks: z.array(TaskItemSchema),
+    recentActivity: z.array(RecentActivityItemSchema),
+});
+export type ProDashboardData = z.infer<typeof ProDashboardDataSchema>;
