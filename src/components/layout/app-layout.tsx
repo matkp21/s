@@ -17,12 +17,10 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Footer } from './footer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { OnboardingModal } from '@/components/onboarding/onboarding-modal';
 import { useProMode, type UserRole } from '@/contexts/pro-mode-context';
 import { useTheme } from '@/contexts/theme-provider'; 
 import { Badge } from '@/components/ui/badge';
 import { AnimatedTagline } from '@/components/layout/animated-tagline';
-import WelcomeDisplay from '@/components/welcome/welcome-display'; 
 import type { NotificationItem } from '@/types/notifications';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationPanelCompact } from './notification-panel-compact';
@@ -74,9 +72,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { userRole, selectUserRole } = useProMode();
   const { toast } = useToast();
   const router = useRouter();
-  const pathname = usePathname();
-
-  const [displayState, setDisplayState] = useState<'loading' | 'onboarding' | 'welcome' | 'app'>('loading');
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -85,28 +80,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const notificationPanelRef = useRef<HTMLDivElement>(null);
   const notificationBellRef = useRef<HTMLButtonElement>(null);
   
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedRole = localStorage.getItem('userRole') as UserRole | null;
-      if (storedRole && !userRole) {
-        selectUserRole(storedRole); 
-        return; 
-      }
-
-      const onboardingComplete = localStorage.getItem('onboardingComplete') === 'true';
-      const welcomeShownThisSession = sessionStorage.getItem('welcomeDisplayShown') === 'true';
-
-      if (!onboardingComplete) {
-        setDisplayState('onboarding');
-      } else if (!welcomeShownThisSession && !['/login', '/signup'].includes(pathname)) {
-        setDisplayState('welcome');
-      } else {
-        setDisplayState('app');
-      }
-    }
-  }, [userRole, selectUserRole, pathname]);
-
-
   const fetchNotifications = useCallback(() => {
     const mockNotifications: NotificationItem[] = [
       { id: '1', type: 'medication_reminder', title: 'Medication Reminder', body: 'Time for Amoxicillin (500mg). Check instructions.', timestamp: new Date(Date.now() - 1000 * 60 * 5), isRead: false, deepLink: '/medications' },
@@ -181,40 +154,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
     if (role === 'diagnosis') return 'Patient/User';
     return 'Guest';
   };
-  
-  const handleOnboardingClose = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('onboardingComplete', 'true');
-      const roleFromStorage = localStorage.getItem('userRole') as UserRole | null;
-      if (roleFromStorage && roleFromStorage !== userRole) {
-          selectUserRole(roleFromStorage); 
-      }
-      setDisplayState('welcome');
-    }
-  };
-  
-  const handleWelcomeComplete = () => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('welcomeDisplayShown', 'true');
-    }
-    setDisplayState('app');
-  };
-
-  if (['/login', '/signup'].includes(pathname)) {
-    return <>{children}</>; 
-  }
-
-  if (displayState === 'loading') {
-    return <div className="fixed inset-0 bg-background flex items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
-  }
-
-  if (displayState === 'onboarding') {
-    return <OnboardingModal isOpen={true} onClose={handleOnboardingClose} />;
-  }
-
-  if (displayState === 'welcome') {
-    return <WelcomeDisplay onDisplayComplete={handleWelcomeComplete} />;
-  }
   
   return (
     <SidebarProvider defaultOpen={true}>
@@ -349,7 +288,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     </DropdownMenuSubTrigger>
                     <DropdownMenuPortal>
                         <DropdownMenuSubContent>
-                        <DropdownMenuRadioGroup value={userRole || ''} onValueChange={(role) => { selectUserRole(role as UserRole); setIsAccountMenuOpen(false); setDisplayState('loading'); setIsNotificationPanelOpen(false); }}>
+                        <DropdownMenuRadioGroup value={userRole || ''} onValueChange={(role) => { selectUserRole(role as UserRole); setIsAccountMenuOpen(false);}}>
                             <DropdownMenuRadioItem value="pro" className="flex items-center gap-2 cursor-pointer">
                                 <BriefcaseMedical className="h-4 w-4 text-purple-500" />
                                 <span className={cn(userRole === 'pro' && "firebase-gradient-text-active-role font-semibold")}>Professional</span>
@@ -379,16 +318,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </header>
         <main className="flex-1 flex flex-col overflow-auto relative">
-          {React.Children.map(children, child => {
-            if (React.isValidElement(child) && typeof child.type !== 'string') { 
-              return React.cloneElement(child as React.ReactElement<any>, { 
-                notifications, 
-                markNotificationAsRead: handleMarkAsRead, 
-                markAllNotificationsAsRead: handleMarkAllAsRead 
-              });
-            }
-            return child;
-          })}
+          {children}
         </main>
         <Footer />
       </SidebarInset>

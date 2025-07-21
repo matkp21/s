@@ -79,12 +79,20 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
     </motion.div>
   );
 
+  // If the tool has a direct href, it's a link to a separate page.
   if (tool.href) {
     return <Link href={tool.href} className="no-underline h-full flex">{cardContent}</Link>;
   }
 
+  // If it's not a link and has a component, it should open in the dialog via the dashboard.
   return (
-    <DialogTrigger asChild onClick={() => !isEditMode && !tool.comingSoon && onLaunch(tool.id)}>
+    <DialogTrigger asChild onClick={(e) => {
+        if (isEditMode || tool.comingSoon) {
+            e.preventDefault(); // Prevent dialog from opening in edit mode or if coming soon.
+        } else {
+            onLaunch(tool.id);
+        }
+    }}>
       {cardContent}
     </DialogTrigger>
   );

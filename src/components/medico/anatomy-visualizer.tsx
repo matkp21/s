@@ -1,7 +1,7 @@
 // src/components/medico/anatomy-visualizer.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,8 +18,6 @@ import Image from 'next/image';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
-import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MedicoAnatomyVisualizerInputSchema } from '@/ai/schemas/medico-tools-schemas';
 import { NextStepsDisplay } from './next-steps-display';
 
@@ -42,6 +40,12 @@ export function AnatomyVisualizer({ initialTopic }: AnatomyVisualizerProps) {
       anatomicalStructure: initialTopic || "",
     },
   });
+
+  useEffect(() => {
+    if (initialTopic) {
+        form.setValue('anatomicalStructure', initialTopic);
+    }
+  }, [initialTopic, form]);
 
   const onSubmit: SubmitHandler<AnatomyFormValues> = async (data) => {
     setIsLoading(true);
@@ -152,7 +156,7 @@ ${anatomyData.relatedStructures?.map(s => `- ${s}`).join('\n') || 'N/A'}
               <div className="p-4 space-y-3">
                 {anatomyData.imageUrl && (
                   <div className="relative aspect-video w-full max-w-md mx-auto border rounded-lg overflow-hidden bg-muted/30 mb-3">
-                    <Image src={anatomyData.imageUrl} alt={`Diagram of ${form.getValues("anatomicalStructure")}`} fill objectFit="contain" data-ai-hint="anatomical diagram" />
+                    <Image src={anatomyData.imageUrl} alt={`Diagram of ${form.getValues("anatomicalStructure")}`} fill className="object-contain" data-ai-hint="anatomical diagram" />
                   </div>
                 )}
                 <div>

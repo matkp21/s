@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -32,6 +33,12 @@ const LoginPage = () => {
         title: "Login Successful!",
         description: "Welcome back to MediAssistant.",
       });
+      // Clear session storage on new login to re-trigger welcome screens if needed
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('welcomeDisplayShown');
+        sessionStorage.removeItem('proSuiteAnimationShown');
+        sessionStorage.removeItem('medicoHubAnimationShown');
+      }
       router.push("/"); // Redirect to homepage or dashboard
     } catch (err: any) {
       let errorMessage = "Failed to log in. Please check your credentials.";

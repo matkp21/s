@@ -10,31 +10,34 @@ import { EducationalSupportMode } from '@/components/homepage/educational-suppor
 import { PageWrapper } from '@/components/layout/page-wrapper';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { PersonalizedClinicalDashboard } from '@/components/pro/personalized-clinical-dashboard';
+import { AppLayout } from '@/components/layout/app-layout';
 
 export default function HomePage() {
   const [activeMode, setActiveMode] = useState<ActiveMode>('symptom'); 
   const { userRole } = useProMode();
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <HeroSection />
-      <PageWrapper className="py-8 sm:py-12 flex-grow">
-        <ModeSwitcher activeMode={activeMode} setActiveMode={setActiveMode} />
-        <div className="mt-8 md:mt-12 content-area">
-          <div className={activeMode === 'symptom' ? 'active-mode' : 'inactive-mode'}>
-            {activeMode === 'symptom' && <SymptomAnalysisMode />}
+    <AppLayout>
+      <div className="flex flex-col min-h-screen">
+        <HeroSection />
+        <PageWrapper className="py-8 sm:py-12 flex-grow">
+          <ModeSwitcher activeMode={activeMode} setActiveMode={setActiveMode} />
+          <div className="mt-8 md:mt-12 content-area">
+            <div className={activeMode === 'symptom' ? 'active-mode' : 'inactive-mode'}>
+              {activeMode === 'symptom' && <SymptomAnalysisMode />}
+            </div>
+            <div className={activeMode === 'image' ? 'active-mode' : 'inactive-mode'}>
+              {activeMode === 'image' && <ImageProcessingMode />}
+            </div>
+            <div className={activeMode === 'education' ? 'active-mode' : 'inactive-mode'}>
+              {activeMode === 'education' && <EducationalSupportMode />}
+            </div>
+            <div className={activeMode === 'dashboard' ? 'active-mode' : 'inactive-mode'}>
+              {activeMode === 'dashboard' && <PersonalizedClinicalDashboard />}
+            </div>
           </div>
-          <div className={activeMode === 'image' ? 'active-mode' : 'inactive-mode'}>
-             {activeMode === 'image' && <ImageProcessingMode />}
-          </div>
-          <div className={activeMode === 'education' ? 'active-mode' : 'inactive-mode'}>
-            {activeMode === 'education' && <EducationalSupportMode />}
-          </div>
-          <div className={activeMode === 'dashboard' ? 'active-mode' : 'inactive-mode'}>
-             {activeMode === 'dashboard' && <PersonalizedClinicalDashboard />}
-          </div>
-        </div>
-      </PageWrapper>
-    </div>
+        </PageWrapper>
+      </div>
+    </AppLayout>
   );
 }
