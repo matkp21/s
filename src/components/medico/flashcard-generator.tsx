@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Layers, Wand2, ArrowLeftRight, CheckCircle, XCircle, Save, ArrowRight, ChevronDown } from 'lucide-react';
+import { Loader2, Layers, Wand2, ArrowLeftRight, CheckCircle, XCircle, Save } from 'lucide-react';
 import { generateFlashcards, type MedicoFlashcardGeneratorInput, type MedicoFlashcardGeneratorOutput, type MedicoFlashcard } from '@/ai/agents/medico/FlashcardGeneratorAgent';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -21,17 +21,11 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import React, { useState, useEffect } from 'react';
 import { trackProgress } from '@/ai/agents/medico/ProgressTrackerAgent';
-import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MedicoFlashcardGeneratorInputSchema } from '@/ai/schemas/medico-tools-schemas';
+import { NextStepsDisplay } from './next-steps-display';
 
-const formSchema = z.object({
-  topic: z.string().min(3, { message: "Topic must be at least 3 characters long." }).max(100, { message: "Topic too long." }),
-  count: z.coerce.number().int().min(1, { message: "Minimum 1 flashcard." }).max(20, { message: "Maximum 20 flashcards." }).default(10),
-  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
-  examType: z.enum(['university', 'neet-pg', 'usmle']).default('university'),
-});
 
-type FlashcardFormValues = z.infer<typeof formSchema>;
+type FlashcardFormValues = z.infer<typeof MedicoFlashcardGeneratorInputSchema>;
 
 interface FlashcardDisplay extends MedicoFlashcard {
   id: string;
@@ -50,7 +44,7 @@ export function FlashcardGenerator({ initialTopic }: FlashcardGeneratorProps) {
   const [generatedFlashcards, setGeneratedFlashcards] = useState<FlashcardDisplay[] | null>(null);
   const [currentTopic, setCurrentTopic] = useState<string | null>(null);
 
-  const { mutate: runGenerateFlashcards, data: aiData, isPending: isLoading, error, reset } = useAiAgent(generateFlashcards, {
+  const { mutate: runGenerateFlashcards, data: aiData, isPending: isLoading, error, reset } = useAiAgent<MedicoFlashcardGeneratorInput, MedicoFlashcardGeneratorOutput>(generateFlashcards, {
     onSuccess: async (data, input) => {
       if (!data?.flashcards || !data.topicGenerated) {
         toast({
@@ -83,7 +77,7 @@ export function FlashcardGenerator({ initialTopic }: FlashcardGeneratorProps) {
 
 
   const form = useForm<FlashcardFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(MedicoFlashcardGeneratorInputSchema),
     defaultValues: {
       topic: initialTopic || "",
       count: 10,
@@ -260,8 +254,8 @@ export function FlashcardGenerator({ initialTopic }: FlashcardGeneratorProps) {
       </Form>
 
       {error && (
-        <Alert variant="destructive" className="rounded-lg">
-          <AlertTitle>Error</AlertTitle>
+        <Alert variant="destructive" className="rounded-lg my-4">
+          <AlertTitle>Error Generating Flashcards</AlertTitle>
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
@@ -343,40 +337,12 @@ export function FlashcardGenerator({ initialTopic }: FlashcardGeneratorProps) {
               </div>
             </ScrollArea>
           </CardContent>
-           <CardFooter className="p-4 border-t flex items-center justify-between">
-              <Button onClick={handleSaveToLibrary} disabled={!user}>
-                <Save className="mr-2 h-4 w-4"/> Save to Library
-              </Button>
-              {aiData?.nextSteps && aiData.nextSteps.length > 0 && (
-                <div className="flex rounded-md border">
-                  <Button asChild className="flex-grow rounded-r-none border-r-0 font-semibold">
-                    <Link href={`/medico/${aiData.nextSteps[0].toolId}?topic=${encodeURIComponent(aiData.nextSteps[0].prefilledTopic)}`}>
-                      {aiData.nextSteps[0].cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                  {aiData.nextSteps.length > 1 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="rounded-l-none">
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>More Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {aiData.nextSteps.slice(1).map((step, index) => (
-                          <DropdownMenuItem key={index} asChild className="cursor-pointer">
-                            <Link href={`/medico/${step.toolId}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
-                              {step.cta}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              )}
+           <CardFooter className="p-4 border-t">
+              <NextStepsDisplay 
+                nextSteps={aiData?.nextSteps}
+                onSaveToLibrary={handleSaveToLibrary}
+                isUserLoggedIn={!!user}
+              />
             </CardFooter>
         </Card>
       )}

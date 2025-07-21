@@ -108,10 +108,10 @@ export type MedicoStudyTimetableOutput = z.infer<typeof MedicoStudyTimetableOutp
 
 // Schema for Flashcard Generator
 export const MedicoFlashcardGeneratorInputSchema = z.object({
-  topic: z.string().min(3, { message: "Topic must be at least 3 characters." }).describe('The medical topic for flashcards.'),
-  count: z.number().int().min(1).max(20).default(10).describe('Number of flashcards to generate (1-20).'),
-  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium').describe('The difficulty level of the flashcards.'),
-  examType: z.enum(['university', 'neet-pg', 'usmle']).default('university').describe('The style of exam to pattern the flashcards after.'),
+  topic: z.string().min(3, { message: "Topic must be at least 3 characters long." }).max(100, { message: "Topic too long." }),
+  count: z.coerce.number().int().min(1, { message: "Minimum 1 flashcard." }).max(20, { message: "Maximum 20 flashcards." }).default(10),
+  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
+  examType: z.enum(['university', 'neet-pg', 'usmle']).default('university'),
 });
 export type MedicoFlashcardGeneratorInput = z.infer<typeof MedicoFlashcardGeneratorInputSchema>;
 
@@ -191,7 +191,7 @@ export type MedicoClinicalCaseOutput = z.infer<typeof MedicoClinicalCaseOutputSc
 
 // Schema for Anatomy Visualizer
 export const MedicoAnatomyVisualizerInputSchema = z.object({
-  anatomicalStructure: z.string().min(3),
+  anatomicalStructure: z.string().min(3, { message: "Structure name must be at least 3 characters." }).max(100, { message: "Structure name too long."}),
 });
 export type MedicoAnatomyVisualizerInput = z.infer<typeof MedicoAnatomyVisualizerInputSchema>;
 

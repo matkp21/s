@@ -1,4 +1,3 @@
-
 // src/components/medico/next-steps-display.tsx
 "use client";
 
@@ -19,6 +18,13 @@ interface NextStepsDisplayProps {
   nextSteps: NextStep[] | undefined;
   onSaveToLibrary: () => void;
   isUserLoggedIn: boolean;
+}
+
+const correctToolId = (toolId: string) => {
+    if (toolId === 'theorycoach-generator') {
+        return 'notes-generator';
+    }
+    return toolId;
 }
 
 export const NextStepsDisplay: React.FC<NextStepsDisplayProps> = ({ nextSteps, onSaveToLibrary, isUserLoggedIn }) => {
@@ -42,7 +48,7 @@ export const NextStepsDisplay: React.FC<NextStepsDisplayProps> = ({ nextSteps, o
       </Button>
       <div className="flex rounded-md border">
         <Button asChild className="flex-grow rounded-r-none border-r-0 font-semibold">
-          <Link href={`/medico/${primaryAction.toolId}?topic=${encodeURIComponent(primaryAction.prefilledTopic)}`}>
+          <Link href={`/medico/${correctToolId(primaryAction.toolId)}?topic=${encodeURIComponent(primaryAction.prefilledTopic)}`}>
             {primaryAction.cta}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
@@ -59,7 +65,7 @@ export const NextStepsDisplay: React.FC<NextStepsDisplayProps> = ({ nextSteps, o
               <DropdownMenuSeparator />
               {secondaryActions.map((step, index) => (
                 <DropdownMenuItem key={index} asChild className="cursor-pointer">
-                  <Link href={`/medico/${step.toolId}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
+                  <Link href={`/medico/${correctToolId(step.toolId)}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
                     {step.cta}
                   </Link>
                 </DropdownMenuItem>

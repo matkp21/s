@@ -1,4 +1,3 @@
-
 // src/components/medico/anatomy-visualizer.tsx
 "use client";
 
@@ -34,10 +33,10 @@ export function AnatomyVisualizer({ initialTopic }: AnatomyVisualizerProps) {
   const { user } = useProMode();
   
   const { mutate: runGetAnatomyDescription, data: anatomyData, isPending: isLoading, error, reset } = useAiAgent<MedicoAnatomyVisualizerInput, MedicoAnatomyVisualizerOutput>(getAnatomyDescription, {
-     onSuccess: (data) => {
+     onSuccess: (data, input) => {
       toast({
           title: "Anatomy Description Ready!",
-          description: `Details for "${data.description.substring(0, 30)}..." generated.`,
+          description: `Details for "${input.anatomicalStructure}" generated.`,
       });
     }
   });
