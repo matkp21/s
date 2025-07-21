@@ -15,7 +15,7 @@ const NextStepSchema = z.object({
 });
 
 export const PatientContextSchema = z.object({
-  age: z.number().int().positive().optional().describe('Patient age in years.'),
+  age: z.coerce.number().int().positive().optional().describe('Patient age in years.'),
   sex: z.enum(['male', 'female', 'other']).optional().describe('Patient biological sex.'),
   history: z.string().optional().describe('Brief relevant medical history or context.'),
 });

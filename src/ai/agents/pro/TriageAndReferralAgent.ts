@@ -13,7 +13,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import {
   SymptomAnalyzerInputSchema,
-  SymptomAnalyzerOutputSchema,
 } from '@/ai/schemas/symptom-analyzer-schemas';
 import {
   DischargeSummaryOutputSchema,

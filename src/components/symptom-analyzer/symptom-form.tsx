@@ -37,7 +37,7 @@ export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: Sym
   });
 
   const onSubmit: SubmitHandler<SymptomFormValues> = async (data) => {
-    setIsLoading(true);
+    // setIsLoading is now handled by the parent component that calls the agent
     const analysisInput: SymptomAnalyzerInput = {
       symptoms: data.symptoms,
       patientContext: {
@@ -46,7 +46,7 @@ export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: Sym
         history: data.patientContext?.history || undefined,
       }
     };
-    onAnalysisComplete(null, undefined, analysisInput); // Pass the raw input to the parent for the orchestrator
+    onAnalysisComplete(null, undefined, analysisInput); // Pass the raw input to the parent
   };
 
   return (
