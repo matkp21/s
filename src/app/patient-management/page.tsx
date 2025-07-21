@@ -1,7 +1,9 @@
 // src/app/patient-management/page.tsx
-import { PageWrapper } from '@/components/layout/page-wrapper';
+"use client";
+
 import { PatientTabs } from '@/components/patient-management/patient-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageWrapper } from '@/components/layout/page-wrapper';
 
 export default function PatientManagementPage() {
   return (

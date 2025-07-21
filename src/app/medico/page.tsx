@@ -5,9 +5,9 @@ import { MedicoDashboard } from '@/components/medico/medico-dashboard';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Loader2 } from 'lucide-react';
 import { MedicoHubAnimation } from '@/components/medico/medico-hub-animation'; 
+import { AppLayout } from '@/components/layout/app-layout';
 
 export default function MedicoPage() {
   const { userRole, loading: authLoading } = useProMode();
@@ -55,9 +55,5 @@ export default function MedicoPage() {
     return <MedicoHubAnimation onAnimationComplete={() => setShowMedicoAnimation(false)} />;
   }
   
-  return (
-    <PageWrapper>
-        <MedicoDashboard />
-    </PageWrapper>
-    );
+  return <MedicoDashboard />;
 }

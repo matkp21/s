@@ -22,23 +22,21 @@ export function AppContentController({ children }: { children: ReactNode }) {
 
   const pathname = usePathname();
 
+  const isProOrMedicoRoute = pathname.startsWith('/pro') || pathname.startsWith('/medico');
+
   const displayState = React.useMemo(() => {
     if (!isClient || authLoading) {
       return 'loading';
     }
-    // Auth pages should always render immediately.
     if (['/login', '/signup'].includes(pathname)) {
         return 'app';
     }
-    // If we have a user but they haven't finished onboarding, show it.
     if (user && !onboardingComplete) {
       return 'onboarding';
     }
-    // If the user exists, onboarding is done, but they haven't seen the welcome screen this session, show it.
     if (user && onboardingComplete && !welcomeShownThisSession) {
       return 'welcome';
     }
-    // Otherwise, show the main app content.
     return 'app';
   }, [isClient, authLoading, user, onboardingComplete, welcomeShownThisSession, pathname]);
 
@@ -50,8 +48,8 @@ export function AppContentController({ children }: { children: ReactNode }) {
     setWelcomeShownThisSession(true);
   };
   
-  // Render auth pages outside the main app layout structure.
-  if (['/login', '/signup'].includes(pathname)) {
+  // Render auth, pro, or medico pages outside the main app layout structure.
+  if (isProOrMedicoRoute || ['/login', '/signup'].includes(pathname)) {
     return <>{children}</>;
   }
 
