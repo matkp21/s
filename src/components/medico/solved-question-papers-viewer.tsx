@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, BookCopy, Wand2, Save, ArrowRight, ChevronDown } from 'lucide-react';
+import { Loader2, BookCopy, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAiAgent } from '@/hooks/use-ai-agent';
 import { generateExamPaper, type MedicoExamPaperInput, type MedicoExamPaperOutput } from '@/ai/agents/medico/ExamPaperAgent';
@@ -19,8 +19,6 @@ import { firestore } from '@/lib/firebase';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '../markdown/markdown-renderer';
-import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MedicoExamPaperInputSchema } from '@/ai/schemas/medico-tools-schemas';
 import { NextStepsDisplay } from './next-steps-display';
 
@@ -96,7 +94,7 @@ export const SolvedQuestionPapersViewerComponent: React.FC<SolvedQuestionPapersV
 export function SolvedQuestionPapersViewer() {
   const { toast } = useToast();
   const { user } = useProMode();
-  const { execute: runGenerateExam, data: examData, isLoading, error, reset } = useAiAgent(generateExamPaper, {
+  const { mutate: runGenerateExam, data: examData, isPending: isLoading, error, reset } = useAiAgent(generateExamPaper, {
     onSuccess: (data, input) => {
       if (!data || (!data.mcqs?.length && !data.essays?.length)) {
         toast({

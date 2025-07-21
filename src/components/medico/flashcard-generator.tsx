@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Layers, Wand2, ArrowLeftRight, CheckCircle, XCircle, Save } from 'lucide-react';
+import { Loader2, Layers, Wand2, ArrowLeftRight, CheckCircle, XCircle } from 'lucide-react';
 import { generateFlashcards, type MedicoFlashcardGeneratorInput, type MedicoFlashcardGeneratorOutput, type MedicoFlashcard } from '@/ai/agents/medico/FlashcardGeneratorAgent';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -63,7 +63,6 @@ export function FlashcardGenerator({ initialTopic }: FlashcardGeneratorProps) {
       setGeneratedFlashcards(displayFlashcards);
       setCurrentTopic(data.topicGenerated);
       
-      // Track Progress silently unless there is an error
       try {
         await trackProgress({
             activityType: 'notes_review',
