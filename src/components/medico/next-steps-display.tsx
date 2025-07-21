@@ -1,3 +1,4 @@
+
 // src/components/medico/next-steps-display.tsx
 "use client";
 
@@ -15,7 +16,7 @@ interface NextStep {
 }
 
 interface NextStepsDisplayProps {
-  nextSteps: NextStep[];
+  nextSteps: NextStep[] | undefined;
   onSaveToLibrary: () => void;
   isUserLoggedIn: boolean;
 }
@@ -23,9 +24,11 @@ interface NextStepsDisplayProps {
 export const NextStepsDisplay: React.FC<NextStepsDisplayProps> = ({ nextSteps, onSaveToLibrary, isUserLoggedIn }) => {
   if (!nextSteps || nextSteps.length === 0) {
     return (
-      <Button onClick={onSaveToLibrary} disabled={!isUserLoggedIn}>
-        <Save className="mr-2 h-4 w-4"/> Save to Library
-      </Button>
+      <div className="flex justify-start w-full">
+        <Button onClick={onSaveToLibrary} disabled={!isUserLoggedIn}>
+          <Save className="mr-2 h-4 w-4"/> Save to Library
+        </Button>
+      </div>
     );
   }
 

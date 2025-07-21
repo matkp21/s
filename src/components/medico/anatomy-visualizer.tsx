@@ -1,3 +1,4 @@
+
 // src/components/medico/anatomy-visualizer.tsx
 "use client";
 
@@ -20,6 +21,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { MedicoAnatomyVisualizerInputSchema } from '@/ai/schemas/medico-tools-schemas';
 import { NextStepsDisplay } from './next-steps-display';
+import { useAiAgent } from '@/hooks/use-ai-agent';
 
 type AnatomyFormValues = z.infer<typeof MedicoAnatomyVisualizerInputSchema>;
 
@@ -28,11 +30,18 @@ interface AnatomyVisualizerProps {
 }
 
 export function AnatomyVisualizer({ initialTopic }: AnatomyVisualizerProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [anatomyData, setAnatomyData] = useState<MedicoAnatomyVisualizerOutput | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useProMode();
+  
+  const { mutate: runGetAnatomyDescription, data: anatomyData, isPending: isLoading, error, reset } = useAiAgent<MedicoAnatomyVisualizerInput, MedicoAnatomyVisualizerOutput>(getAnatomyDescription, {
+     onSuccess: (data) => {
+      toast({
+          title: "Anatomy Description Ready!",
+          description: `Details for "${data.description.substring(0, 30)}..." generated.`,
+      });
+    }
+  });
+
 
   const form = useForm<AnatomyFormValues>({
     resolver: zodResolver(MedicoAnatomyVisualizerInputSchema),
@@ -48,25 +57,7 @@ export function AnatomyVisualizer({ initialTopic }: AnatomyVisualizerProps) {
   }, [initialTopic, form]);
 
   const onSubmit: SubmitHandler<AnatomyFormValues> = async (data) => {
-    setIsLoading(true);
-    setAnatomyData(null);
-    setError(null);
-
-    try {
-      const result = await getAnatomyDescription(data as MedicoAnatomyVisualizerInput);
-      setAnatomyData(result);
-    } catch (err) {
-      console.error("Anatomy description error:", err);
-      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-      setError(errorMessage);
-      toast({
-        title: "Retrieval Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    runGetAnatomyDescription(data);
   };
   
   const handleSaveToLibrary = async () => {
@@ -138,7 +129,7 @@ ${anatomyData.relatedStructures?.map(s => `- ${s}`).join('\n') || 'N/A'}
       {error && (
         <Alert variant="destructive" className="rounded-lg my-4">
           <AlertTitle>Error Fetching Description</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
@@ -156,7 +147,7 @@ ${anatomyData.relatedStructures?.map(s => `- ${s}`).join('\n') || 'N/A'}
               <div className="p-4 space-y-3">
                 {anatomyData.imageUrl && (
                   <div className="relative aspect-video w-full max-w-md mx-auto border rounded-lg overflow-hidden bg-muted/30 mb-3">
-                    <Image src={anatomyData.imageUrl} alt={`Diagram of ${form.getValues("anatomicalStructure")}`} fill className="object-contain" data-ai-hint="anatomical diagram" />
+                    <Image src={anatomyData.imageUrl} alt={`Diagram of ${form.getValues("anatomicalStructure")}`} fill objectFit="contain" data-ai-hint="anatomical diagram" />
                   </div>
                 )}
                 <div>

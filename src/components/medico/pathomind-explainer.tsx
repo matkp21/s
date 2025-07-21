@@ -1,3 +1,4 @@
+
 // src/components/medico/pathomind-explainer.tsx
 "use client";
 
@@ -18,8 +19,8 @@ import { useProMode } from '@/contexts/pro-mode-context';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
-import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { NextStepsDisplay } from './next-steps-display';
+import { MermaidRenderer } from '../markdown/mermaid-renderer';
 
 const formSchema = z.object({
   topic: z.string().min(3, { message: "Topic must be at least 3 characters." }).max(150),
@@ -29,7 +30,7 @@ type PathoMindFormValues = z.infer<typeof formSchema>;
 export function PathoMindExplainer() {
   const { toast } = useToast();
   const { user } = useProMode();
-  const { execute: runExplanation, data: explanationData, isLoading, error, reset } = useAiAgent(explainPathophysiology, {
+  const { mutate: runExplanation, data: explanationData, isPending: isLoading, error, reset } = useAiAgent(explainPathophysiology, {
     onSuccess: (data, input) => {
       toast({
         title: "Explanation Ready!",
@@ -44,7 +45,7 @@ export function PathoMindExplainer() {
   });
 
   const onSubmit: SubmitHandler<PathoMindFormValues> = async (data) => {
-    await runExplanation(data as PathoMindInput);
+    runExplanation(data as PathoMindInput);
   };
 
   const handleReset = () => {
@@ -115,7 +116,7 @@ export function PathoMindExplainer() {
       {error && (
         <Alert variant="destructive" className="rounded-lg">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
@@ -146,53 +147,20 @@ export function PathoMindExplainer() {
               </div>
               <div className="lg:col-span-1">
                 <h4 className="font-semibold mb-2">Process Diagram</h4>
-                <ScrollArea className="h-[400px] p-1 border bg-background rounded-lg">
-                  <div className="p-4 text-sm">
+                <div className="border bg-background rounded-lg p-2">
                     {explanationData.diagram ? (
-                      <>
-                        <Alert className="mb-2"><AlertDescription>Copy this code into a Mermaid.js renderer to view the diagram.</AlertDescription></Alert>
-                        <pre className="p-2 bg-muted rounded-md overflow-x-auto"><code>{explanationData.diagram}</code></pre>
-                      </>
-                    ) : <p className="text-muted-foreground">No diagram was generated for this topic.</p>}
+                      <MermaidRenderer chart={explanationData.diagram} />
+                    ) : <p className="text-muted-foreground p-4 text-center text-sm">No diagram was generated for this topic.</p>}
                   </div>
-                </ScrollArea>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="p-4 border-t flex items-center justify-between">
-            <Button onClick={handleSaveToLibrary} disabled={!user}>
-              <Save className="mr-2 h-4 w-4"/> Save to Library
-            </Button>
-            {explanationData.nextSteps && explanationData.nextSteps.length > 0 && (
-              <div className="flex rounded-md border">
-                <Button asChild className="flex-grow rounded-r-none border-r-0 font-semibold">
-                  <Link href={`/medico/${explanationData.nextSteps[0].toolId}?topic=${encodeURIComponent(explanationData.nextSteps[0].prefilledTopic)}`}>
-                    {explanationData.nextSteps[0].cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                {explanationData.nextSteps.length > 1 && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" className="rounded-l-none">
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>More Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {explanationData.nextSteps.slice(1).map((step, index) => (
-                        <DropdownMenuItem key={index} asChild className="cursor-pointer">
-                          <Link href={`/medico/${step.toolId}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
-                            {step.cta}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            )}
+          <CardFooter className="p-4 border-t">
+              <NextStepsDisplay 
+                nextSteps={explanationData.nextSteps}
+                onSaveToLibrary={handleSaveToLibrary}
+                isUserLoggedIn={!!user}
+              />
           </CardFooter>
         </Card>
       )}
