@@ -13,6 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { symptomAnalyzerTool } from '@/ai/tools/symptom-analyzer-tool';
 import { callGeminiApiDirectly } from '@/ai/utils/direct-gemini-call';
+import { mcqGeneratorTool, studyNotesGeneratorTool } from '@/ai/tools/medico-tools';
 
 // Define input schema for a chat message
 const ChatMessageInputSchema = z.object({
@@ -24,6 +25,9 @@ export type ChatMessageInput = z.infer<typeof ChatMessageInputSchema>;
 // Define output schema for a chat message response
 const ChatMessageOutputSchema = z.object({
   response: z.string().describe('The AI assistant s response to the user message.'),
+  // The output can now also contain structured data from tools.
+  // We will handle this on the client by inspecting the tool call results.
+  // The 'response' field will contain a summary or confirmation message.
 });
 export type ChatMessageOutput = z.infer<typeof ChatMessageOutputSchema>;
 
@@ -53,19 +57,19 @@ const chatPrompt = ai.definePrompt({
   name: 'chatPrompt',
   input: { schema: ChatMessageInputSchema },
   output: { schema: ChatMessageOutputSchema },
-  tools: [symptomAnalyzerTool],
+  tools: [symptomAnalyzerTool, studyNotesGeneratorTool, mcqGeneratorTool],
   prompt: `You are MediAssistant, a helpful and friendly AI medical assistant.
   Your primary goal is to assist users with their medical queries.
 
   User's message: {{{message}}}
 
   Instructions:
-  1. If the user's message clearly describes medical symptoms they are experiencing (e.g., "I have a fever and a cough", "My symptoms are headache and nausea"), use the 'symptomAnalyzer' tool to analyze these symptoms.
-     - When presenting the results from the 'symptomAnalyzer' tool, clearly state that these are potential considerations and not a diagnosis, and advise consulting a medical professional.
-     - Format the potential diagnoses from the tool in a clear, readable way (e.g., a list).
-  2. If the user's message is a general question, a greeting, or anything not describing specific medical symptoms for analysis, respond conversationally and helpfully without using the tool.
-  3. Be empathetic and maintain a professional tone.
-  4. If the symptomAnalyzer tool returns no specific diagnoses, inform the user that no specific considerations could be determined based on the input and still advise consulting a doctor.
+  1.  **Symptom Analysis:** If the user's message clearly describes medical symptoms (e.g., "I have a fever and a cough"), use the 'symptomAnalyzer' tool.
+  2.  **Study Notes:** If the user asks for notes, an explanation, or details about a medical topic (e.g., "Tell me about diabetes", "notes on hypertension", "/notes Myocardial Infarction"), use the 'studyNotesGenerator' tool.
+  3.  **MCQs:** If the user asks for questions, a quiz, or MCQs (e.g., "give me 5 questions on cardiology", "/mcq Asthma 3"), use the 'mcqGeneratorTool'. Extract both the topic and the number of questions requested.
+  4.  **General Conversation:** For anything else (greetings, general questions), respond conversationally without using a tool.
+  5.  **Confirmation:** When a tool is used successfully, respond with a brief confirmation message like "Here are the notes for..." or "I've generated some MCQs for you." The tool's output will be handled separately.
+  6.  Be empathetic and maintain a professional tone.
   `,
   config: {
     temperature: 0.5, // Slightly more creative for conversation but still factual for medical info
@@ -98,3 +102,5 @@ const chatFlow = ai.defineFlow(
     return output;
   }
 );
+
+    

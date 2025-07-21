@@ -7,7 +7,7 @@
 
 import { ai } from '@/ai/genkit';
 import { generateMCQs } from '@/ai/agents/medico/MCQGeneratorAgent';
-import { generateStudyNotes } from '@/ai/agents/medico/MbbsStudyAgent';
+import { generateStudyNotes } from '@/ai/agents/medico/StudyNotesAgent';
 import { 
   MedicoMCQGeneratorInputSchema, 
   MedicoMCQGeneratorOutputSchema,
@@ -52,7 +52,9 @@ export const studyNotesGeneratorTool = ai.defineTool(
         // Call the full agent function with default values
         return generateStudyNotes({
             ...input,
-            subject: 'General Medicine', // Or try to infer this
+            answerLength: '10-mark',
         });
     }
 );
+
+    

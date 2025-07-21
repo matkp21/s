@@ -472,3 +472,5 @@ export function ChatInterface() {
     </Card>
   );
 }
+
+    
