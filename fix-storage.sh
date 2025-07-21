@@ -12,7 +12,7 @@ PNPM_CMD="pnpm"
 
 echo "📂 Project detected at: $SOURCE_DIR"
 
-if [ -f "$TARGET_DIR/frontend/pnpm-lock.yaml" ]; then
+if [ -f "$TARGET_DIR/frontend/package.json" ]; then
     echo "✅ Project already exists in writable directory. Skipping move."
 else
     echo "📦 Will relocate project to writable directory: $TARGET_DIR"
@@ -39,21 +39,18 @@ else
     fi
 fi
 
-# Change to the new directory to ensure subsequent commands run there.
-cd "$TARGET_DIR/frontend"
+# Change to the new root directory to ensure subsequent commands run there.
+cd "$TARGET_DIR"
 echo "📂 Current working directory is now $(pwd)"
 
 echo "🛠️  Setting up isolated build/output cache..."
-mkdir -p ./.next ./.turbo
+mkdir -p ./frontend/.next ./frontend/.turbo
 export NEXT_PRIVATE_DIR="$TARGET_DIR/frontend/.next"
 export TURBO_CACHE_DIR="$TARGET_DIR/frontend/.turbo"
 
 echo "🔗 Redirecting build folders..."
 # Symlink if not already linked
 ln -sf "$TARGET_DIR/frontend/.next" "$SOURCE_DIR/frontend/.next"
-# No longer a workspace, so no root .turbo
-# ln -sf "$TARGET_DIR/.turbo" "$SOURCE_DIR/.turbo"
-
 
 echo "⚙️  Configuring PNPM and NPM..."
 # Redirect cache to a writable directory
@@ -61,8 +58,9 @@ $PNPM_CMD config set store-dir "$TARGET_DIR/.pnpm-store"
 $PNPM_CMD config set cache-dir "$TARGET_DIR/.pnpm-cache"
 npm config set cache "$TARGET_DIR/.npm"
 
-echo "📦 Installing dependencies..."
-# Install dependencies in the new location
+echo "📦 Installing dependencies from the frontend directory..."
+# Install dependencies in the new location from the frontend directory
+cd ./frontend
 $PNPM_CMD install
 
 echo "🚀 Starting development server..."

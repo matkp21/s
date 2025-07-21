@@ -13,7 +13,7 @@ import { MedicoToolCard } from '@/components/medico/medico-tool-card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { NeuralProgress } from "@/components/medico/NeuralProgress";
-import { KnowledgeHubSearch } from './KnowledgeHubSearch'; // Updated import
+import { KnowledgeHubSearch } from '@/components/medico/KnowledgeHubSearch';
 
 // Wrapper component to handle suspense boundary
 export function MedicoDashboard() {
