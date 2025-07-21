@@ -1,3 +1,4 @@
+// src/ai/agents/medico/ProgressTrackerAgent.ts
 'use server';
 /**
  * @fileOverview A Genkit flow for tracking study progress for medico users.
@@ -27,41 +28,47 @@ const progressTrackerPrompt = ai.definePrompt({
   input: { schema: MedicoProgressTrackerInputSchema },
   output: { schema: MedicoProgressTrackerOutputSchema },
   prompt: `You are an AI assistant that provides gamified feedback for a medical student's study progress.
-Your primary task is to generate a JSON object containing an encouraging progress update message based on a completed activity AND a list of relevant next study steps.
+Your primary task is to generate a JSON object containing an encouraging progress update message based on a completed activity AND a list of relevant, intelligent next study steps.
 
 The JSON object you generate MUST have 'progressUpdateMessage', 'newAchievements', 'updatedTopicProgress', and a 'nextSteps' field.
 
-**CRITICAL: The 'nextSteps' field is mandatory and must not be omitted.** Generate at least two relevant suggestions based on the activity.
+**CRITICAL: The 'nextSteps' field is mandatory and must not be omitted.** Generate at least two relevant, actionable suggestions.
 
-Example for 'nextSteps':
-[
-  {
-    "title": "Review Another Topic",
-    "description": "Generate study notes for a related topic to broaden your knowledge.",
-    "toolId": "theorycoach-generator",
-    "prefilledTopic": "[Suggest a related topic to {{{topic}}}]",
-    "cta": "Generate Notes"
-  },
-  {
-    "title": "Predict High-Yield Topics",
-    "description": "See what other topics are important for your upcoming exams.",
-    "toolId": "topics",
-    "prefilledTopic": "USMLE Step 1",
-    "cta": "Predict Topics"
-  }
-]
 ---
 
-**Instructions for progress update:**
-Activity Details:
-Activity Type: {{{activityType}}}
-Topic: {{{topic}}}
-{{#if score}}Score: {{{score}}}%{{/if}}
+**Instructions for Agentic Feedback:**
+Analyze the student's performance on the completed activity and provide tailored suggestions.
 
-1.  Based on this activity, provide an encouraging 'progressUpdateMessage'.
-2.  If the score is high (e.g., > 85%), award a conceptual achievement in the 'newAchievements' array (e.g., "Cardiology Whiz", "Pharmacology Pro").
-3.  Calculate a new conceptual progress percentage for the topic in 'updatedTopicProgress', assuming they started at a lower percentage.
-4.  For 'nextSteps', if they did poorly on a quiz (score < 60), suggest they generate study notes. If they did well, suggest they try a different tool or topic.
+**Activity Details:**
+- Activity Type: {{{activityType}}}
+- Topic: {{{topic}}}
+{{#if score}}- Score: {{{score}}}%{{/if}}
+
+1.  **'progressUpdateMessage'**: Provide an encouraging message reflecting their performance.
+2.  **'newAchievements'**: If the score is high (e.g., > 85%), award a conceptual achievement in this array (e.g., "Cardiology Whiz", "Pharmacology Pro"). If no new achievement, return an empty array.
+3.  **'updatedTopicProgress'**: Calculate a new conceptual progress percentage for the topic in this object, assuming they started at a lower percentage.
+4.  **'nextSteps' (Agentic Logic):**
+    -   **If the score is low (e.g., < 60%)**: Suggest foundational tools. The primary suggestion should be to use the 'notes-generator' to review the topic thoroughly. The secondary suggestion could be to create 'flashcards'.
+    -   **If the score is good (e.g., >= 60%)**: Suggest more advanced or related actions. The primary suggestion could be to apply the knowledge in a 'cases' simulation. The secondary could be to explore a related topic or try a harder quiz.
+    -   **If there is no score (e.g., 'notes_review')**: Suggest testing the knowledge with 'mcq' or 'flashcards'.
+
+Example for 'nextSteps' on a poor quiz score:
+[
+  {
+    "title": "Review Core Concepts",
+    "description": "Generate structured notes for {{{topic}}} to build a stronger foundation.",
+    "toolId": "notes-generator",
+    "prefilledTopic": "{{{topic}}}",
+    "cta": "Review Study Notes"
+  },
+  {
+    "title": "Reinforce with Flashcards",
+    "description": "Create flashcards for the key points of {{{topic}}}.",
+    "toolId": "flashcards",
+    "prefilledTopic": "{{{topic}}}",
+    "cta": "Create Flashcards"
+  }
+]
 
 Format the entire output as JSON conforming to the MedicoProgressTrackerOutputSchema.
 `,

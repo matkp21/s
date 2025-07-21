@@ -36,7 +36,7 @@ export interface MedicoTool {
   title: string;
   description: string;
   icon: React.ElementType;
-  component?: React.ElementType; 
+  component?: React.ComponentType<{ initialTopic?: string | null }>; // Accept initialTopic prop
   href?: string; 
   comingSoon?: boolean;
   isFrequentlyUsed?: boolean; // Added for dashboard layout

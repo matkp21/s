@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, HelpCircle, Wand2, Save, ArrowRight, ChevronDown } from 'lucide-react';
+import { Loader2, HelpCircle, Wand2, Save } from 'lucide-react';
 import { generateMCQs, type MedicoMCQGeneratorInput, type MedicoMCQGeneratorOutput } from '@/ai/agents/medico/MCQGeneratorAgent';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -21,10 +21,9 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { trackProgress } from '@/ai/agents/medico/ProgressTrackerAgent';
 import React, { useEffect } from 'react';
-import Link from 'next/link';
 import { MarkdownRenderer } from '../markdown/markdown-renderer';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MedicoMCQGeneratorInputSchema, type MCQSchema as SingleMCQ } from '@/ai/schemas/medico-tools-schemas';
+import { NextStepsDisplay } from './next-steps-display';
 
 const subjects = ["Anatomy", "Physiology", "Biochemistry", "Pathology", "Pharmacology", "Microbiology", "Forensic Medicine", "Community Medicine", "Ophthalmology", "ENT", "General Medicine", "General Surgery", "Obstetrics & Gynaecology", "Pediatrics", "Other"] as const;
 const systems = ["Cardiovascular", "Respiratory", "Gastrointestinal", "Neurological", "Musculoskeletal", "Endocrine", "Genitourinary", "Integumentary", "Hematological", "Immunological", "Other"] as const;
@@ -54,10 +53,17 @@ export function McqGenerator({ initialTopic }: McqGeneratorProps) {
       });
       
       try {
-        await trackProgress({
+        const progressResult = await trackProgress({
             activityType: 'mcq_session',
             topic: input.topic,
-            score: undefined
+            // A mock score since we don't have an interactive quiz yet.
+            // In a real quiz, this score would be calculated based on user answers.
+            score: Math.floor(Math.random() * 41) + 60, // Simulate a decent score (60-100)
+        });
+         toast({
+          title: "Practice Session Logged!",
+          description: progressResult.progressUpdateMessage,
+          duration: 5000,
         });
       } catch (progressError) {
           console.warn("Could not track progress for MCQ generation:", progressError);
@@ -248,7 +254,7 @@ export function McqGenerator({ initialTopic }: McqGeneratorProps) {
                 </>
                 ) : (
                 <>
-                    <Wand2 className="mr-2 h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
+                    <Wand2 className="mr-2 h-4 w-4" />
                     Generate MCQs
                 </>
                 )}
@@ -263,8 +269,8 @@ export function McqGenerator({ initialTopic }: McqGeneratorProps) {
       </Form>
 
       {error && (
-        <Alert variant="destructive" className="rounded-lg">
-          <AlertTitle>Error</AlertTitle>
+        <Alert variant="destructive" className="rounded-lg my-4">
+          <AlertTitle>Error Generating MCQs</AlertTitle>
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
@@ -313,41 +319,13 @@ export function McqGenerator({ initialTopic }: McqGeneratorProps) {
               </div>
             </ScrollArea>
           </CardContent>
-          <CardFooter className="p-4 border-t flex items-center justify-between">
-              <Button onClick={handleSaveToLibrary} disabled={!user}>
-                <Save className="mr-2 h-4 w-4"/> Save to Library
-              </Button>
-              {generatedMcqs.nextSteps && generatedMcqs.nextSteps.length > 0 && (
-                <div className="flex rounded-md border">
-                  <Button asChild className="flex-grow rounded-r-none border-r-0 font-semibold">
-                    <Link href={`/medico/${generatedMcqs.nextSteps[0].toolId}?topic=${encodeURIComponent(generatedMcqs.nextSteps[0].prefilledTopic)}`}>
-                      {generatedMcqs.nextSteps[0].cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                  {generatedMcqs.nextSteps.length > 1 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="rounded-l-none">
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>More Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {generatedMcqs.nextSteps.slice(1).map((step, index) => (
-                          <DropdownMenuItem key={index} asChild className="cursor-pointer">
-                            <Link href={`/medico/${step.toolId}?topic=${encodeURIComponent(step.prefilledTopic)}`}>
-                              {step.cta}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              )}
-            </CardFooter>
+          <CardFooter className="p-4 border-t">
+            <NextStepsDisplay 
+                nextSteps={generatedMcqs.nextSteps}
+                onSaveToLibrary={handleSaveToLibrary}
+                isUserLoggedIn={!!user}
+              />
+          </CardFooter>
         </Card>
       )}
     </div>
