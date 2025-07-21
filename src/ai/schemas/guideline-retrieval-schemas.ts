@@ -1,4 +1,5 @@
 
+
 /**
  * @fileOverview Defines Zod schemas for the Guideline Retrieval flow.
  */
@@ -13,7 +14,9 @@ export type GuidelineRetrievalInput = z.infer<typeof GuidelineRetrievalInputSche
 export const GuidelineItemSchema = z.object({
   title: z.string().describe('The title of the guideline or protocol.'),
   summary: z.string().describe('A concise summary of the key points of the guideline.'),
-  source: z.string().optional().describe('The primary source of the guideline (e.g., "WHO 2023", "NICE NGXX", "AHA/ACC Guidelines 2022").')
+  source: z.string().optional().describe('The primary source of the guideline (e.g., "WHO 2023", "NICE NGXX", "AHA/ACC Guidelines 2022").'),
+  investigations: z.array(z.string()).optional().describe('A list of key investigations mentioned in the guideline.'),
+  management: z.array(z.string()).optional().describe('A list of key management steps mentioned in the guideline.'),
 });
 export type GuidelineItem = z.infer<typeof GuidelineItemSchema>;
 

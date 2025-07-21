@@ -43,8 +43,8 @@ export type DiagnosisItem = z.infer<typeof DiagnosisItemSchema>;
 
 export const SymptomAnalyzerOutputSchema = z.object({
   diagnoses: z.array(DiagnosisItemSchema).describe('A list of potential differential diagnoses, each with a name, optional confidence, and optional rationale.'),
-  suggestedInvestigations: z.array(InvestigationSchema).optional().describe('A list of suggested investigations for the top likely diagnoses, each with a name and optional rationale.'),
-  suggestedManagement: z.array(z.string()).optional().describe('A list of suggested initial management steps or considerations.'),
+  suggestedInvestigations: z.array(z.string()).optional().describe('A list of suggested investigations for the top likely diagnoses, derived from guidelines.'),
+  suggestedManagement: z.array(z.string()).optional().describe('A list of suggested initial management steps or considerations, derived from guidelines.'),
   nextSteps: z.array(NextStepSchema).optional().describe('A list of suggested next steps for the user, such as using a study tool.'),
   disclaimer: z.string().optional().describe('A standard disclaimer advising consultation with a medical professional.'),
 });

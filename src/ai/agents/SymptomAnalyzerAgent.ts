@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview An AI agent that analyzes symptoms and provides potential diagnoses.
- * This is a Genkit flow that can be called from other parts of the application, including the Python backend.
+ * This is a Genkit flow that now uses a guideline retrieval tool to enhance its output.
  *
  * - analyzeSymptoms - A function that takes user-provided symptoms and returns a detailed analysis.
  */
@@ -10,6 +10,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { SymptomAnalyzerInputSchema, SymptomAnalyzerOutputSchema } from '../schemas/symptom-analyzer-schemas';
+import { guidelineRetrievalTool } from '../tools/guideline-retrieval-tool';
 
 // Export types for use in other modules
 export type { SymptomAnalyzerInput, SymptomAnalyzerOutput, DiagnosisItem, InvestigationItem } from '../schemas/symptom-analyzer-schemas';
@@ -22,10 +23,13 @@ const prompt = ai.definePrompt({
   name: 'symptomAnalyzerPrompt',
   input: {schema: SymptomAnalyzerInputSchema},
   output: {schema: SymptomAnalyzerOutputSchema},
-  prompt: `You are an expert medical AI assistant. Based on the symptoms and patient context provided, generate a list of potential differential diagnoses.
+  tools: [guidelineRetrievalTool],
+  prompt: `You are an expert medical AI assistant. Based on the symptoms and patient context provided, your first step is to generate a list of potential differential diagnoses.
 For each diagnosis, include a 'name', 'confidence' level ('High', 'Medium', 'Low', 'Possible'), and a 'rationale'.
 
-For the top 1-2 most likely diagnoses, provide a list of 'suggestedInvestigations' (e.g., blood tests, imaging) with a rationale for each, and a list of 'suggestedManagement' steps (e.g., initial treatments).
+After identifying the single most likely diagnosis, your second step is to use the 'guidelineRetriever' tool to find its standard investigations and management guidelines.
+- Use the name of the most likely diagnosis as the 'query' for the tool.
+- Populate the 'suggestedInvestigations' and 'suggestedManagement' fields in your final output using the information returned by the tool.
 
 Symptoms: {{{symptoms}}}
 {{#if patientContext.age}}Patient Age: {{{patientContext.age}}}{{/if}}

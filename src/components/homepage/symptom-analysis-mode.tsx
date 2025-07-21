@@ -123,12 +123,9 @@ export function SymptomAnalysisMode() {
                       <Microscope className="mr-2 h-5 w-5 text-primary" />
                       Suggested Investigations:
                     </h3>
-                    <ul className="space-y-2">
+                    <ul className="list-disc list-inside pl-4 space-y-1 text-sm bg-muted/40 p-3 rounded-lg">
                       {analysisResult.suggestedInvestigations.map((inv, index) => (
-                        <li key={index} className="p-2 bg-muted/40 rounded-lg border text-sm">
-                          <p className="font-medium">{inv.name}</p>
-                          {inv.rationale && <p className="text-xs text-muted-foreground italic">{inv.rationale}</p>}
-                        </li>
+                        <li key={index}>{inv}</li>
                       ))}
                     </ul>
                   </div>
