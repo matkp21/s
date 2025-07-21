@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { ProSuiteAnimation } from '@/components/pro/pro-suite-animation'; 
-import { AppLayout } from '@/components/layout/app-layout';
+import { PageWrapper } from '@/components/layout/page-wrapper';
 
 export default function ProPage() {
   const { userRole, loading: authLoading } = useProMode();
@@ -55,5 +55,9 @@ export default function ProPage() {
     return <ProSuiteAnimation onAnimationComplete={() => setShowProAnimation(false)} />;
   }
   
-  return <ProModeDashboard />;
+  return (
+    <PageWrapper>
+        <ProModeDashboard />
+    </PageWrapper>
+  );
 }

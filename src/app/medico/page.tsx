@@ -8,8 +8,6 @@ import React, { useEffect, useState } from 'react';
 import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Loader2 } from 'lucide-react';
 import { MedicoHubAnimation } from '@/components/medico/medico-hub-animation'; 
-import { ClientLayoutWrapper } from '@/components/layout/client-layout-wrapper';
-import { AppLayout } from '@/components/layout/app-layout';
 
 export default function MedicoPage() {
   const { userRole, loading: authLoading } = useProMode();
@@ -46,12 +44,10 @@ export default function MedicoPage() {
   
   if (userRole !== 'medico') {
     return (
-      <PageWrapper>
         <div className="text-center p-8">
           <p className="text-lg">You must be in Medico mode to access this page.</p>
           <p className="text-sm text-muted-foreground">Redirecting to homepage...</p>
         </div>
-      </PageWrapper>
     );
   }
 
@@ -59,5 +55,9 @@ export default function MedicoPage() {
     return <MedicoHubAnimation onAnimationComplete={() => setShowMedicoAnimation(false)} />;
   }
   
-  return <MedicoDashboard />;
+  return (
+    <PageWrapper>
+        <MedicoDashboard />
+    </PageWrapper>
+    );
 }

@@ -155,15 +155,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
     return 'Guest';
   };
   
-  const pathname = usePathname();
-  const isProRoute = pathname.startsWith('/pro');
-  const isMedicoRoute = pathname.startsWith('/medico');
-
-  // Do not render the full AppLayout for Pro or Medico pages, they have their own.
-  if (isProRoute || isMedicoRoute) {
-    return <>{children}</>;
-  }
-
   return (
     <SidebarProvider defaultOpen={true}>
       <Sidebar
@@ -310,7 +301,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                                 <Stethoscope className="h-4 w-4 text-green-500" />
                                 <span className={cn(userRole === 'diagnosis' && "firebase-gradient-text-active-role font-semibold")}>Patient/User</span>
                             </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="" className="flex items-center gap-2 cursor-pointer">
+                             <DropdownMenuRadioItem value="" className="flex items-center gap-2 cursor-pointer">
                                 <UserCircle className="h-4 w-4 text-muted-foreground" />
                                 <span className={cn(userRole === null && "firebase-gradient-text-active-role font-semibold")}>Guest</span>
                             </DropdownMenuRadioItem>
@@ -327,7 +318,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </header>
         <main className="flex-1 flex flex-col overflow-auto relative">
-          {children}
+            {children}
         </main>
         <Footer />
       </SidebarInset>

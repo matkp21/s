@@ -1,7 +1,6 @@
 // src/components/layout/page-wrapper.tsx
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { AppLayout } from './app-layout';
 
 interface PageWrapperProps {
   children: ReactNode;
@@ -11,11 +10,9 @@ interface PageWrapperProps {
 
 export function PageWrapper({ children, className, title }: PageWrapperProps) {
   return (
-    <AppLayout>
         <div className={cn("container mx-auto px-4 sm:px-6 lg:px-8", className)}>
          {title && <h1 className="text-3xl font-bold tracking-tight text-foreground my-4">{title}</h1>}
         {children}
         </div>
-    </AppLayout>
   );
 }
