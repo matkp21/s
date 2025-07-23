@@ -1,4 +1,3 @@
 packages:
-  - 'src'
-  - 'functions'
   - 'frontend'
+  - 'functions'

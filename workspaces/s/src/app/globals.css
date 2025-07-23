@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -197,11 +196,165 @@
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@layer components {
+  /* Animation Utilities */
+  .fade-in {
+    animation: fadeInAnimation 0.5s ease-out forwards;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  .slide-in-bottom {
+    animation: slideInBottomAnimation 0.6s ease-out forwards;
+  }
+
+  /* Content Crossfade */
+  .content-area > .active-mode {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+  }
+  .content-area > .inactive-mode {
+    opacity: 0;
+    transform: scale(0.95);
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out, height 0s 0.4s;
+  }
+
+  /* Input focus glow */
+  .input-focus-glow:focus-within {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4);
+  }
+
+  /* Animated Gradient Text for Logo and other elements */
+  .animated-gradient-text {
+    background-size: 200% auto;
+    background-image: linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--primary)) 100%);
+    animation: gradient-flow 3s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .firebase-gradient-text {
+    background-size: 200% auto;
+    background-image: linear-gradient(to right,
+      hsl(var(--firebase-color-1-light-h), var(--firebase-color-1-light-s), var(--firebase-color-1-light-l)) 0%,
+      hsl(var(--firebase-color-2-light-h), var(--firebase-color-2-light-s), var(--firebase-color-2-light-l)) 25%,
+      hsl(var(--firebase-color-3-light-h), var(--firebase-color-3-light-s), var(--firebase-color-3-light-l)) 50%,
+      hsl(var(--firebase-color-4-light-h), var(--firebase-color-4-light-s), var(--firebase-color-4-light-l)) 75%,
+      hsl(var(--firebase-color-1-light-h), var(--firebase-color-1-light-s), var(--firebase-color-1-light-l)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: firebase-gradient-flow 4s linear infinite;
+  }
+
+  .dark .firebase-gradient-text {
+     background-image: linear-gradient(to right,
+      hsl(var(--firebase-color-1-dark-h), var(--firebase-color-1-dark-s), var(--firebase-color-1-dark-l)) 0%,
+      hsl(var(--firebase-color-2-dark-h), var(--firebase-color-2-dark-s), var(--firebase-color-2-dark-l)) 25%,
+      hsl(var(--firebase-color-3-dark-h), var(--firebase-color-3-dark-s), var(--firebase-color-3-dark-l)) 50%,
+      hsl(var(--firebase-color-4-dark-h), var(--firebase-color-4-dark-s), var(--firebase-color-4-dark-l)) 75%,
+      hsl(var(--firebase-color-1-dark-h), var(--firebase-color-1-dark-s), var(--firebase-color-1-dark-l)) 100%);
+  }
+
+  /* Other component styles moved here */
+  .animate-pulse-medical {
+    animation: pulseMedical 1.8s infinite ease-in-out;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .simple-welcome-screen {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top:0; left:0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    cursor: pointer;
+  }
+  
+  .simple-welcome-tagline {
+    text-align: center;
+    font-weight: 300;
+    letter-spacing: 0.025em;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    color: hsl(var(--foreground), 0.9);
+  }
+  
+  .dark .simple-welcome-tagline {
+    color: hsl(var(--foreground), 0.85);
+  }
+
+  .simple-welcome-screen .welcome-logo-container .logo-icon-container {
+    width: clamp(var(--heart-icon-splash-size-min), var(--heart-icon-splash-size-vw), var(--heart-icon-splash-size-max));
+    height: clamp(var(--heart-icon-splash-size-min), var(--heart-icon-splash-size-vw), var(--heart-icon-splash-size-max));
+  }
+  
+  .simple-welcome-screen .welcome-logo-container .logo-icon-container svg {
+      width: 60%;
+      height: 60%;
+  }
+
+  .simple-welcome-screen .welcome-logo-container .logo-text {
+    font-size: clamp(var(--logo-text-splash-size-min), var(--logo-text-splash-size-vw), var(--logo-text-splash-size-max));
+  }
+  
+  .notification-panel-compact {
+    background-color: hsl(var(--notification-panel-compact-bg));
+    border: 1px solid hsl(var(--notification-panel-compact-border));
+    @apply rounded-xl shadow-2xl overflow-hidden fixed top-16 right-4 z-50 w-[320px] max-h-[400px] flex flex-col;
+  }
+
+  .notification-item-card-compact {
+    @apply p-1.5 rounded-md cursor-pointer transition-colors duration-150 flex items-start gap-2;
+  }
+  .notification-unread-dot {
+    height: 0.375rem; /* 6px */
+    width: 0.375rem; /* 6px */
+    border-radius: 9999px; /* full */
+    margin-top: 0.25rem; /* mt-1 */
+    flex-shrink: 0;
+    align-self: center;
+    background-color: var(--notification-unread-dot-color);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--muted)/0.3);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary)/0.7);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+
+  .medico-layout-background {
+    background-image: linear-gradient(to bottom right, hsl(var(--background)), hsla(204.7, 90.1%, 53.5%, 0.03));
+  }
+  .dark .medico-layout-background {
+    background-image: linear-gradient(to bottom right, hsl(var(--background)), hsla(204.7, 90.1%, 53.5%, 0.07));
+  }
+  
+  .onboarding-progress-dot {
+      @apply h-2 w-2 rounded-full mx-1 transition-all duration-300;
+  }
+  .onboarding-progress-dot-active {
+      @apply bg-primary scale-125;
+  }
+  .onboarding-progress-dot-inactive {
+      @apply bg-muted-foreground/30;
   }
 }
