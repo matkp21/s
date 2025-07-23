@@ -199,7 +199,7 @@
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    @apply border-border;
   }
   body, html {
     @apply bg-background text-foreground;
@@ -554,7 +554,7 @@ body:not(:has(.simple-welcome-screen)):not(:has(.spark-welcome-screen)):not(:has
     hsl(var(--firebase-color-1-light-h), var(--firebase-color-1-light-s), var(--firebase-color-1-light-l)) 0%,
     hsl(var(--firebase-color-2-light-h), var(--firebase-color-2-light-s), var(--firebase-color-2-light-l)) 25%,
     hsl(var(--firebase-color-3-light-h), var(--firebase-color-3-light-s), var(--firebase-color-3-light-l)) 50%,
-    hsl(var(--firebase-color-4-light-h), var(--firebase-color-4-light-s), var(--firebase-color-4-dark-l)) 75%,
+    hsl(var(--firebase-color-4-light-h), var(--firebase-color-4-light-s), var(--firebase-color-4-light-l)) 75%,
     hsl(var(--firebase-color-1-light-h), var(--firebase-color-1-light-s), var(--firebase-color-1-light-l)) 100%);
   background-size: 100% auto; /* Static gradient, not animated by default */
   -webkit-background-clip: text;
@@ -815,7 +815,7 @@ body:not(:has(.simple-welcome-screen)):not(:has(.spark-welcome-screen)):not(:has
     hsl(var(--firebase-color-1-light-h), var(--firebase-color-1-light-s), var(--firebase-color-1-light-l)),
     hsl(var(--firebase-color-2-light-h), var(--firebase-color-2-light-s), var(--firebase-color-2-light-l)),
     hsl(var(--firebase-color-3-light-h), var(--firebase-color-3-light-s), var(--firebase-color-3-light-l)),
-    hsl(var(--firebase-color-4-light-h), var(--firebase-color-4-light-s), var(--firebase-color-4-dark-l)),
+    hsl(var(--firebase-color-4-light-h), var(--firebase-color-4-light-s), var(--firebase-color-4-light-l)),
     hsl(var(--firebase-color-1-light-h), var(--firebase-color-1-light-s), var(--firebase-color-1-light-l))
   );
   background-size: 300% 300%;
