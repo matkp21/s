@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from 'react';
-import { HeroSection } from '@/components/homepage/hero-section'; 
+import { HeroSection } from '../../components/homepage/hero-section'; 
 import { ModeSwitcher, type ActiveMode } from '@/components/homepage/mode-switcher';
 import { SymptomAnalysisMode } from '@/components/homepage/symptom-analysis-mode';
 import { ImageProcessingMode } from '@/components/homepage/image-processing-mode';
