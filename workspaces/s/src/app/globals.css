@@ -1,0 +1,207 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base Theme (Light - Apple Inspired Cool Metallic) */
+    --background: 210 33% 98%; /* Very Light Cool Gray (Almost White) */
+    --foreground: 220 25% 25%; /* Dark Cool Gray */
+
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 220 25% 25%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 25%;
+
+    /* Primary color HSL components */
+    --primary-h: 210;
+    --primary-s: 100%;
+    --primary-l: 50%;
+    --primary: var(--primary-h) var(--primary-s) var(--primary-l); /* Vibrant Blue */
+    --primary-foreground: 0 0% 100%; /* White */
+
+    --secondary: 210 25% 96%; /* Light Gray */
+    --secondary-foreground: 220 25% 35%;
+
+    --muted: 210 20% 90%; /* Lighter Cool Gray */
+    --muted-foreground: 220 20% 50%;
+
+    /* Accent color HSL components */
+    --accent-h: 170; /* Teal */
+    --accent-s: 98%;
+    --accent-l: 52%;
+    --accent: var(--accent-h) var(--accent-s) var(--accent-l); /* Vibrant Teal/Cyan */
+    --accent-foreground: 210 100% 10%;
+
+    --destructive: 0 70% 60%; /* Standard Red */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 88%;
+    --input: 210 20% 92%;
+    --ring: 210 100% 55%; /* Primary Blue for focus rings */
+
+    --radius: 0.75rem; /* Apple-like rounded corners */
+
+    /* Sidebar specific colors - Light Mode (Gemini Inspired) */
+    --sidebar-background: 220 20% 97%;
+    --sidebar-foreground: 220 25% 28%;
+    --sidebar-primary: hsl(var(--primary-h) var(--primary-s) var(--primary-l));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: 220 80% 92%; /* Light blue, good for hover */
+    --sidebar-accent-foreground: 220 80% 40%; /* Darker blue for text on hover */
+    --sidebar-active-background: hsl(var(--primary-h) var(--primary-s) var(--primary-l)); /* Primary for active */
+    --sidebar-active-foreground: hsl(var(--primary-foreground)); /* Primary foreground for active text */
+    --sidebar-border: 220 15% 88%;
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-active-indicator-start: hsl(var(--sidebar-primary), 0.8);
+    --sidebar-active-indicator-end: hsl(var(--sidebar-accent), 0.8);
+
+
+    /* Chart Colors - Light Mode */
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--accent));
+    --chart-3: 260 65% 60%;
+    --chart-4: 30 80% 55%;
+    --chart-5: 130 50% 50%;
+
+     /* Firebase Inspired Gradient Colors (Light Mode) - For General Use */
+    --firebase-color-1-light-h: 45; --firebase-color-1-light-s: 100%; --firebase-color-1-light-l: 58%; /* Bright Yellow (#FFCA28) */
+    --firebase-color-2-light-h: 36; --firebase-color-2-light-s: 100%; --firebase-color-2-light-l: 50%; /* Bright Orange (#FFA000) */
+    --firebase-color-3-light-h: 25; --firebase-color-3-light-s: 100%; --firebase-color-3-light-l: 55%; /* Orange-Red (#FF8A65) */
+    --firebase-color-4-light-h: 15; --firebase-color-4-light-s: 100%; --firebase-color-4-light-l: 60%; /* Reddish-Orange (#FF7043) */
+
+
+    /* --- "Elegant Reveal" Welcome Screen Colors & Sizing (Light Mode) --- */
+    /* Background for the "Elegant Reveal" screen is the main app background */
+    /* Icon & Text colors for "Elegant Reveal" */
+    --heart-stroke-width: 2px; /* Maintained for heart icon in Logo */
+    --heart-icon-splash-size-min: 70px;
+    --heart-icon-splash-size-vw: 17vw;
+    --heart-icon-splash-size-max: 140px;
+    --logo-text-splash-size-min: 2.0rem;
+    --logo-text-splash-size-vw: 5.5vw;
+    --logo-text-splash-size-max: 3.3rem;
+
+
+    /* --- "MediAssistant Spark" Welcome Screen Colors (Light Mode) - REVISED --- */
+    /* Adjusted for a Pro Clinical Suite like background for "Spark" if used, otherwise "Elegant Reveal" uses simple background */
+    --spark-bg-start-light-h: 220; --spark-bg-start-light-s: 25%; --spark-bg-start-light-l: 95%; /* Very light, cool gray */
+    --spark-bg-mid-light-h: 270;   --spark-bg-mid-light-s: 40%; --spark-bg-mid-light-l: 90%;   /* Very light, desaturated lavender */
+    --spark-bg-end-light-h: 220;   --spark-bg-end-light-s: 20%; --spark-bg-end-light-l: 97%;   /* Off-white with cool tint */
+
+    /* Particle Colors (Pastel Firebase-Inspired) for "Spark" screen */
+    --spark-particle-color-1-h: 45; --spark-particle-color-1-s: 100%; --spark-particle-color-1-l: 80%; /* Pastel Yellow */
+    --spark-particle-color-2-h: 30; --spark-particle-color-2-s: 100%; --spark-particle-color-2-l: 75%; /* Pastel Orange */
+    --spark-particle-color-3-h: 0;  --spark-particle-color-3-s: 100%; --spark-particle-color-3-l: 80%; /* Pastel Pink/Red */
+    --spark-particle-color-4-h: 280;--spark-particle-color-4-s: 100%; --spark-particle-color-4-l: 82%; /* Pastel Purple */
+
+    /* Notification Panel (Compact, solid) - Light Mode */
+    --notification-panel-compact-bg: 0 0% 100%; /* White */
+    --notification-panel-compact-border: 210 20% 88%;
+    --notification-item-compact-bg: 0 0% 100%;
+    --notification-item-compact-hover-bg: 210 25% 96%;
+    --notification-unread-dot-color: hsl(var(--primary));
+
+  }
+
+  .dark {
+    /* Dark Theme - Apple Inspired (Deep Navy/Cool Metallic) */
+    --background: 216 65% 11%;
+    --foreground: 215 100% 95%;
+
+    --card: 216 54% 20%;
+    --card-foreground: 215 100% 95%;
+
+    --popover: 216 65% 9%;
+    --popover-foreground: 215 100% 95%;
+
+    --primary-h: 210;
+    --primary-s: 100%;
+    --primary-l: 60%;
+    --primary: var(--primary-h) var(--primary-s) var(--primary-l);
+    --primary-foreground: 216 65% 10%;
+
+    --secondary: 216 50% 25%;
+    --secondary-foreground: 215 20% 85%;
+
+    --muted: 216 45% 18%;
+    --muted-foreground: 215 15% 70%;
+
+    --accent-h: 170; /* Teal */
+    --accent-s: 98%;
+    --accent-l: 52%;
+    --accent: var(--accent-h) var(--accent-s) var(--accent-l);
+    --accent-foreground: 170 90% 10%;
+
+    --destructive: 0 60% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 216 40% 30%;
+    --input: 216 50% 28%;
+    --ring: 210 100% 65%;
+
+    /* Sidebar specific colors - Dark Mode (Gemini Inspired) */
+    --sidebar-background: 220 30% 12%;
+    --sidebar-foreground: 220 15% 88%;
+    --sidebar-primary: hsl(var(--primary-h) var(--primary-s) var(--primary-l));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: 220 40% 22%;
+    --sidebar-accent-foreground: 220 80% 80%;
+    --sidebar-active-background: hsl(var(--primary-h) var(--primary-s) var(--primary-l));
+    --sidebar-active-foreground: hsl(var(--primary-foreground));
+    --sidebar-border: 220 25% 20%;
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-active-indicator-start: hsl(var(--sidebar-primary), 0.9);
+    --sidebar-active-indicator-end: hsl(var(--sidebar-accent), 0.9);
+
+    /* Chart Colors - Dark Mode */
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--accent));
+    --chart-3: 270 70% 70%;
+    --chart-4: 40 90% 65%;
+    --chart-5: 140 60% 60%;
+
+    /* Firebase Inspired Gradient Colors (Dark Mode) - For General Use */
+    --firebase-color-1-dark-h: 45; --firebase-color-1-dark-s: 100%; --firebase-color-1-dark-l: 65%;
+    --firebase-color-2-dark-h: 36; --firebase-color-2-dark-s: 100%; --firebase-color-2-dark-l: 60%;
+    --firebase-color-3-dark-h: 25; --firebase-color-3-dark-s: 100%; --firebase-color-3-dark-l: 65%;
+    --firebase-color-4-dark-h: 15; --firebase-color-4-dark-s: 100%; --firebase-color-4-dark-l: 70%;
+
+    /* --- "Elegant Reveal" Welcome Screen Sizing (Dark Mode) --- */
+    --heart-icon-splash-size-min: 70px;
+    --heart-icon-splash-size-vw: 17vw;
+    --heart-icon-splash-size-max: 140px;
+    --logo-text-splash-size-min: 2.0rem;
+    --logo-text-splash-size-vw: 5.5vw;
+    --logo-text-splash-size-max: 3.3rem;
+
+    /* --- "MediAssistant Spark" Welcome Screen Colors (Dark Mode) - REVISED --- */
+    --spark-bg-start-dark-h: 222; --spark-bg-start-dark-s: 47%; --spark-bg-start-dark-l: 11%; /* Slate-900 like */
+    --spark-bg-mid-dark-h: 275;   --spark-bg-mid-dark-s: 60%; --spark-bg-mid-dark-l: 15%;   /* Deep Purple */
+    --spark-bg-end-dark-h: 222;   --spark-bg-end-dark-s: 47%; --spark-bg-end-dark-l: 11%;   /* Slate-900 like */
+
+    /* Particle Colors (Still vibrant but against dark BG) for "Spark" screen */
+    --spark-particle-color-1-h: 45; --spark-particle-color-1-s: 100%; --spark-particle-color-1-l: 65%; /* Yellow */
+    --spark-particle-color-2-h: 30; --spark-particle-color-2-s: 100%; --spark-particle-color-2-l: 60%; /* Orange */
+    --spark-particle-color-3-h: 0;  --spark-particle-color-3-s: 90%; --spark-particle-color-3-l: 65%; /* Pink/Red */
+    --spark-particle-color-4-h: 280;--spark-particle-color-4-s: 90%; --spark-particle-color-4-l: 70%; /* Purple */
+
+    /* Notification Panel (Compact, solid) - Dark Mode */
+    --notification-panel-compact-bg: 216 54% 18%;
+    --notification-panel-compact-border: 216 40% 25%;
+    --notification-item-compact-bg: 216 54% 18%;
+    --notification-item-compact-hover-bg: 216 50% 22%;
+    /* --notification-unread-dot-color is same as light mode (primary) */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
