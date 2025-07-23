@@ -1,4 +1,3 @@
-
 // src/components/pro/personalized-clinical-dashboard.tsx
 "use client";
 
@@ -10,28 +9,11 @@ import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { motion, Reorder } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-
-
-interface TaskItem {
-  id: string;
-  text: string;
-  category: 'Lab Review' | 'Follow-up' | 'Patient Alert' | 'Schedule';
-  dueDate?: string;
-  priority?: 'High' | 'Medium' | 'Low';
-  completed: boolean;
-}
-
-interface RecentActivityItem {
-    id: string;
-    text: string;
-    timestamp: string;
-}
-
-interface DashboardData {
-    tasks: TaskItem[];
-    recentActivity: RecentActivityItem[];
-}
-
+import { useAiAgent } from "@/hooks/use-ai-agent";
+import { getDashboardData, type ProDashboardData } from "@/ai/agents/pro/DashboardDataAgent";
+import type { TaskItem } from "@/ai/schemas/pro-schemas";
+import { HeroWidgets, type HeroTask } from '@/components/homepage/hero-widgets';
+import { addDays } from 'date-fns';
 
 interface DashboardWidget {
   id: string;
@@ -44,42 +26,34 @@ interface DashboardWidget {
 }
 
 
+const sampleProTasks: HeroTask[] = [
+    { id: 'task-pro-1', date: new Date(), title: 'Review Mr. Smith\'s latest CBC results', description: 'Priority: High. Check for trends.' },
+    { id: 'task-pro-2', date: new Date(), title: 'On-call shift: 7 PM - 7 AM', description: 'Review handover notes before starting.' },
+    { id: 'task-pro-3', date: addDays(new Date(), 1), title: 'Follow-up call with Mrs. Jones', description: 'Re: medication adjustment for hypertension.' },
+];
+
+
 export function PersonalizedClinicalDashboard() {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const { data: dashboardData, isPending: isLoading, error, mutate: fetchDashboardData } = useAiAgent(getDashboardData);
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/pro/dashboard`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch dashboard data from the backend.');
-            }
-            const data: DashboardData = await response.json();
-            setDashboardData(data);
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-            setError(errorMessage);
-            toast({ title: "Error", description: "Could not load dashboard data.", variant: "destructive" });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     fetchDashboardData();
-  }, [toast]);
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    if (dashboardData) {
+      setTasks(dashboardData.tasks);
+    }
+  }, [dashboardData]);
 
   const toggleTaskCompletion = (taskId: string) => {
-    if (!dashboardData) return;
-    const updatedTasks = dashboardData.tasks.map(task => 
-      task.id === taskId ? { ...task, completed: !task.completed } : task
+    setTasks(prevTasks => 
+      prevTasks.map(task => 
+        task.id === taskId ? { ...task, completed: !task.completed } : task
+      )
     );
-    setDashboardData({ ...dashboardData, tasks: updatedTasks });
   };
 
 
@@ -94,7 +68,7 @@ export function PersonalizedClinicalDashboard() {
       content: (
          <ScrollArea className="h-40">
           <ul className="space-y-2">
-            {dashboardData?.tasks.filter(t => t.category === 'Patient Alert' && !t.completed).map(task => (
+            {tasks?.filter(t => t.category === 'Patient Alert' && !t.completed).map(task => (
               <li key={task.id} className="flex items-center justify-between p-2 bg-destructive/10 border border-destructive/30 rounded-md text-sm">
                 <span className="font-medium text-destructive">{task.text}</span>
                  <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={() => toggleTaskCompletion(task.id)}>
@@ -102,7 +76,7 @@ export function PersonalizedClinicalDashboard() {
                 </Button>
               </li>
             ))}
-            {dashboardData && dashboardData.tasks.filter(t => t.category === 'Patient Alert' && !t.completed).length === 0 && <p className="text-center text-muted-foreground py-4">No active alerts.</p>}
+            {tasks && tasks.filter(t => t.category === 'Patient Alert' && !t.completed).length === 0 && <p className="text-center text-muted-foreground py-4">No active alerts.</p>}
           </ul>
         </ScrollArea>
       )
@@ -117,7 +91,7 @@ export function PersonalizedClinicalDashboard() {
       content: (
         <ScrollArea className="h-60">
           <ul className="space-y-2">
-            {dashboardData?.tasks.filter(t => !t.completed).map(task => (
+            {tasks?.filter(t => !t.completed).map(task => (
               <li key={task.id} className="flex items-center justify-between p-2 bg-muted/50 rounded-md text-sm hover:bg-muted/70 transition-colors">
                 <div>
                   <span className={cn("font-medium", task.priority === "High" && "text-destructive")}>{task.text}</span>
@@ -131,7 +105,7 @@ export function PersonalizedClinicalDashboard() {
                 </Button>
               </li>
             ))}
-            {dashboardData && dashboardData.tasks.filter(t => !t.completed).length === 0 && <p className="text-center text-muted-foreground py-4">No pending tasks!</p>}
+            {tasks && tasks.filter(t => !t.completed).length === 0 && <p className="text-center text-muted-foreground py-4">No pending tasks!</p>}
           </ul>
         </ScrollArea>
       )
@@ -161,12 +135,16 @@ export function PersonalizedClinicalDashboard() {
         return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;
     }
     if (error) {
-        return <div className="p-4"><Card className="bg-destructive/10 border-destructive"><CardContent className="p-4 text-center text-destructive-foreground"><ServerCrash className="mx-auto h-8 w-8 mb-2"/><p>Failed to load dashboard data.</p><p className="text-xs">{error}</p></CardContent></Card></div>
+        return <div className="p-4"><Card className="bg-destructive/10 border-destructive"><CardContent className="p-4 text-center text-destructive-foreground"><ServerCrash className="mx-auto h-8 w-8 mb-2"/><p>Failed to load dashboard data.</p><p className="text-xs">{error.message}</p></CardContent></Card></div>
     }
     if (!dashboardData) {
         return <p className="text-center text-muted-foreground py-10">No dashboard data available.</p>;
     }
     return (
+      <>
+        <div className="mb-8">
+            <HeroWidgets tasks={sampleProTasks} />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {widgetOrder.map(widgetId => {
             const widget = widgets.find(w => w.id === widgetId);
@@ -200,6 +178,7 @@ export function PersonalizedClinicalDashboard() {
             );
             })}
         </div>
+      </>
     )
   }
 
