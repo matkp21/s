@@ -54,7 +54,11 @@ export function NotificationItemCardCompact({ item, onMarkAsRead, onClosePanel }
   };
 
   const cardContent = (
-    <div
+    <motion.div
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       className={cn(
         "notification-item-card-compact flex items-start gap-2 p-1.5 rounded-md cursor-pointer transition-colors duration-150", // Reduced padding
         item.isRead ? 'bg-card hover:bg-muted/30' : 'bg-primary/10 hover:bg-primary/20 border border-primary/20', // Solid background for cards
@@ -78,40 +82,20 @@ export function NotificationItemCardCompact({ item, onMarkAsRead, onClosePanel }
             {item.body}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 
   if (item.deepLink) {
     return (
-      <Link href={item.deepLink} passHref legacyBehavior>
-        <motion.a
-          onClick={handleItemClick}
-          className="block w-full no-underline"
-          role="button"
-          tabIndex={0}
-          variants={cardVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-        >
-          {cardContent}
-        </motion.a>
+      <Link href={item.deepLink} onClick={handleItemClick} className="block w-full no-underline" role="button" tabIndex={0}>
+        {cardContent}
       </Link>
     );
   }
 
   return (
-    <motion.div
-      onClick={handleItemClick}
-      className="block w-full cursor-pointer"
-      role="button"
-      tabIndex={0}
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-    >
-      {cardContent}
-    </motion.div>
+    <div onClick={handleItemClick} role="button" tabIndex={0}>
+        {cardContent}
+    </div>
   );
 }
