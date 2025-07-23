@@ -1,3 +1,4 @@
+
 // src/components/layout/sidebar-nav.tsx
 "use client";
 
@@ -96,36 +97,37 @@ export function SidebarNav({ unreadNotificationCount }: SidebarNavProps) {
               <SidebarMenuItem key={item.href}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      aria-label={item.ariaLabel}
-                      className={cn(
-                        "justify-start w-full rounded-lg group transition-all duration-200 ease-in-out sidebar-item-shine",
-                        "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md",
-                        isActive
-                          ? "bg-sidebar-active-background text-sidebar-active-foreground shadow-lg font-semibold sidebar-active-item-glow"
-                          : "text-sidebar-foreground/80 hover:text-sidebar-foreground",
-                        "focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar-background"
-                      )}
-                    >
-                      <Link href={item.href} className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-2">
-                          <item.icon className={cn(
-                              "h-5 w-5 transition-transform duration-200 ease-in-out",
-                              "group-hover:scale-110",
-                              isActive && "text-sidebar-active-foreground"
-                             )}
-                           />
-                          <span>{item.label}</span>
-                        </div>
-                        {isNotifications && badgeCount > 0 && (
-                           <Badge className="sidebar-notification-badge h-5 px-1.5 text-xs ml-auto group-data-[collapsible=icon]:hidden">
-                             {badgeCount}
-                           </Badge>
+                    <Link href={item.href} passHref>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        aria-label={item.ariaLabel}
+                        className={cn(
+                          "justify-start w-full rounded-lg group transition-all duration-200 ease-in-out sidebar-item-shine",
+                          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md",
+                          isActive
+                            ? "bg-sidebar-active-background text-sidebar-active-foreground shadow-lg font-semibold sidebar-active-item-glow"
+                            : "text-sidebar-foreground/80 hover:text-sidebar-foreground",
+                          "focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar-background"
                         )}
-                      </Link>
-                    </SidebarMenuButton>
+                      >
+                          <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-2">
+                                  <item.icon className={cn(
+                                      "h-5 w-5 transition-transform duration-200 ease-in-out",
+                                      "group-hover:scale-110",
+                                      isActive && "text-sidebar-active-foreground"
+                                  )}
+                                  />
+                                  <span>{item.label}</span>
+                              </div>
+                              {isNotifications && badgeCount > 0 && (
+                                  <Badge className="sidebar-notification-badge h-5 px-1.5 text-xs ml-auto group-data-[collapsible=icon]:hidden">
+                                      {badgeCount}
+                                  </Badge>
+                              )}
+                          </div>
+                      </SidebarMenuButton>
+                    </Link>
                   </TooltipTrigger>
                   {(sidebarState === "collapsed" || isMobile) && (
                     <TooltipContent
@@ -148,9 +150,8 @@ export function SidebarNav({ unreadNotificationCount }: SidebarNavProps) {
           <SidebarMenuItem>
              <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link href="/settings" passHref legacyBehavior>
+                  <Link href="/settings" passHref>
                     <SidebarMenuButton
-                        as="a" // Important for legacyBehavior with Link
                         isActive={pathname.startsWith('/settings')}
                         aria-label="Open Settings"
                         className={cn(

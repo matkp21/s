@@ -1,3 +1,4 @@
+
 // src/components/layout/notification-item-card-compact.tsx
 "use client";
 
@@ -83,7 +84,7 @@ export function NotificationItemCardCompact({ item, onMarkAsRead, onClosePanel }
 
   if (item.deepLink) {
     return (
-      <Link href={item.deepLink} passHref legacyBehavior>
+      <Link href={item.deepLink} passHref>
         <motion.a
           onClick={handleItemClick}
           className="block w-full no-underline"
