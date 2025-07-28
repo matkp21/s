@@ -17,12 +17,11 @@ import type { z } from 'zod';
 type SymptomFormValues = z.infer<typeof SymptomAnalyzerInputSchema>;
 
 interface SymptomFormProps {
-  onAnalysisStart: (rawInput: SymptomAnalyzerInput) => void;
-  setIsLoading: (loading: boolean) => void;
+  onAnalysisStart: (rawInput: SymptomFormValues) => void;
   isLoading: boolean;
 }
 
-export function SymptomForm({ onAnalysisStart, setIsLoading, isLoading }: SymptomFormProps) {
+export function SymptomForm({ onAnalysisStart, isLoading }: SymptomFormProps) {
   const { toast } = useToast();
   const form = useForm<SymptomFormValues>({
     resolver: zodResolver(SymptomAnalyzerInputSchema),
@@ -37,15 +36,7 @@ export function SymptomForm({ onAnalysisStart, setIsLoading, isLoading }: Sympto
   });
 
   const onSubmit: SubmitHandler<SymptomFormValues> = async (data) => {
-    const analysisInput: SymptomAnalyzerInput = {
-      symptoms: data.symptoms,
-      patientContext: {
-        age: data.patientContext?.age || undefined,
-        sex: data.patientContext?.sex || undefined,
-        history: data.patientContext?.history || undefined,
-      }
-    };
-    onAnalysisStart(analysisInput);
+    onAnalysisStart(data);
   };
 
   return (

@@ -53,7 +53,7 @@ export function SymptomAnalysisMode() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SymptomForm onAnalysisStart={handleAnalysisStart} setIsLoading={setIsLoading} isLoading={isLoading}/>
+          <SymptomForm onAnalysisStart={handleAnalysisStart} isLoading={isLoading}/>
         </CardContent>
       </Card>
 

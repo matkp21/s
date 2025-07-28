@@ -1,3 +1,4 @@
+
 // src/components/guideline-retrieval/guideline-query-form.tsx
 "use client";
 
@@ -9,15 +10,16 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { retrieveGuidelines, type GuidelineRetrievalInput, type GuidelineRetrievalOutput } from '@/ai/agents/GuidelineRetrievalAgent';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Send } from 'lucide-react';
+import { Search, Send, Loader2 } from 'lucide-react';
 import { GuidelineRetrievalInputSchema } from '@/ai/schemas/guideline-retrieval-schemas';
+import { useAiAgent } from '@/hooks/use-ai-agent';
 
 
 type GuidelineQueryFormValues = z.infer<typeof GuidelineRetrievalInputSchema>;
 
 interface GuidelineQueryFormProps {
   onRetrievalComplete: (result: GuidelineRetrievalOutput | null, error?: string) => void;
-  setIsLoading: (loading: boolean) => void;
+  setIsLoading: (loading: boolean) => void; // Can be controlled by useAiAgent now
   isLoading: boolean; 
 }
 
@@ -30,12 +32,8 @@ export function GuidelineQueryForm({ onRetrievalComplete, setIsLoading, isLoadin
     },
   });
 
-  const onSubmit: SubmitHandler<GuidelineQueryFormValues> = async (data) => {
-    setIsLoading(true);
-    onRetrievalComplete(null); 
-
-    try {
-      const result = await retrieveGuidelines(data);
+  const { mutate: runRetrieveGuidelines, isPending } = useAiAgent<GuidelineRetrievalInput, GuidelineRetrievalOutput>(retrieveGuidelines, {
+    onSuccess: (result) => {
       onRetrievalComplete(result);
       if (result.results && result.results.length > 0) {
         toast({
@@ -49,19 +47,26 @@ export function GuidelineQueryForm({ onRetrievalComplete, setIsLoading, isLoadin
             variant: "default"
         });
       }
-    } catch (error) {
-      console.error("Guideline retrieval error:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during guideline retrieval.";
+    },
+    onError: (errorMessage) => {
       onRetrievalComplete(null, errorMessage);
       toast({
         title: "Retrieval Failed",
         description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const onSubmit: SubmitHandler<GuidelineQueryFormValues> = async (data) => {
+    onRetrievalComplete(null); 
+    runRetrieveGuidelines(data);
   };
+  
+  // Keep isLoading in sync with the hook's pending state
+  React.useEffect(() => {
+    setIsLoading(isPending);
+  }, [isPending, setIsLoading]);
 
   return (
     <Form {...form}>
@@ -91,9 +96,18 @@ export function GuidelineQueryForm({ onRetrievalComplete, setIsLoading, isLoadin
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full rounded-lg py-3 text-base group" disabled={form.formState.isSubmitting || isLoading} aria-label="Retrieve medical guidelines and information">
-          {isLoading ? 'Searching...' : 'Retrieve Information'}
-          {!isLoading && <Send className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />}
+        <Button type="submit" className="w-full rounded-lg py-3 text-base group" disabled={isPending} aria-label="Retrieve medical guidelines and information">
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Searching...
+            </>
+          ) : (
+             <>
+              Retrieve Information
+              <Send className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+             </>
+          )}
         </Button>
       </form>
     </Form>
