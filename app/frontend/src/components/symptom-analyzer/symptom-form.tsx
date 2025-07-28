@@ -6,8 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import type { SymptomAnalyzerInput } from '@/ai/agents/SymptomAnalyzerAgent';
-import { useToast } from '@/hooks/use-toast';
+import { analyzeSymptoms, type SymptomAnalyzerInput, type SymptomAnalyzerOutput } from '@/ai/agents/SymptomAnalyzerAgent';
 import { Send } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -17,12 +16,12 @@ import type { z } from 'zod';
 type SymptomFormValues = z.infer<typeof SymptomAnalyzerInputSchema>;
 
 interface SymptomFormProps {
-  onAnalysisStart: (rawInput: SymptomFormValues) => void;
+  onAnalysisComplete: (result: SymptomAnalyzerOutput | null, error?: string) => void;
+  setIsLoading: (loading: boolean) => void;
   isLoading: boolean;
 }
 
-export function SymptomForm({ onAnalysisStart, isLoading }: SymptomFormProps) {
-  const { toast } = useToast();
+export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: SymptomFormProps) {
   const form = useForm<SymptomFormValues>({
     resolver: zodResolver(SymptomAnalyzerInputSchema),
     defaultValues: {
@@ -36,7 +35,17 @@ export function SymptomForm({ onAnalysisStart, isLoading }: SymptomFormProps) {
   });
 
   const onSubmit: SubmitHandler<SymptomFormValues> = async (data) => {
-    onAnalysisStart(data);
+    setIsLoading(true);
+    onAnalysisComplete(null);
+    try {
+      const result = await analyzeSymptoms(data);
+      onAnalysisComplete(result);
+    } catch (agentError) {
+      const errorMessage = agentError instanceof Error ? agentError.message : "An unknown error occurred.";
+      onAnalysisComplete(null, errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

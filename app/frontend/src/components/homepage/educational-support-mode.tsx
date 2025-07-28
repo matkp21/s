@@ -1,3 +1,4 @@
+
 // src/components/homepage/educational-support-mode.tsx
 "use client";
 
@@ -5,10 +6,9 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, BookMarked, Brain, Target, Users, BookOpen, ArrowRight } from 'lucide-react';
+import { BookMarked, Brain, Target, Users, ArrowRight } from 'lucide-react';
 import { GuidelineQueryForm } from '@/components/guideline-retrieval/guideline-query-form';
 import type { GuidelineRetrievalOutput } from '@/ai/schemas/guideline-retrieval-schemas';
-import { useProMode } from '@/contexts/pro-mode-context';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -36,16 +36,13 @@ const communityHighlight = {
 
 export function EducationalSupportMode() {
   const [retrievalResult, setRetrievalResult] = useState<GuidelineRetrievalOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { userRole } = useProMode();
   const [selectedQuizOption, setSelectedQuizOption] = useState<string | null>(null);
   const [isQuizAnswered, setIsQuizAnswered] = useState(false);
 
   const handleRetrievalComplete = (result: GuidelineRetrievalOutput | null, err?: string) => {
     setRetrievalResult(result);
     setError(err || null);
-    setIsLoading(false);
   };
   
   const handleQuizSubmit = (option: string) => {
@@ -138,7 +135,7 @@ export function EducationalSupportMode() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-grow">
-             <GuidelineQueryForm onRetrievalComplete={handleRetrievalComplete} setIsLoading={setIsLoading} isLoading={isLoading} />
+             <GuidelineQueryForm onRetrievalComplete={handleRetrievalComplete} />
           </CardContent>
         </Card>
       </motion.div>
@@ -166,7 +163,7 @@ export function EducationalSupportMode() {
       </motion.div>
 
        {/* Display search results if any */}
-      {retrievalResult && retrievalResult.results && !isLoading && !error && (
+      {retrievalResult && retrievalResult.results && !error && (
         <motion.div className="md:col-span-2 lg:col-span-3" variants={cardVariants} custom={4}>
             <Card className="shadow-lg rounded-xl">
                  <CardHeader>

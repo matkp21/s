@@ -6,7 +6,7 @@ import { SymptomForm } from '@/components/symptom-analyzer/symptom-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, ListChecks, Sparkles, Brain, Microscope, Stethoscope } from 'lucide-react';
-import { analyzeSymptoms, type SymptomAnalyzerOutput, type SymptomAnalyzerInput, type DiagnosisItem } from '@/ai/agents/SymptomAnalyzerAgent';
+import type { SymptomAnalyzerOutput, DiagnosisItem } from '@/ai/agents/SymptomAnalyzerAgent';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,22 +26,11 @@ export function SymptomAnalysisMode() {
   const [error, setError] = useState<string | null>(null);
   const { isProMode } = useProMode();
 
-  const handleAnalysisStart = async (rawInput: SymptomAnalyzerInput) => {
-    setIsLoading(true);
-    setError(null);
-    setAnalysisResult(null);
-
-    try {
-      const result = await analyzeSymptoms(rawInput);
-      setAnalysisResult(result);
-    } catch (agentError) {
-      const errorMessage = agentError instanceof Error ? agentError.message : "An unknown error occurred.";
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAnalysisComplete = (result: SymptomAnalyzerOutput | null, err?: string) => {
+    setAnalysisResult(result);
+    setError(err || null);
+    setIsLoading(false);
   };
-
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 fade-in">
@@ -53,7 +42,11 @@ export function SymptomAnalysisMode() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SymptomForm onAnalysisStart={handleAnalysisStart} isLoading={isLoading}/>
+          <SymptomForm 
+            onAnalysisComplete={handleAnalysisComplete} 
+            setIsLoading={setIsLoading} 
+            isLoading={isLoading}
+          />
         </CardContent>
       </Card>
 

@@ -2,6 +2,7 @@
 // src/components/guideline-retrieval/guideline-query-form.tsx
 "use client";
 
+import React from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,16 +15,13 @@ import { Search, Send, Loader2 } from 'lucide-react';
 import { GuidelineRetrievalInputSchema } from '@/ai/schemas/guideline-retrieval-schemas';
 import { useAiAgent } from '@/hooks/use-ai-agent';
 
-
 type GuidelineQueryFormValues = z.infer<typeof GuidelineRetrievalInputSchema>;
 
 interface GuidelineQueryFormProps {
   onRetrievalComplete: (result: GuidelineRetrievalOutput | null, error?: string) => void;
-  setIsLoading: (loading: boolean) => void; // Can be controlled by useAiAgent now
-  isLoading: boolean; 
 }
 
-export function GuidelineQueryForm({ onRetrievalComplete, setIsLoading, isLoading }: GuidelineQueryFormProps) {
+export function GuidelineQueryForm({ onRetrievalComplete }: GuidelineQueryFormProps) {
   const { toast } = useToast();
   const form = useForm<GuidelineQueryFormValues>({
     resolver: zodResolver(GuidelineRetrievalInputSchema),
@@ -62,11 +60,6 @@ export function GuidelineQueryForm({ onRetrievalComplete, setIsLoading, isLoadin
     onRetrievalComplete(null); 
     runRetrieveGuidelines(data);
   };
-  
-  // Keep isLoading in sync with the hook's pending state
-  React.useEffect(() => {
-    setIsLoading(isPending);
-  }, [isPending, setIsLoading]);
 
   return (
     <Form {...form}>
