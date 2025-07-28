@@ -12,8 +12,6 @@ import type { MedicoTool, ActiveToolId } from '@/types/medico-tools';
 import { MedicoToolCard } from '@/components/medico/medico-tool-card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { NeuralProgress } from "@/components/medico/NeuralProgress";
-import { KnowledgeHubSearch } from '@/components/medico/KnowledgeHubSearch';
 import { HeroWidgets, type HeroTask } from '@/components/homepage/hero-widgets';
 import { addDays } from 'date-fns';
 
@@ -62,15 +60,10 @@ export function MedicoDashboard() {
                 </Button>
             </div>
             
-            <div className="mb-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="mb-10">
                 <HeroWidgets tasks={sampleMedicoTasks} />
-                <NeuralProgress />
             </div>
 
-            <div className="mb-10">
-                <KnowledgeHubSearch />
-            </div>
-            
             <div className="mt-10">
                 {isEditMode ? (
                 <>
