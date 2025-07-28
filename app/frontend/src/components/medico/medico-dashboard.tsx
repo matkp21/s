@@ -14,6 +14,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { NeuralProgress } from "@/components/medico/NeuralProgress";
 import { KnowledgeHubSearch } from '@/components/medico/KnowledgeHubSearch';
+import { HeroWidgets, type HeroTask } from '@/components/homepage/hero-widgets';
+import { addDays } from 'date-fns';
+
+const sampleMedicoTasks: HeroTask[] = [
+    { id: 'task-med-1', date: new Date(), title: 'Review Anatomy of the Heart', description: 'Focus on coronary circulation.' },
+    { id: 'task-med-2', date: new Date(), title: 'Practice 10 MCQs on Diabetes', description: 'Use the MCQ Generator tool.' },
+    { id: 'task-med-3', date: addDays(new Date(), 1), title: 'Prepare notes for Pneumonia', description: 'Cover etiology and management.' },
+];
+
 
 // Wrapper component to handle suspense boundary
 export function MedicoDashboard() {
@@ -52,7 +61,8 @@ export function MedicoDashboard() {
                 </Button>
             </div>
             
-            <div className="mb-10">
+            <div className="mb-10 space-y-6">
+                <HeroWidgets tasks={sampleMedicoTasks} />
                 <NeuralProgress />
                 <KnowledgeHubSearch />
             </div>
