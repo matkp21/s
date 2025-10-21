@@ -20,7 +20,7 @@ import {
   NextStepSchema,
 } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
-import { generate } from '@genkit-ai/googleai';
+import { generate } from 'genkit/ai';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 
@@ -64,7 +64,7 @@ const mbbsStudyFlow = ai.defineFlow(
   async (input) => {
     try {
       // Step 1: Concurrently generate text content using MedGemma and an image with Gemini
-      console.log(`Starting multi-agent generation for: ${input.topic}`);
+      console.log(`[MbbsStudyAgent] Starting multi-agent generation for topic: "${input.topic}"`);
       
       const [textResult, imageResult] = await Promise.allSettled([
         // Agent 1: MedGemma for expert text generation
@@ -78,6 +78,7 @@ const mbbsStudyFlow = ai.defineFlow(
                 Focus on providing detailed headings, bullet points, a concise summary, and textbook references.
                 Generate at least two relevant nextSteps.
             `;
+            console.log(`[MbbsStudyAgent] Invoking MedGemma for text generation...`);
             const invokeMedGemma = httpsCallable(functions, 'invokeMedGemma');
             const result = await invokeMedGemma({ prompt: medGemmaPrompt });
             const responseData = (result.data as any)?.responseText;
@@ -90,23 +91,25 @@ const mbbsStudyFlow = ai.defineFlow(
                 console.error("Zod validation failed for MedGemma (MbbsStudyAgent):", validation.error.flatten());
                 throw new Error("MedGemma output did not match the expected schema.");
             }
+            console.log(`[MbbsStudyAgent] MedGemma text generation successful.`);
             return validation.data;
         })(),
 
         // Agent 2: Gemini for image generation
         (async () => {
              const imageGenPrompt = `Create a simple, clear educational diagram for a medical student about "${input.topic}". The style should be like a clean, modern medical textbook illustration with clear labels.`;
+             console.log(`[MbbsStudyAgent] Invoking Gemini for image generation...`);
              const { media } = await generate({
-                model: 'googleai/gemini-2.0-flash-preview-image-generation',
+                model: 'googleai/gemini-pro-image-generation',
                 prompt: imageGenPrompt,
-                config: { responseModalities: ['IMAGE'] },
             });
+            console.log(`[MbbsStudyAgent] Gemini image generation successful.`);
             return media;
         })()
       ]);
 
       if (textResult.status === 'rejected') {
-          console.error("MedGemma text generation failed:", textResult.reason);
+          console.error("[MbbsStudyAgent] MedGemma text generation failed:", textResult.reason);
           throw textResult.reason; // If the main content fails, we must throw the error.
       }
       
@@ -114,11 +117,13 @@ const mbbsStudyFlow = ai.defineFlow(
 
       if (imageResult.status === 'fulfilled' && imageResult.value.url) {
         finalOutput.enhancedContent.diagramUrl = imageResult.value.url;
+        console.log(`[MbbsStudyAgent] Diagram successfully attached to the output.`);
       } else {
-        console.warn(`Could not generate diagram for "${input.topic}":`, imageResult.status === 'rejected' ? imageResult.reason : "No URL returned");
+        console.warn(`[MbbsStudyAgent] Could not generate diagram for "${input.topic}":`, imageResult.status === 'rejected' ? imageResult.reason : "No URL returned");
         // Proceed without a diagram if image generation fails
       }
       
+      console.log(`[MbbsStudyAgent] Final study package assembled successfully.`);
       return finalOutput;
 
     } catch (err) {

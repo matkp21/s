@@ -10,8 +10,7 @@ import { analyzeSymptoms as symptomAnalyzerFlow } from '@/ai/agents/SymptomAnaly
 import { z } from 'zod';
 import {
   googleAI,
-  geminiPro,
-} from '@genkit-ai/googleai';
+} from '@genkit-ai/google-genai';
 import {
   answerRelevancy,
   faithfulness,

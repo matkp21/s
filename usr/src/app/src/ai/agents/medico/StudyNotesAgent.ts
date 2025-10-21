@@ -13,13 +13,13 @@ import { ai } from '@/ai/genkit';
 import { StudyNotesGeneratorInputSchema, StudyNotesGeneratorOutputSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
 
-export type StudyNotesGeneratorInput = z.infer<typeof StudyNotesGeneratorInputSchema>;
-export type StudyNotesGeneratorOutput = z.infer<typeof StudyNotesGeneratorOutputSchema>;
-
 // This function now points to the more powerful MbbsStudyAgent for consistency.
 // It adapts the output to match the simpler StudyNotesGeneratorOutputSchema.
 export { generateStudyNotes } from './MbbsStudyAgent';
 
+
+export type StudyNotesGeneratorInput = z.infer<typeof StudyNotesGeneratorInputSchema>;
+export type StudyNotesGeneratorOutput = z.infer<typeof StudyNotesGeneratorOutputSchema>;
 
 const simpleStudyNotesPrompt = ai.definePrompt({
   name: 'medicoStudyNotesPrompt',

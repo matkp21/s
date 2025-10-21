@@ -10,7 +10,7 @@ import { generateMCQs } from '@/ai/agents/medico/MCQGeneratorAgent';
 import { z } from 'zod';
 import {
   googleAI,
-} from '@genkit-ai/googleai';
+} from '@genkit-ai/google-genai';
 import {
   answerRelevancy,
   faithfulness,
