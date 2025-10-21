@@ -1,3 +1,4 @@
+
 // src/ai/agents/medico/MnemonicsGeneratorAgent.ts
 'use server';
 /**
@@ -85,8 +86,11 @@ const mnemonicsGeneratorFlow = ai.defineFlow(
         const imageGenPrompt = `Create a simple, clear, and memorable visual diagram or cartoon that illustrates the medical mnemonic: "${textOutput.mnemonic}". The style should be like a clean, modern medical textbook illustration with clear, simple labels if necessary. Focus on making the visual connection to the mnemonic's words obvious.`;
         
         const { media } = await generate({
-            model: 'googleai/gemini-pro-image-generation',
+            model: 'googleai/gemini-2.0-flash-preview-image-generation',
             prompt: imageGenPrompt,
+            config: {
+                responseModalities: ['IMAGE'],
+            },
         });
         
         // Ensure media and media.url exist before assigning

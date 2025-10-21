@@ -1,3 +1,4 @@
+
 // src/ai/agents/medico/MbbsStudyAgent.ts
 'use server';
 /**
@@ -100,8 +101,9 @@ const mbbsStudyFlow = ai.defineFlow(
              const imageGenPrompt = `Create a simple, clear educational diagram for a medical student about "${input.topic}". The style should be like a clean, modern medical textbook illustration with clear labels.`;
              console.log(`[MbbsStudyAgent] Invoking Gemini for image generation...`);
              const { media } = await generate({
-                model: 'googleai/gemini-pro-image-generation',
+                model: 'googleai/gemini-2.0-flash-preview-image-generation',
                 prompt: imageGenPrompt,
+                config: { responseModalities: ['IMAGE'] },
             });
             console.log(`[MbbsStudyAgent] Gemini image generation successful.`);
             return media;
