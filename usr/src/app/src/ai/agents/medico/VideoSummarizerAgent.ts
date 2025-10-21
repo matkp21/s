@@ -81,7 +81,7 @@ Summary:`;
       
       const { text } = await generate({
         prompt: summaryPrompt,
-        model: 'googleai/gemini-1.5-flash',
+        model: 'gemini-1.5-flash',
         config: {
           temperature: 0.2, // Lower temperature for factual summarization
         },
