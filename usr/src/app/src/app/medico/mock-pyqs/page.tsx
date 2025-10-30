@@ -1,3 +1,4 @@
+
 // src/app/medico/mock-pyqs/page.tsx
 "use client";
 
@@ -191,17 +192,19 @@ export default function MockPYQsPage() {
         )}
 
         {examData && (
-            <SolvedQuestionPapersViewerComponent
-                content={examData}
-                title={`Generated Paper: ${examData.topicGenerated}`}
-                description="Review the AI-generated questions and structured answers below."
-            >
-              <NextStepsDisplay 
-                nextSteps={examData.nextSteps}
-                onSaveToLibrary={handleSaveToLibrary}
-                isUserLoggedIn={!!user}
-              />
-            </SolvedQuestionPapersViewerComponent>
+          <SolvedQuestionPapersViewerComponent
+            content={examData}
+            title={`Generated Paper: ${examData.topicGenerated}`}
+            description="Review the AI-generated questions and structured answers below."
+          >
+             <CardFooter className="p-0 pt-4">
+                <NextStepsDisplay 
+                    nextSteps={examData.nextSteps}
+                    onSaveToLibrary={handleSaveToLibrary}
+                    isUserLoggedIn={!!user}
+                />
+            </CardFooter>
+          </SolvedQuestionPapersViewerComponent>
         )}
       </div>
     </PageWrapper>

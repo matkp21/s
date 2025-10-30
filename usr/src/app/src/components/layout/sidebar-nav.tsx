@@ -1,3 +1,4 @@
+
 // src/components/layout/sidebar-nav.tsx
 "use client";
 
@@ -96,7 +97,7 @@ export function SidebarNav({ unreadNotificationCount }: SidebarNavProps) {
               <SidebarMenuItem key={item.href}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Link href={item.href} passHref legacyBehavior>
+                    <Link href={item.href} passHref>
                       <SidebarMenuButton
                         as="a"
                         isActive={isActive}
@@ -150,7 +151,7 @@ export function SidebarNav({ unreadNotificationCount }: SidebarNavProps) {
           <SidebarMenuItem>
              <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link href="/settings" passHref legacyBehavior>
+                  <Link href="/settings" passHref>
                     <SidebarMenuButton
                         as="a" // Important for legacyBehavior with Link
                         isActive={pathname.startsWith('/settings')}

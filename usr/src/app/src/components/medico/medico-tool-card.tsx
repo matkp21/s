@@ -1,3 +1,4 @@
+
 // src/components/medico/medico-tool-card.tsx
 "use client";
 
@@ -85,26 +86,15 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
     }
   };
 
-  // If the tool has an href, it navigates to a new page.
-  if (tool.href && !isEditMode && !tool.comingSoon) {
-    return (
-      <Link href={tool.href} className="no-underline h-full flex">
-        {cardContent}
-      </Link>
-    );
+  if (tool.href) {
+    return <Link href={tool.href} className="no-underline h-full flex">{cardContent}</Link>;
   }
 
-  // If the tool has a component, it opens in a dialog via the dashboard.
-  if (tool.component && tool.id) {
-    return (
-       <DialogTrigger asChild onClick={handleLaunch} disabled={isEditMode || tool.comingSoon}>
-         {cardContent}
-       </DialogTrigger>
-    );
-  }
-  
-  // Fallback for tools with no action defined yet or in edit mode.
-  return cardContent;
+  return (
+    <DialogTrigger asChild onClick={handleLaunch} disabled={isEditMode || tool.comingSoon}>
+      {cardContent}
+    </DialogTrigger>
+  );
 };
 
 export const MedicoToolCard = React.memo(MedicoToolCardComponent);
