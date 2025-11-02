@@ -1,3 +1,4 @@
+
 // src/components/medico/study-notes-generator.tsx
 "use client";
 
@@ -21,8 +22,11 @@ import { trackProgress } from '@/ai/agents/medico/ProgressTrackerAgent';
 import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
+import Link from 'next/link';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { StudyNotesGeneratorInputSchema } from '@/ai/schemas/medico-tools-schemas';
 import { NextStepsDisplay } from './next-steps-display';
+import { MermaidRenderer } from '../markdown/mermaid-renderer';
 
 const subjects = ["Anatomy", "Physiology", "Biochemistry", "Pathology", "Pharmacology", "Microbiology", "Forensic Medicine", "Community Medicine", "Ophthalmology", "ENT", "General Medicine", "General Surgery", "Obstetrics & Gynaecology", "Pediatrics", "Other"] as const;
 const systems = ["Cardiovascular", "Respiratory", "Gastrointestinal", "Neurological", "Musculoskeletal", "Endocrine", "Genitourinary", "Integumentary", "Hematological", "Immunological", "Other"] as const;
@@ -40,7 +44,7 @@ const seedQuestions = [
 export function StudyNotesGenerator({ initialTopic }: StudyNotesGeneratorProps) {
   const { toast } = useToast();
   const { user } = useProMode();
-  const { mutate: runGenerateAnswer, data: generatedAnswer, isPending: isLoading, error, reset } = useAiAgent(generateStudyNotes, {
+  const { mutate: runGenerateAnswer, data: generatedAnswer, isPending: isLoading, error, reset } = useAiAgent<StudyNotesFormValues, StudyNotesGeneratorOutput>(generateStudyNotes, {
      onSuccess: async (data, input) => {
       toast({
           title: "Structured Notes Generated!",
@@ -248,16 +252,11 @@ export function StudyNotesGenerator({ initialTopic }: StudyNotesGeneratorProps) 
               </div>
               <div>
                   <h4 className="font-semibold mb-2 text-lg text-primary">Diagram / Flowchart:</h4>
-                    <ScrollArea className="h-auto max-h-[400px] p-1 border bg-background rounded-lg">
-                      <div className="p-4 text-sm">
-                          {generatedAnswer.diagram ? (
-                              <>
-                              <Alert className="mb-2"><AlertDescription>Copy this code into a Mermaid.js renderer to view the diagram.</AlertDescription></Alert>
-                              <pre className="p-2 bg-muted rounded-md overflow-x-auto"><code>{generatedAnswer.diagram}</code></pre>
-                              </>
-                          ) : <p className="text-muted-foreground">No diagram was generated for this topic.</p>}
-                      </div>
-                  </ScrollArea>
+                    <div className="border bg-background rounded-lg p-2">
+                        {generatedAnswer.diagram ? (
+                            <MermaidRenderer chart={generatedAnswer.diagram} />
+                        ) : <p className="text-muted-foreground p-4 text-center text-sm">No diagram was generated for this topic.</p>}
+                    </div>
               </div>
             </div>
           </CardContent>

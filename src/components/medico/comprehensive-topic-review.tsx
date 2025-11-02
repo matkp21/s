@@ -25,7 +25,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function ComprehensiveTopicReview() {
-  const { mutate: runReview, data: reviewData, isPending: isLoading, error, reset } = useAiAgent(getComprehensiveReview);
+  const { mutate: runReview, data: reviewData, isPending: isLoading, error } = useAiAgent(getComprehensiveReview, ComprehensiveReviewOutputSchema);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

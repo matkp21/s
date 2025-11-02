@@ -20,7 +20,7 @@ import {
   NextStepSchema,
 } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
-import { generate } from '@genkit-ai/googleai';
+import { generate } from 'genkit/ai';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 
@@ -95,16 +95,15 @@ const mbbsStudyFlow = ai.defineFlow(
             return validation.data;
         })(),
 
-        // Agent 2: Gemini for image generation
+        // Agent 2: Imagen for image generation
         (async () => {
-             const imageGenPrompt = `Create a simple, clear educational diagram for a medical student about "${input.topic}". The style should be like a clean, modern medical textbook illustration with clear labels.`;
-             console.log(`[MbbsStudyAgent] Invoking Gemini for image generation...`);
+             const imageGenPrompt = `A simple, clear, modern medical textbook-style educational diagram illustrating the key concepts of "${input.topic}". Ensure labels are clear and concise.`;
+             console.log(`[MbbsStudyAgent] Invoking Imagen for image generation...`);
              const { media } = await generate({
-                model: 'googleai/gemini-2.0-flash-preview-image-generation',
-                prompt: imageGenPrompt,
-                config: { responseModalities: ['IMAGE'] },
+                model: 'googleai/imagen-4.0-fast-generate-001',
+                prompt: imageGenPrompt
             });
-            console.log(`[MbbsStudyAgent] Gemini image generation successful.`);
+            console.log(`[MbbsStudyAgent] Imagen image generation successful.`);
             return media;
         })()
       ]);
@@ -116,7 +115,7 @@ const mbbsStudyFlow = ai.defineFlow(
       
       const finalOutput = textResult.value;
 
-      if (imageResult.status === 'fulfilled' && imageResult.value.url) {
+      if (imageResult.status === 'fulfilled' && imageResult.value?.url) {
         finalOutput.enhancedContent.diagramUrl = imageResult.value.url;
         console.log(`[MbbsStudyAgent] Diagram successfully attached to the output.`);
       } else {

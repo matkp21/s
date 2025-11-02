@@ -101,7 +101,7 @@ const mbbsStudyFlow = ai.defineFlow(
              const imageGenPrompt = `Create a simple, clear educational diagram for a medical student about "${input.topic}". The style should be like a clean, modern medical textbook illustration with clear labels.`;
              console.log(`[MbbsStudyAgent] Invoking Gemini for image generation...`);
              const { media } = await generate({
-                model: 'googleai/gemini-2.0-flash-preview-image-generation',
+                model: 'googleai/gemini-2.5-flash-image-preview',
                 prompt: imageGenPrompt,
                 config: { responseModalities: ['IMAGE'] },
             });

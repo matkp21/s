@@ -10,6 +10,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { SymptomAnalyzerInputSchema, SymptomAnalyzerOutputSchema } from '../schemas/symptom-analyzer-schemas';
+import { generate } from 'genkit/ai';
 
 // Export types for use in other modules
 export type { SymptomAnalyzerInput, SymptomAnalyzerOutput, DiagnosisItem, InvestigationItem } from '../schemas/symptom-analyzer-schemas';
@@ -46,7 +47,14 @@ const symptomAnalyzerFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const {output} = await prompt(input);
+      const { output } = await generate({
+          model: 'googleai/gemini-2.5-flash-preview',
+          prompt: prompt.render(input),
+          output: {
+            format: 'json',
+            schema: SymptomAnalyzerOutputSchema,
+          }
+      });
       if (!output) {
         throw new Error("Symptom analyzer prompt did not return an output.");
       }

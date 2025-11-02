@@ -82,14 +82,11 @@ const mnemonicsGeneratorFlow = ai.defineFlow(
       // Step 2: Attempt to generate an image based on the generated mnemonic text
       let imageUrl: string | undefined = undefined;
       try {
-        const imageGenPrompt = `Create a simple, clear, and memorable visual diagram or cartoon that illustrates the medical mnemonic: "${textOutput.mnemonic}". The style should be like a clean, modern medical textbook illustration with clear, simple labels if necessary. Focus on making the visual connection to the mnemonic's words obvious.`;
+        const imageGenPrompt = `A simple, clear, and memorable visual diagram or cartoon that illustrates the medical mnemonic: "${textOutput.mnemonic}". The style should be like a clean, modern medical textbook illustration with clear, simple labels if necessary. Focus on making the visual connection to the mnemonic's words obvious.`;
         
         const { media } = await generate({
-            model: 'googleai/gemini-2.0-flash-preview-image-generation',
+            model: 'googleai/imagen-4.0-fast-generate-001',
             prompt: imageGenPrompt,
-            config: {
-                responseModalities: ['IMAGE'],
-            },
         });
         
         // Ensure media and media.url exist before assigning

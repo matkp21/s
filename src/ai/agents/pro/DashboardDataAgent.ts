@@ -3,7 +3,7 @@
 /**
  * @fileOverview An AI agent to fetch data for the Pro clinical dashboard.
  * In a real application, this would fetch data from Firestore for the logged-in user.
- * For now, it returns structured mock data, replacing the Python backend endpoint.
+ * For now, it returns structured mock data.
  *
  * - getDashboardData - A function that returns tasks and recent activity.
  */
@@ -25,11 +25,7 @@ const getDashboardDataFlow = ai.defineFlow(
     outputSchema: ProDashboardDataSchema,
   },
   async () => {
-    // In a real app, this would involve fetching data from Firestore collections
-    // like 'tasks' and 'activity_logs' for the specific user.
-    // e.g., const tasks = await firestore.collection(`users/${userId}/tasks`).get();
-
-    // For now, we return structured mock data.
+    // This is mock data. In a real application, this would fetch data from a database like Firestore.
     const mockTasks: z.infer<typeof TaskItemSchema>[] = [
       { id: 'task1', text: "Review Mr. Smith's latest CBC results", category: 'Lab Review', dueDate: 'Today', priority: 'High', completed: false },
       { id: 'task2', text: 'Follow-up call with Mrs. Jones re: medication adjustment', category: 'Follow-up', dueDate: 'Tomorrow', priority: 'Medium', completed: false },

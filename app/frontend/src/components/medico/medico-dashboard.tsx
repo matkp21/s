@@ -1,10 +1,10 @@
 // src/components/medico/medico-dashboard.tsx
 "use client";
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  CheckSquare, Settings, Loader2, Star
+  CheckSquare, Settings, Loader2, Star, BrainCircuit
 } from 'lucide-react';
 import { motion, Reorder } from 'framer-motion';
 import { allMedicoToolsList } from '@/config/medico-tools-config';
@@ -18,11 +18,11 @@ import { HeroWidgets, type HeroTask } from '@/components/homepage/hero-widgets';
 import { addDays } from 'date-fns';
 
 const sampleMedicoTasks: HeroTask[] = [
-    { id: 'task-med-1', date: new Date(), title: 'Review Anatomy of the Heart', description: 'Focus on coronary circulation.' },
-    { id: 'task-med-2', date: new Date(), title: 'Practice 10 MCQs on Diabetes', description: 'Use the MCQ Generator tool.' },
-    { id: 'task-med-3', date: addDays(new Date(), 1), title: 'Prepare notes for Pneumonia', description: 'Cover etiology and management.' },
+    { id: 'task-med-1', date: new Date(), title: 'Review Anatomy Lecture', description: 'Focus on brachial plexus.' },
+    { id: 'task-med-2', date: new Date(), title: 'Cardiology Ward Rounds', description: '10:00 AM, Ward B.' },
+    { id: 'task-med-3', date: addDays(new Date(), 1), title: 'Pharmacology Quiz Prep', description: 'Study adrenergic drugs.' },
+    { id: 'task-med-4', date: addDays(new Date(), 2), title: 'Submit Case Presentation Draft', description: 'Topic: Acute Pancreatitis.' },
 ];
-
 
 // Wrapper component to handle suspense boundary
 export function MedicoDashboard() {
@@ -31,14 +31,14 @@ export function MedicoDashboard() {
     const [activeDialog, setActiveDialog] = useState<ActiveToolId>(null);
     const [initialTopic, setInitialTopic] = useState<string | null>(null);
 
-    const frequentlyUsedToolIds = allMedicoToolsList
+    const frequentlyUsedToolIds = useMemo(() => allMedicoToolsList
         .filter(t => t.isFrequentlyUsed)
-        .map(t => t.id);
+        .map(t => t.id), []);
 
-    const frequentlyUsedTools = displayedTools.filter(tool => frequentlyUsedToolIds.includes(tool.id));
-    const otherTools = displayedTools.filter(tool => !frequentlyUsedToolIds.includes(tool.id));
+    const frequentlyUsedTools = useMemo(() => displayedTools.filter(tool => frequentlyUsedToolIds.includes(tool.id)), [displayedTools, frequentlyUsedToolIds]);
+    const otherTools = useMemo(() => displayedTools.filter(tool => !frequentlyUsedToolIds.includes(tool.id)), [displayedTools, frequentlyUsedToolIds]);
     
-    const currentTool = allMedicoToolsList.find(tool => tool.id === activeDialog);
+    const currentTool = useMemo(() => allMedicoToolsList.find(tool => tool.id === activeDialog), [activeDialog]);
     const ToolComponent = currentTool?.component;
     
     const handleLaunchTool = (toolId: ActiveToolId, topic: string | null = null) => {
@@ -61,8 +61,11 @@ export function MedicoDashboard() {
                 </Button>
             </div>
             
-            <div className="mb-10 space-y-6">
+            <div className="mb-8">
                 <HeroWidgets tasks={sampleMedicoTasks} />
+            </div>
+
+            <div className="mb-10">
                 <NeuralProgress />
                 <KnowledgeHubSearch />
             </div>

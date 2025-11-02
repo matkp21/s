@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { analyzeSymptoms, type SymptomAnalyzerInput, type SymptomAnalyzerOutput } from '@/ai/agents/SymptomAnalyzerAgent';
+import { analyzeSymptoms, type SymptomAnalyzerInput } from '@/ai/agents/SymptomAnalyzerAgent';
 import { Send } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -16,12 +16,10 @@ import type { z } from 'zod';
 type SymptomFormValues = z.infer<typeof SymptomAnalyzerInputSchema>;
 
 interface SymptomFormProps {
-  onAnalysisComplete: (result: SymptomAnalyzerOutput | null, error?: string) => void;
-  setIsLoading: (loading: boolean) => void;
-  isLoading: boolean;
+  onAnalysisStart: (rawInput: SymptomAnalyzerInput) => void;
 }
 
-export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: SymptomFormProps) {
+export function SymptomForm({ onAnalysisStart }: SymptomFormProps) {
   const form = useForm<SymptomFormValues>({
     resolver: zodResolver(SymptomAnalyzerInputSchema),
     defaultValues: {
@@ -35,17 +33,7 @@ export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: Sym
   });
 
   const onSubmit: SubmitHandler<SymptomFormValues> = async (data) => {
-    setIsLoading(true);
-    onAnalysisComplete(null);
-    try {
-      const result = await analyzeSymptoms(data);
-      onAnalysisComplete(result);
-    } catch (agentError) {
-      const errorMessage = agentError instanceof Error ? agentError.message : "An unknown error occurred.";
-      onAnalysisComplete(null, errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    onAnalysisStart(data);
   };
 
   return (
@@ -123,7 +111,7 @@ export function SymptomForm({ onAnalysisComplete, setIsLoading, isLoading }: Sym
                 </FormItem>
               )}
             />
-        <Button type="submit" className="w-full rounded-lg py-3 text-base group" disabled={isLoading} aria-label="Submit symptoms for analysis">
+        <Button type="submit" className="w-full rounded-lg py-3 text-base group" aria-label="Submit symptoms for analysis">
           Analyze
           <Send className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
         </Button>
