@@ -12,6 +12,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { generate } from 'genkit/ai';
 
 const AnalyzeImageInputSchema = z.object({
   imageDataUri: z
@@ -74,7 +75,15 @@ const analyzeImageFlow = ai.defineFlow(
   },
   async input => {
     try {
-        const {output} = await prompt(input);
+        const { output } = await generate({
+          model: 'googleai/gemini-1.5-pro-preview',
+          prompt: prompt.render(input),
+          output: {
+            format: 'json',
+            schema: AnalyzeImageOutputSchema,
+          }
+        });
+
         if (!output) {
         console.error("Image analysis prompt did not return an output for image:", input.imageDataUri ? input.imageDataUri.substring(0,50) + "..." : "undefined");
         return { annotations: [] };

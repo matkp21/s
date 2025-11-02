@@ -48,7 +48,7 @@ const symptomAnalyzerFlow = ai.defineFlow(
   async (input) => {
     try {
       const { output } = await generate({
-          model: 'googleai/gemini-2.5-flash-preview',
+          model: 'googleai/gemini-1.5-pro-preview',
           prompt: prompt.render(input),
           output: {
             format: 'json',

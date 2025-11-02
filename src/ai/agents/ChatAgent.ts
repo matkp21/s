@@ -1,4 +1,4 @@
-// src/ai/agents/ChatAgent.ts
+
 'use server';
 /**
  * @fileOverview Defines a Genkit flow for handling chat interactions.
@@ -14,6 +14,7 @@ import {z} from 'genkit';
 import { symptomAnalyzerTool } from '@/ai/tools/symptom-analyzer-tool';
 import { studyNotesTool, mcqGeneratorTool } from '@/ai/tools/medico-tools';
 import { callGeminiApiDirectly } from '@/ai/utils/direct-gemini-call';
+import { generate } from 'genkit/ai';
 
 // Define input schema for a chat message
 const ChatMessageInputSchema = z.object({
@@ -40,7 +41,7 @@ export async function processChatMessage(input: ChatMessageInput): Promise<ChatM
     console.warn("Genkit chatFlow failed, attempting direct Gemini API call as fallback:", genkitError.message || genkitError);
     try {
       // Construct a simplified prompt for the direct call.
-      // This fallback will NOT use tools or the full context of the original chatPrompt.
+      // This fallback will NOT use tools like symptomAnalyzerTool or the full context of the original chatPrompt.
       const directPrompt = `You are MediAssistant, a helpful and friendly AI medical assistant. The user says: "${input.message}". Respond conversationally and helpfully.`;
       const fallbackResponseText = await callGeminiApiDirectly(directPrompt);
       return { response: fallbackResponseText };
@@ -55,7 +56,6 @@ export async function processChatMessage(input: ChatMessageInput): Promise<ChatM
 const chatPrompt = ai.definePrompt({
   name: 'chatPrompt',
   input: { schema: ChatMessageInputSchema },
-  output: { schema: ChatMessageOutputSchema },
   tools: [symptomAnalyzerTool, studyNotesTool, mcqGeneratorTool],
   prompt: `You are MediAssistant, a helpful and friendly AI medical assistant.
   Your primary goal is to assist users with their medical queries.
@@ -86,7 +86,11 @@ const chatFlow = ai.defineFlow(
     outputSchema: ChatMessageOutputSchema,
   },
   async (input) => {
-    const llmResponse = await chatPrompt(input);
+    const llmResponse = await generate({
+        model: 'googleai/gemini-1.5-pro-preview',
+        prompt: chatPrompt.render(input)
+    });
+    
     const output = llmResponse.output();
     
     if (!output) {

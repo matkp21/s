@@ -16,8 +16,8 @@ export const guidelineRetrievalFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await generate({
-      prompt: `Based on the query "${input.query}", provide a list of relevant medical guidelines. For each guideline, provide a title, a concise summary, and the source.`,
-      model: 'googleai/gemini-2.5-flash-preview',
+      prompt: `Based on the query "${input.query}", provide a list of relevant medical guidelines. For each guideline, provide a title, a concise summary, and the source. Also include key investigations and management steps if available in the source.`,
+      model: 'googleai/gemini-1.5-pro-preview',
       output: {
         format: 'json',
         schema: GuidelineRetrievalOutputSchema,
