@@ -1,8 +1,8 @@
-
 // src/components/homepage/hero-widgets.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -10,8 +10,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from "@/lib/utils";
 import { format, isSameDay } from "date-fns";
 import { CalendarDays, Clock, Dot } from "lucide-react";
-import { ClockWidget } from '../homepage/clock-widget';
-import { useToast } from '@/hooks/use-toast';
+import { ClockWidget } from '../homepage/clock-widget'; 
+import { useToast } from '@/hooks/use-toast'; 
 
 export interface HeroTask {
   id: string;
@@ -29,29 +29,31 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
   const [isCalendarPopoverOpen, setIsCalendarPopoverOpen] = useState(false);
   const [isClockWidgetPopoverOpen, setIsClockWidgetPopoverOpen] = useState(false);
-  const { toast } = useToast();
+  const { toast } = useToast(); 
 
   useEffect(() => {
     const timerId = setInterval(() => {
       setCurrentDateTime(new Date());
-    }, 1000);
+    }, 1000); 
     return () => clearInterval(timerId);
   }, []);
 
   const tasksForSelectedDate = tasks.filter(task => selectedCalendarDate && isSameDay(task.date, selectedCalendarDate));
 
   return (
-    <div
+    <div 
       className={cn(
-        "relative mt-4 flex w-full max-w-md mx-auto items-center justify-between gap-2 md:gap-4 py-2 px-3 rounded-xl shadow-lg",
-        "bg-card border border-border/60"
+        "relative mt-4 flex w-full max-w-md mx-auto items-center justify-between gap-2 md:gap-4 py-2 px-3 rounded-xl shadow-lg", // Added relative
+        "bg-card border border-border/60" 
       )}
       aria-label="Date and Time Information Panel"
     >
+
+      {/* Left Side: Compact Functional Calendar - Apple Theme */}
       <Popover open={isCalendarPopoverOpen} onOpenChange={setIsCalendarPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="ghost"
+            variant="ghost" 
             className="flex-1 justify-center text-left font-normal text-xs sm:text-sm rounded-md h-auto p-2 text-foreground hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             aria-label="Open calendar and tasks"
           >
@@ -120,12 +122,14 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
         </PopoverContent>
       </Popover>
 
+      {/* Separator */}
       <div className="h-6 w-px bg-border/70" />
 
+      {/* Right Side: Clock Popover - Apple Theme Trigger, Original Functional ClockWidget Content */}
       <Popover open={isClockWidgetPopoverOpen} onOpenChange={setIsClockWidgetPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="ghost"
+            variant="ghost" 
             className="flex-1 justify-center text-left font-normal text-xs sm:text-sm rounded-md h-auto p-2 text-foreground hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             aria-label="Open clock, timer, and reminders widget"
           >
@@ -134,6 +138,7 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0 rounded-xl shadow-xl border border-border/50 bg-card" align="end">
+          {/* Reverted ClockWidget with full functionality (tabs, timer, reminders) */}
           <ClockWidget onClose={() => setIsClockWidgetPopoverOpen(false)} />
         </PopoverContent>
       </Popover>
