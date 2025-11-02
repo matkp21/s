@@ -1,3 +1,4 @@
+
 // src/components/layout/app-content-controller.tsx
 "use client";
 
@@ -22,21 +23,23 @@ export function AppContentController({ children }: { children: ReactNode }) {
 
   const pathname = usePathname();
 
-  const isProOrMedicoRoute = pathname.startsWith('/pro') || pathname.startsWith('/medico');
-
   const displayState = React.useMemo(() => {
     if (!isClient || authLoading) {
       return 'loading';
     }
+    // Auth pages should always render immediately without the main layout.
     if (['/login', '/signup'].includes(pathname)) {
-        return 'app';
+        return 'auth';
     }
+    // If we have a user but they haven't finished onboarding, show it.
     if (user && !onboardingComplete) {
       return 'onboarding';
     }
+    // If the user exists, onboarding is done, but they haven't seen the welcome screen this session, show it.
     if (user && onboardingComplete && !welcomeShownThisSession) {
       return 'welcome';
     }
+    // Otherwise, show the main app content within the AppLayout.
     return 'app';
   }, [isClient, authLoading, user, onboardingComplete, welcomeShownThisSession, pathname]);
 
@@ -48,11 +51,6 @@ export function AppContentController({ children }: { children: ReactNode }) {
     setWelcomeShownThisSession(true);
   };
   
-  // Render auth, pro, or medico pages outside the main app layout structure.
-  if (isProOrMedicoRoute || ['/login', '/signup'].includes(pathname)) {
-    return <>{children}</>;
-  }
-
   switch (displayState) {
     case 'loading':
       return <div className="fixed inset-0 bg-background flex items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
@@ -60,6 +58,8 @@ export function AppContentController({ children }: { children: ReactNode }) {
       return <OnboardingModal isOpen={true} onClose={handleOnboardingClose} />;
     case 'welcome':
       return <WelcomeDisplay onDisplayComplete={handleWelcomeComplete} />;
+    case 'auth':
+       return <>{children}</>;
     case 'app':
       return <AppLayout>{children}</AppLayout>;
     default:

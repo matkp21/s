@@ -1,3 +1,4 @@
+
 // src/components/layout/app-layout.tsx
 "use client";
 
@@ -38,6 +39,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
+import { PageWrapper } from './page-wrapper';
 
 const ThemeToggleButton = () => {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -318,7 +320,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </header>
         <main className="flex-1 flex flex-col overflow-auto relative">
+          <PageWrapper>
             {children}
+          </PageWrapper>
         </main>
         <Footer />
       </SidebarInset>

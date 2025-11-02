@@ -1,7 +1,8 @@
+
 // src/components/medico/medico-dashboard.tsx
 "use client";
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   CheckSquare, Settings, Loader2, Star
@@ -31,14 +32,14 @@ export function MedicoDashboard() {
     const [activeDialog, setActiveDialog] = useState<ActiveToolId>(null);
     const [initialTopic, setInitialTopic] = useState<string | null>(null);
 
-    const frequentlyUsedToolIds = allMedicoToolsList
+    const frequentlyUsedToolIds = useMemo(() => allMedicoToolsList
         .filter(t => t.isFrequentlyUsed)
-        .map(t => t.id);
+        .map(t => t.id), []);
 
-    const frequentlyUsedTools = displayedTools.filter(tool => frequentlyUsedToolIds.includes(tool.id));
-    const otherTools = displayedTools.filter(tool => !frequentlyUsedToolIds.includes(tool.id));
+    const frequentlyUsedTools = useMemo(() => displayedTools.filter(tool => frequentlyUsedToolIds.includes(tool.id)), [displayedTools, frequentlyUsedToolIds]);
+    const otherTools = useMemo(() => displayedTools.filter(tool => !frequentlyUsedToolIds.includes(tool.id)), [displayedTools, frequentlyUsedToolIds]);
     
-    const currentTool = allMedicoToolsList.find(tool => tool.id === activeDialog);
+    const currentTool = useMemo(() => allMedicoToolsList.find(tool => tool.id === activeDialog), [activeDialog]);
     const ToolComponent = currentTool?.component;
     
     const handleLaunchTool = (toolId: ActiveToolId, topic: string | null = null) => {

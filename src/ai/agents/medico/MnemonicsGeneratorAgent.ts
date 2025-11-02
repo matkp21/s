@@ -86,7 +86,7 @@ const mnemonicsGeneratorFlow = ai.defineFlow(
         const imageGenPrompt = `A simple, clear, and memorable visual diagram or cartoon that illustrates the medical mnemonic: "${textOutput.mnemonic}". The style should be like a clean, modern medical textbook illustration with clear, simple labels if necessary. Focus on making the visual connection to the mnemonic's words obvious.`;
         
         const { media } = await generate({
-            model: 'googleai/imagen-4.0-fast-generate-001',
+            model: 'googleai/imagen-3.0-generate-preview',
             prompt: imageGenPrompt,
         });
         

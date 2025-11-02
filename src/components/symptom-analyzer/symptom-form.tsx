@@ -6,24 +6,29 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import type { SymptomAnalyzerInput } from '@/ai/agents/SymptomAnalyzerAgent';
+import type { SymptomAnalyzerInput, SymptomAnalyzerOutput } from '@/ai/agents/SymptomAnalyzerAgent';
 import { useToast } from '@/hooks/use-toast';
 import { Send } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { SymptomAnalyzerInputSchema } from '@/ai/schemas/symptom-analyzer-schemas';
 import type { z } from 'zod';
+import { useAiAgent } from '@/hooks/use-ai-agent';
+import { analyzeSymptoms } from '@/ai/agents/SymptomAnalyzerAgent';
 
 type SymptomFormValues = z.infer<typeof SymptomAnalyzerInputSchema>;
 
 interface SymptomFormProps {
-  onAnalysisStart: (rawInput: SymptomAnalyzerInput) => void;
-  setIsLoading: (loading: boolean) => void;
+  onAnalysisComplete: (result: SymptomAnalyzerOutput | null, error?: string) => void;
   isLoading: boolean;
 }
 
-export function SymptomForm({ onAnalysisStart, setIsLoading, isLoading }: SymptomFormProps) {
-  const { toast } = useToast();
+export function SymptomForm({ onAnalysisComplete, isLoading }: SymptomFormProps) {
+  const { mutate: runAnalysis, isPending } = useAiAgent<SymptomAnalyzerInput, SymptomAnalyzerOutput>(analyzeSymptoms, {
+    onSuccess: (data) => onAnalysisComplete(data),
+    onError: (error) => onAnalysisComplete(null, error),
+  });
+
   const form = useForm<SymptomFormValues>({
     resolver: zodResolver(SymptomAnalyzerInputSchema),
     defaultValues: {
@@ -37,15 +42,8 @@ export function SymptomForm({ onAnalysisStart, setIsLoading, isLoading }: Sympto
   });
 
   const onSubmit: SubmitHandler<SymptomFormValues> = async (data) => {
-    const analysisInput: SymptomAnalyzerInput = {
-      symptoms: data.symptoms,
-      patientContext: {
-        age: data.patientContext?.age || undefined,
-        sex: data.patientContext?.sex || undefined,
-        history: data.patientContext?.history || undefined,
-      }
-    };
-    onAnalysisStart(analysisInput);
+    onAnalysisComplete(null); // Clear previous results
+    runAnalysis(data);
   };
 
   return (
@@ -123,7 +121,7 @@ export function SymptomForm({ onAnalysisStart, setIsLoading, isLoading }: Sympto
                 </FormItem>
               )}
             />
-        <Button type="submit" className="w-full rounded-lg py-3 text-base group" disabled={isLoading} aria-label="Submit symptoms for analysis">
+        <Button type="submit" className="w-full rounded-lg py-3 text-base group" disabled={isPending} aria-label="Submit symptoms for analysis">
           Analyze
           <Send className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
         </Button>

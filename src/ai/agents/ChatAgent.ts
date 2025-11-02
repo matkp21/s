@@ -87,7 +87,7 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await generate({
-        model: 'googleai/gemini-1.5-pro-preview',
+        model: 'googleai/gemini-1.5-flash',
         prompt: chatPrompt.render(input)
     });
     
