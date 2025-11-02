@@ -1,4 +1,3 @@
-
 // src/components/medico/medico-hub-animation.tsx
 "use client";
 
@@ -74,6 +73,7 @@ export function MedicoHubAnimation({ onAnimationComplete }: MedicoHubAnimationPr
       <motion.h1 
         className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-indigo-400 to-sky-300"
         variants={textVariants(1.2)}
+        style={{ animation: "gradient-flow 8s ease infinite alternate", backgroundSize: "250% 250%" }}
       >
         Medico Study Hub
       </motion.h1>

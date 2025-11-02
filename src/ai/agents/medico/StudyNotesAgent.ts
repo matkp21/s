@@ -1,4 +1,3 @@
-
 // src/ai/agents/medico/StudyNotesAgent.ts
 'use server';
 /**
@@ -92,7 +91,7 @@ const studyNotesFlow = ai.defineFlow(
   async (input) => {
     try {
       const { output } = await generate({
-          model: 'googleai/gemini-1.5-pro-preview',
+          model: 'googleai/gemini-1.5-flash',
           prompt: studyNotesPrompt.render(input),
           output: {
             format: 'json',

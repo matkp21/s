@@ -66,36 +66,45 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
           </div>
         ) : (
            <div className="w-full text-right">
-              <Button variant="link" size="sm" disabled={isEditMode} className={cn(
-                  "text-primary group-hover:underline p-0 h-auto text-xs",
+              <span className={cn(
+                  "text-primary group-hover:underline p-0 h-auto text-xs font-medium flex items-center justify-end",
                    !isEditMode && "group-hover:text-foreground group-hover:hover:text-primary",
                    isEditMode && "text-muted-foreground cursor-default"
                   )}>
                  Open Tool <ArrowRight className="ml-1 h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Button>
+              </span>
            </div>
         )}
       </CardContent>
     </motion.div>
   );
 
-  // If the tool has a direct href, it's a link to a separate page.
-  if (tool.href) {
-    return <Link href={tool.href} className="no-underline h-full flex">{cardContent}</Link>;
+  const handleLaunch = () => {
+    if (!isEditMode && !tool.comingSoon && tool.id) {
+      onLaunch(tool.id);
+    }
+  };
+
+  // If the tool has an href, it navigates to a new page.
+  if (tool.href && !isEditMode && !tool.comingSoon) {
+    return (
+      <Link href={tool.href} className="no-underline h-full flex">
+        {cardContent}
+      </Link>
+    );
   }
 
-  // If it's not a link and has a component, it should open in the dialog via the dashboard.
-  return (
-    <DialogTrigger asChild onClick={(e) => {
-        if (isEditMode || tool.comingSoon) {
-            e.preventDefault(); // Prevent dialog from opening in edit mode or if coming soon.
-        } else {
-            onLaunch(tool.id);
-        }
-    }}>
-      {cardContent}
-    </DialogTrigger>
-  );
+  // If the tool has a component, it opens in a dialog via the dashboard.
+  if (tool.component && tool.id) {
+    return (
+       <DialogTrigger asChild onClick={handleLaunch} disabled={isEditMode || tool.comingSoon}>
+         {cardContent}
+       </DialogTrigger>
+    );
+  }
+  
+  // Fallback for tools with no action defined yet or in edit mode.
+  return cardContent;
 };
 
 export const MedicoToolCard = React.memo(MedicoToolCardComponent);

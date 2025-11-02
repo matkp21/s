@@ -5,6 +5,7 @@ export type ActiveToolId =
   | 'guided-study' // New orchestrator tool
   | 'q-bank'
   | 'notes-generator' // Corrected ID
+  | 'advanced-notes'
   | 'topics'
   | 'flowcharts'
   | 'flashcards'

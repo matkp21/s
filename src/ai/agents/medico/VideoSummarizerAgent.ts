@@ -1,4 +1,3 @@
-
 // src/ai/agents/medico/VideoSummarizerAgent.ts
 'use server';
 /**
@@ -81,7 +80,7 @@ Summary:`;
       
       const { text } = await generate({
         prompt: summaryPrompt,
-        model: 'googleai/gemini-1.5-pro-preview',
+        model: 'googleai/gemini-1.5-flash',
         config: {
           temperature: 0.2, // Lower temperature for factual summarization
         },

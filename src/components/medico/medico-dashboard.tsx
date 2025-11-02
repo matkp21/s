@@ -1,11 +1,10 @@
-
 // src/components/medico/medico-dashboard.tsx
 "use client";
 
 import React, { useState, Suspense, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  CheckSquare, Settings, Loader2, Star
+  CheckSquare, Settings, Loader2, Star, BrainCircuit
 } from 'lucide-react';
 import { motion, Reorder } from 'framer-motion';
 import { allMedicoToolsList } from '@/config/medico-tools-config';
