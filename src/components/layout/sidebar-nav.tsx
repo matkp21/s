@@ -99,6 +99,7 @@ export function SidebarNav({ unreadNotificationCount }: SidebarNavProps) {
                   <TooltipTrigger asChild>
                     <Link href={item.href} passHref>
                       <SidebarMenuButton
+                        as="a"
                         isActive={isActive}
                         aria-label={item.ariaLabel}
                         className={cn(
@@ -152,6 +153,7 @@ export function SidebarNav({ unreadNotificationCount }: SidebarNavProps) {
                 <TooltipTrigger asChild>
                   <Link href="/settings" passHref>
                     <SidebarMenuButton
+                        as="a" // Important for legacyBehavior with Link
                         isActive={pathname.startsWith('/settings')}
                         aria-label="Open Settings"
                         className={cn(
