@@ -1,3 +1,4 @@
+
 // src/components/pro/ProDashboardSkeleton.tsx
 import { Skeleton } from '@/components/ui/skeleton';
 

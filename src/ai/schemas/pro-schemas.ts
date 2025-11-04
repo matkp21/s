@@ -1,3 +1,4 @@
+
 // src/ai/schemas/pro-schemas.ts
 /**
  * @fileOverview Defines Zod schemas for Professional Mode specific tools.
@@ -93,3 +94,27 @@ export const ProDashboardDataSchema = z.object({
     recentActivity: z.array(RecentActivityItemSchema),
 });
 export type ProDashboardData = z.infer<typeof ProDashboardDataSchema>;
+
+
+// Schema for System Diagnostics
+export const DiagnosticResultSchema = z.object({
+  status: z.enum(['ok', 'error', 'pending']),
+  message: z.string(),
+  details: z.any().optional(),
+});
+export type DiagnosticResult = z.infer<typeof DiagnosticResultSchema>;
+
+export const SystemDiagnosticOutputSchema = z.object({
+  overallStatus: z.enum(['ok', 'error', 'partial']),
+  timestamp: z.string().datetime(),
+  checks: z.record(DiagnosticResultSchema),
+});
+export type SystemDiagnosticOutput = z.infer<typeof SystemDiagnosticOutputSchema>;
+
+// Same as the output, but used as input for the suggestion agent
+export const SystemDiagnosticInputSchema = SystemDiagnosticOutputSchema;
+
+export const ImprovementSuggestionsOutputSchema = z.object({
+  suggestions: z.string().describe("Actionable suggestions for improvement based on the diagnostics report, formatted as Markdown."),
+});
+export type ImprovementSuggestionsOutput = z.infer<typeof ImprovementSuggestionsOutputSchema>;

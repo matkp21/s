@@ -1,3 +1,4 @@
+
 // src/app/pro/diagnostics/page.tsx
 "use client";
 

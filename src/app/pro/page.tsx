@@ -1,3 +1,4 @@
+
 // src/app/pro/page.tsx
 "use client";
 
@@ -44,10 +45,12 @@ export default function ProPage() {
   
   if (userRole !== 'pro') {
     return (
+      <PageWrapper title="Access Denied">
         <div className="text-center p-8">
           <p className="text-lg">You must be in Professional mode to access this page.</p>
           <p className="text-sm text-muted-foreground">Redirecting to homepage...</p>
         </div>
+      </PageWrapper>
     );
   }
 

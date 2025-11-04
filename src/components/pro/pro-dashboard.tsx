@@ -4,10 +4,8 @@
 
 import type { ReactNode } from 'react';
 import React, { useState, useEffect, Suspense } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '../ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import {
   Brain, ClipboardCheck, ArrowRightLeft, Mic, BarChart3, BriefcaseMedical,
@@ -28,6 +26,7 @@ import { ResearchSummarizer } from './research-summarizer';
 import { TriageAndReferral } from './triage-and-referral';
 import { ProToolCard } from './pro-tool-card'; // Import the extracted component
 import { Loader2 } from 'lucide-react';
+import { PersonalizedClinicalDashboard } from './personalized-clinical-dashboard';
 
 
 type ActiveToolId =
@@ -72,80 +71,29 @@ const frequentlyUsedToolIds: ActiveToolId[] = ['smartTriage', 'discharge', 'phar
 
 export function ProModeDashboard() {
   const [activeDialog, setActiveDialog] = useState<ActiveToolId>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [displayedTools, setDisplayedTools] = useState<ProTool[]>(allProToolsList);
-
+  
   const currentTool = allProToolsList.find(tool => tool.id === activeDialog);
   const ToolComponent = currentTool?.component;
 
-  const frequentlyUsedTools = displayedTools.filter(tool => tool.isFrequentlyUsed);
-  const otherTools = displayedTools.filter(tool => !tool.isFrequentlyUsed);
-
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div className="text-left">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground mb-1 firebase-gradient-text">Pro Clinical Suite</h1>
-            <p className="text-md text-muted-foreground">
-            Your personalized command center for advanced AI clinical tools.
-            </p>
-        </div>
-        <Button variant="outline" onClick={() => setIsEditMode(!isEditMode)} size="sm" className="rounded-lg group">
-          {isEditMode ? <CheckSquare className="mr-2 h-4 w-4"/> : <Settings className="mr-2 h-4 w-4 transition-transform duration-300 group-hover:rotate-45"/>}
-          {isEditMode ? 'Save Layout' : 'Customize'}
-        </Button>
+      <div className="mb-10">
+        <PersonalizedClinicalDashboard />
       </div>
 
-      {isEditMode ? (
-        <>
-           <div className="p-4 mb-6 border border-dashed border-primary/50 rounded-lg bg-primary/5 text-center">
-              <p className="text-sm text-primary">
-                  Customize Dashboard: Drag and drop is conceptual. This demonstrates the reorderable UI state.
-              </p>
-          </div>
-          <Reorder.Group
-            as="div"
-            values={displayedTools}
-            onReorder={setDisplayedTools}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-          >
-            {displayedTools.map((tool) => (
-              <Reorder.Item key={tool.id} value={tool} layout>
-                  <ProToolCard
-                    tool={tool}
-                    onLaunch={setActiveDialog}
-                    isFrequentlyUsed={tool.isFrequentlyUsed}
-                    isEditMode={isEditMode}
-                  />
-              </Reorder.Item>
-            ))}
-          </Reorder.Group>
-        </>
-      ) : (
-        <>
-          {frequentlyUsedTools.length > 0 && (
-            <section className="mb-10">
-              <h2 className="text-2xl font-semibold text-foreground mb-4 flex items-center">
-                <Star className="mr-2 h-6 w-6 text-yellow-400 fill-yellow-400"/> Frequently Used
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {frequentlyUsedTools.map((tool) => (
-                  <ProToolCard key={`${tool.id}-freq`} tool={tool} onLaunch={setActiveDialog} isFrequentlyUsed isEditMode={isEditMode} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section>
-            <h2 className="text-2xl font-semibold text-foreground mb-5">All Professional Tools</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {otherTools.map((tool) => (
-                <ProToolCard key={tool.id} tool={tool} onLaunch={setActiveDialog} isEditMode={isEditMode} />
-              ))}
-            </div>
-          </section>
-        </>
-      )}
+      <section>
+        <h2 className="text-2xl font-semibold text-foreground mb-5">All Professional Tools</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {allProToolsList.map((tool) => (
+            <ProToolCard 
+              key={tool.id} 
+              tool={tool} 
+              onLaunch={setActiveDialog} 
+              isFrequentlyUsed={frequentlyUsedToolIds.includes(tool.id)}
+            />
+          ))}
+        </div>
+      </section>
 
       <Dialog open={!!activeDialog} onOpenChange={(isOpen) => !isOpen && setActiveDialog(null)}>
         {currentTool && ToolComponent && (

@@ -1,17 +1,17 @@
+
 // src/components/pro/research-summarizer.tsx
 "use client";
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Library, Lightbulb, Search, Loader2, FileText, BookOpen } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { retrieveGuidelines, type GuidelineRetrievalInput, type GuidelineRetrievalOutput, type GuidelineItem } from '@/ai/agents/GuidelineRetrievalAgent';
+import { Library, BookOpen, Lightbulb, Search, Loader2, FileText } from 'lucide-react';
+import { retrieveGuidelines, type GuidelineRetrievalInput, type GuidelineRetrievalOutput } from '@/ai/agents/GuidelineRetrievalAgent';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { MarkdownRenderer } from '../markdown/markdown-renderer';
 
 export function ResearchSummarizer() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,24 +62,22 @@ export function ResearchSummarizer() {
           </CardTitle>
           <CardDescription>Enter a clinical question or topic to find and summarize relevant medical literature.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="research-query">Clinical Question or Topic</Label>
-              <div className="flex gap-2 mt-1">
-                <Input 
-                    id="research-query" 
-                    value={searchTerm} 
-                    onChange={e => setSearchTerm(e.target.value)} 
-                    placeholder="e.g., Best treatment for early-stage diabetic nephropathy" 
-                    className="rounded-lg flex-grow border-border/70 focus:border-primary"
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearchAndSummarize()}
-                />
-                <Button onClick={handleSearchAndSummarize} disabled={isLoading} className="rounded-lg">
-                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
-                    <span className="sr-only sm:not-sr-only sm:ml-2">Search & Summarize</span>
-                </Button>
-              </div>
-            </div>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input
+              type="search"
+              placeholder="Search by condition, drug, or clinical question..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="rounded-lg flex-grow border-border/70 focus:border-primary"
+              onKeyDown={(e) => e.key === 'Enter' && handleSearchAndSummarize()}
+              aria-label="Search for medical literature"
+            />
+            <Button onClick={handleSearchAndSummarize} disabled={isLoading} className="rounded-lg">
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
+              <span className="sr-only sm:not-sr-only sm:ml-2">Search</span>
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -90,12 +88,12 @@ export function ResearchSummarizer() {
         </div>
       )}
 
-      {!isLoading && summaries && summaries.results.length > 0 && (
+       {!isLoading && summaries && (
         <div className="mt-6 space-y-4">
             <h3 className="text-lg font-semibold">Summarized Articles for "{searchTerm}"</h3>
             <ScrollArea className="h-[50vh] p-1 border rounded-lg bg-background">
                 <div className="p-3 space-y-4">
-                {summaries.results.map((article, index) => (
+                {summaries.results.length > 0 ? summaries.results.map((article, index) => (
                     <Card key={index} className="shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-md hover:text-primary transition-colors">
@@ -108,21 +106,22 @@ export function ResearchSummarizer() {
                         )}
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm mb-2 whitespace-pre-wrap prose prose-sm dark:prose-invert max-w-none">{article.summary}</p>
+                        <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                            <MarkdownRenderer content={article.summary} />
+                        </div>
                     </CardContent>
                     </Card>
-                ))}
+                )) : (
+                     <div className="text-center py-10 text-muted-foreground">
+                        <FileText className="h-12 w-12 mx-auto mb-3 text-primary/50" />
+                        <p className="font-semibold">No articles found.</p>
+                        <p className="text-sm">Try a different search term.</p>
+                    </div>
+                )}
                 </div>
             </ScrollArea>
         </div>
       )}
-       {!isLoading && summaries && summaries.results.length === 0 && searchTerm && (
-        <div className="text-center py-10 text-muted-foreground bg-card p-6 rounded-xl shadow-md">
-          <FileText className="h-12 w-12 mx-auto mb-3 text-primary/50" />
-          <p className="font-semibold">No articles found for "{searchTerm}".</p>
-          <p className="text-sm">Try refining your search term or check the spelling.</p>
-        </div>
-      ): null}
     </div>
   );
 }

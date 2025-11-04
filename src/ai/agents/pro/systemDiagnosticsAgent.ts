@@ -14,6 +14,7 @@
 import { ai } from '@/ai/genkit';
 import { SystemDiagnosticInputSchema, ImprovementSuggestionsOutputSchema } from '@/ai/schemas/pro-schemas';
 import type { z } from 'zod';
+import { prompt } from 'genkit/ai';
 
 export type SystemDiagnosticInput = z.infer<typeof SystemDiagnosticInputSchema>;
 export type ImprovementSuggestionsOutput = z.infer<typeof ImprovementSuggestionsOutputSchema>;
@@ -22,9 +23,22 @@ export async function generateImprovementSuggestions(input: SystemDiagnosticInpu
   return generateSuggestionsFlow(input);
 }
 
-const suggestionsPrompt = ai.defineDotprompt({
+const suggestionsPrompt = prompt({
   name: 'proGenerateSuggestionsPrompt',
-  promptPath: 'prompts/pro/system-diagnostics.prompt',
+  input: { schema: SystemDiagnosticInputSchema },
+  output: { schema: ImprovementSuggestionsOutputSchema },
+  prompt: `Based on the following system diagnostics report, provide clear, actionable suggestions for improvement. Focus on any checks that have an 'error' status.
+
+  **Diagnostics Report:**
+  - Overall Status: {{{overallStatus}}}
+  - Timestamp: {{{timestamp}}}
+  - Checks:
+  {{#each checks}}
+  - **{{@key}}**: Status: {{this.status}} - Message: {{this.message}}
+  {{/each}}
+
+  Your suggestions should be formatted as a single Markdown string. If all systems are 'ok', provide a confirmation message.
+`,
 });
 
 
