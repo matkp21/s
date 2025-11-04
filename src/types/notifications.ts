@@ -1,3 +1,4 @@
+
 // src/types/notifications.ts
 
 export type NotificationType =

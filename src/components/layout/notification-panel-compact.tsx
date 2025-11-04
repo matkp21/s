@@ -1,3 +1,4 @@
+
 // src/components/layout/notification-panel-compact.tsx
 "use client";
 

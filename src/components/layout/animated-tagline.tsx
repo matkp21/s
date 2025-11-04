@@ -1,10 +1,11 @@
+
 // src/components/layout/animated-tagline.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-// Heart icon is no longer used here directly for the tagline, emojis are used.
+// Emojis are used directly in the JSX below.
 
 const smartWords = [
   "Smart", "Intelligent", "Caring", "Healing", "Diagnosing", "Supportive", "Better", "Helping", "Insightful", "Efficient", "Constructive", "Decisive"
@@ -63,12 +64,12 @@ export function AnimatedTagline({ className }: AnimatedTaglineProps) {
         initial="initial"
         animate="animate"
         role="img"
-        aria-label="sparks and brain"
+        aria-label="sparks"
       >
         ✨
       </motion.span>
       <motion.span
-         className="inline-block" // Removed ml-0.5 if they should be closer or part of one animated block
+         className="inline-block"
          variants={emojiVariants}
          initial="initial"
          animate="animate"

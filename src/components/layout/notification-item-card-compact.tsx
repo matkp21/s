@@ -82,37 +82,25 @@ export function NotificationItemCardCompact({ item, onMarkAsRead, onClosePanel }
     </div>
   );
 
-  if (item.deepLink) {
-    return (
-      <Link href={item.deepLink} passHref>
-        <motion.a
-          onClick={handleItemClick}
-          className="block w-full no-underline"
-          role="button"
-          tabIndex={0}
-          variants={cardVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-        >
-          {cardContent}
-        </motion.a>
-      </Link>
-    );
-  }
-
-  return (
+  const contentWrapper = (
     <motion.div
-      onClick={handleItemClick}
-      className="block w-full cursor-pointer"
-      role="button"
-      tabIndex={0}
       variants={cardVariants}
       initial="initial"
       animate="animate"
       exit="exit"
+      className="block w-full no-underline"
+      role="button"
+      tabIndex={0}
+      onClick={handleItemClick}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleItemClick()}
     >
       {cardContent}
     </motion.div>
   );
+
+  if (item.deepLink) {
+    return <Link href={item.deepLink} passHref legacyBehavior>{contentWrapper}</Link>;
+  }
+
+  return contentWrapper;
 }
