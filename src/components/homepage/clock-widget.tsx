@@ -68,8 +68,11 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
           setIsTimerRunning(false);
           toast({ title: "Timer Finished!", description: "Your timer has ended." });
           try {
-            const audio = new Audio('/sounds/timer-finish.mp3'); 
-            audio.play().catch(e => console.warn("Audio play failed:", e));
+            // In a browser environment, you can use Audio API
+            if (typeof window !== 'undefined') {
+              const audio = new Audio('/sounds/timer-finish.mp3'); 
+              audio.play().catch(e => console.warn("Audio play failed:", e));
+            }
           } catch (e) {
             console.warn("Could not play timer sound", e);
           }
@@ -132,14 +135,6 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
     toast({ title: "Reminder Deleted" });
   };
 
-  const hoursForClock = currentTime.getHours() % 12;
-  const minutesForClock = currentTime.getMinutes();
-  const secondsForClock = currentTime.getSeconds();
-  const hourAngle = (hoursForClock + minutesForClock / 60) * 30;
-  const minuteAngle = (minutesForClock + secondsForClock / 60) * 6;
-  const secondAngle = secondsForClock * 6;
-
-
   return (
     <Card className="border-none shadow-none bg-transparent w-full">
       <Tabs defaultValue="clock" className="w-full">
@@ -149,27 +144,10 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
           <TabsTrigger value="reminders" className="text-xs h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-tr-lg transition-colors duration-300"><BellRing className="mr-1 h-4 w-4" />Reminders</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="clock" className="p-4 pt-6">
-          <div className="text-center">
+        <TabsContent value="clock" className="p-4 pt-6 text-center">
             <p className="text-5xl font-bold tabular-nums text-foreground">{format(currentTime, "HH:mm")}</p>
             <p className="text-sm text-muted-foreground">{format(currentTime, "ss 'sec'")}</p>
             <p className="text-lg text-foreground mt-1">{format(currentTime, "eeee, MMMM do")}</p>
-          </div>
-          <div className="relative w-32 h-32 mx-auto mt-6" aria-label="Analogue clock">
-            <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
-              <circle cx="50" cy="50" r="48" stroke="hsl(var(--border))" strokeWidth="2" fill="hsl(var(--card))" />
-              {[...Array(12)].map((_, i) => (
-                <line key={`h-marker-${i}`} x1="50" y1="10" x2="50" y2="14" stroke="hsl(var(--foreground))" strokeWidth="1.5" transform={`rotate(${i * 30} 50 50)`} />
-              ))}
-              {[...Array(60)].map((_, i) => (i % 5 === 0 ? null : 
-                <line key={`m-marker-${i}`} x1="50" y1="10" x2="50" y2="12" stroke="hsl(var(--muted-foreground))" strokeWidth="0.5" transform={`rotate(${i * 6} 50 50)`} />
-              ))}
-              <line x1="50" y1="50" x2="50" y2="30" stroke="hsl(var(--foreground))" strokeWidth="3.5" strokeLinecap="round" transform={`rotate(${hourAngle} 50 50)`} />
-              <line x1="50" y1="50" x2="50" y2="20" stroke="hsl(var(--foreground))" strokeWidth="2.5" strokeLinecap="round" transform={`rotate(${minuteAngle} 50 50)`} />
-              <line x1="50" y1="50" x2="50" y2="15" stroke="hsl(var(--primary))" strokeWidth="1" strokeLinecap="round" transform={`rotate(${secondAngle} 50 50)`} />
-              <circle cx="50" cy="50" r="2.5" fill="hsl(var(--primary))" stroke="hsl(var(--card))" strokeWidth="1"/>
-            </svg>
-          </div>
         </TabsContent>
 
         <TabsContent value="timer" className="p-4 space-y-4">
