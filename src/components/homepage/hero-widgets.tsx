@@ -1,3 +1,4 @@
+
 // src/components/homepage/hero-widgets.tsx
 "use client";
 

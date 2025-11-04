@@ -11,7 +11,7 @@ const subjects = ["Anatomy", "Physiology", "Biochemistry", "Pathology", "Pharmac
 const systems = ["Cardiovascular", "Respiratory", "Gastrointestinal", "Neurological", "Musculoskeletal", "Endocrine", "Genitourinary", "Integumentary", "Hematological", "Immunological", "Other"] as const;
 
 // Common schema for recommended next steps
-const NextStepSchema = z.object({
+export const NextStepSchema = z.object({
   title: z.string().describe("The title of the suggested next step."),
   description: z.string().describe("A brief description of what this step entails."),
   toolId: z.string().describe("The unique ID of the tool to be used for this step (e.g., 'mcq', 'flashcards')."),
@@ -93,9 +93,9 @@ export type MedicoExamPaperOutput = z.infer<typeof MedicoExamPaperOutputSchema>;
 // Schema for Study Timetable Creator
 export const MedicoStudyTimetableInputSchema = z.object({
   examName: z.string().min(3, { message: "Exam name must be at least 3 characters." }).describe('Name of the examination (e.g., "Final MBBS Prof").'),
-  examDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Exam date must be in YYYY-MM-DD format." }).describe('Date of the examination in YYYY-MM-DD format.'),
+  examDate: z.date({ required_error: "Please select an exam date." }).describe('Date of the examination.'),
   subjects: z.array(z.string().min(1)).min(1, { message: "At least one subject is required." }).describe('List of subjects to study.'),
-  studyHoursPerWeek: z.number().min(1).max(100).describe('Total number of study hours available per week.'),
+  studyHoursPerWeek: z.coerce.number().min(1).max(100).describe('Total number of study hours available per week.'),
   performanceContext: z.string().optional().describe('Brief description of the student\'s weak areas or performance to help prioritize.'),
 });
 export type MedicoStudyTimetableInput = z.infer<typeof MedicoStudyTimetableInputSchema>;
@@ -334,7 +334,7 @@ export type DiagnoBotInput = z.infer<typeof DiagnoBotInputSchema>;
 export type DiagnoBotOutput = z.infer<typeof DiagnoBotOutputSchema>;
 
 
-// Schema for Progress Tracker Agent - THIS IS THE FIX
+// Schema for Progress Tracker Agent
 export const MedicoProgressTrackerInputSchema = z.object({
   activityType: z.enum(['notes_review', 'mcq_session', 'case_sim_completed']).describe("The type of study activity completed."),
   topic: z.string().describe("The topic of the completed activity."),

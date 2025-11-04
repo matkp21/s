@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, BookOpen, Wand2, FileText, Save, ArrowRight, ChevronDown } from 'lucide-react';
+import { Loader2, BookOpen, Wand2, FileText } from 'lucide-react';
 import { generateStudyNotes, type StudyNotesGeneratorOutput } from '@/ai/agents/medico/StudyNotesAgent';
 import { useToast } from '@/hooks/use-toast';
 import { useAiAgent } from '@/hooks/use-ai-agent';
@@ -22,11 +22,9 @@ import { trackProgress } from '@/ai/agents/medico/ProgressTrackerAgent';
 import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
-import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { StudyNotesGeneratorInputSchema } from '@/ai/schemas/medico-tools-schemas';
 import { NextStepsDisplay } from './next-steps-display';
 import { MermaidRenderer } from '../markdown/mermaid-renderer';
+import { StudyNotesGeneratorInputSchema } from '@/ai/schemas/medico-tools-schemas';
 
 const subjects = ["Anatomy", "Physiology", "Biochemistry", "Pathology", "Pharmacology", "Microbiology", "Forensic Medicine", "Community Medicine", "Ophthalmology", "ENT", "General Medicine", "General Surgery", "Obstetrics & Gynaecology", "Pediatrics", "Other"] as const;
 const systems = ["Cardiovascular", "Respiratory", "Gastrointestinal", "Neurological", "Musculoskeletal", "Endocrine", "Genitourinary", "Integumentary", "Hematological", "Immunological", "Other"] as const;
