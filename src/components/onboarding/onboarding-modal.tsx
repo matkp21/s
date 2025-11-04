@@ -335,4 +335,3 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     </Dialog>
   );
 }
-      
