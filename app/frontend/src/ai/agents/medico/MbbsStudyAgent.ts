@@ -1,8 +1,7 @@
-
 // src/ai/agents/medico/MbbsStudyAgent.ts
 'use server';
 /**
- * @fileOverview A comprehensive study agent for MBBS students, now powered by MedGemma.
+ * @fileOverview A comprehensive study agent for MBBS students, now powered by MedGemma on Vertex AI.
  *
  * This agent generates structured study material for a given topic,
  * using MedGemma for clinical accuracy and a separate image model for diagrams.
@@ -18,12 +17,13 @@ import {
   MbbsStudyOutputSchema,
   StudyNotesGeneratorOutputSchema,
   StudyNotesGeneratorInputSchema,
-  NextStepSchema,
 } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
-import { generate } from 'genkit/ai';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
+import { generate, type ModelReference } from 'genkit/ai';
+import { vertexAI } from '@genkit-ai/vertexai';
+
+// Define a reference to your custom MedGemma model on Vertex AI
+const medGemma: ModelReference = vertexAI.model('medGemma');
 
 export type MbbsStudyInput = z.infer<typeof MbbsStudyInputSchema>;
 export type MbbsStudyOutput = z.infer<typeof MbbsStudyOutputSchema>;
@@ -37,7 +37,7 @@ export async function generateStudyNotes(input: z.infer<typeof StudyNotesGenerat
   return {
       notes: result.enhancedContent.summary,
       summaryPoints: result.enhancedContent.bulletPoints,
-      diagram: result.enhancedContent.diagramUrl, // Pass diagram URL as a string (Mermaid component can handle URLs)
+      diagram: result.enhancedContent.diagramUrl, // Pass diagram URL as a string
       nextSteps: result.nextSteps,
   };
 }
@@ -48,13 +48,12 @@ export async function generateComprehensiveNotes(
   return mbbsStudyFlow(input);
 }
 
-// Define the schema for the text-only output from the first LLM call
+// Define the schema for the text-only output from MedGemma
 const MedGemmaTextOutputSchema = MbbsStudyOutputSchema.extend({
     enhancedContent: MbbsStudyOutputSchema.shape.enhancedContent.extend({
         diagramUrl: z.string().url().optional().describe("This will be populated in a later step."),
     }),
 });
-
 
 const mbbsStudyFlow = ai.defineFlow(
   {
@@ -64,7 +63,6 @@ const mbbsStudyFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      // Step 1: Concurrently generate text content using MedGemma and an image with Gemini
       console.log(`[MbbsStudyAgent] Starting multi-agent generation for topic: "${input.topic}"`);
       
       const [textResult, imageResult] = await Promise.allSettled([
@@ -79,32 +77,38 @@ const mbbsStudyFlow = ai.defineFlow(
                 Focus on providing detailed headings, bullet points, a concise summary, and textbook references.
                 Generate at least two relevant nextSteps.
             `;
-            console.log(`[MbbsStudyAgent] Invoking MedGemma for text generation...`);
-            const invokeMedGemma = httpsCallable(functions, 'invokeMedGemma');
-            const result = await invokeMedGemma({ prompt: medGemmaPrompt });
-            const responseData = (result.data as any)?.responseText;
-            if (!responseData) throw new Error("MedGemma function returned an empty response.");
+            console.log(`[MbbsStudyAgent] Invoking MedGemma via Vertex AI for text generation...`);
+
+            const { output } = await generate({
+              model: medGemma,
+              prompt: medGemmaPrompt,
+              output: {
+                format: 'json',
+                schema: MedGemmaTextOutputSchema,
+              },
+              config: {
+                // These are now standard Genkit config, not custom VLLM params
+                temperature: 0.2, 
+                maxOutputTokens: 2048, 
+              }
+            });
             
-            const jsonString = responseData.substring(responseData.indexOf('{'), responseData.lastIndexOf('}') + 1);
-            const parsedJson = JSON.parse(jsonString);
-            const validation = MedGemmaTextOutputSchema.safeParse(parsedJson);
-            if (!validation.success) {
-                console.error("Zod validation failed for MedGemma (MbbsStudyAgent):", validation.error.flatten());
-                throw new Error("MedGemma output did not match the expected schema.");
+            if (!output) {
+                throw new Error("MedGemma on Vertex AI returned an empty response.");
             }
             console.log(`[MbbsStudyAgent] MedGemma text generation successful.`);
-            return validation.data;
+            return output;
         })(),
 
-        // Agent 2: Imagen for image generation
+        // Agent 2: Gemini for image generation
         (async () => {
              const imageGenPrompt = `A simple, clear, modern medical textbook-style educational diagram illustrating the key concepts of "${input.topic}". Ensure labels are clear and concise.`;
-             console.log(`[MbbsStudyAgent] Invoking Imagen for image generation...`);
+             console.log(`[MbbsStudyAgent] Invoking image generation model...`);
              const { media } = await generate({
                 model: 'googleai/imagen-4.0-fast-generate-001',
                 prompt: imageGenPrompt
             });
-            console.log(`[MbbsStudyAgent] Imagen image generation successful.`);
+            console.log(`[MbbsStudyAgent] Image generation successful.`);
             return media;
         })()
       ]);
@@ -121,7 +125,6 @@ const mbbsStudyFlow = ai.defineFlow(
         console.log(`[MbbsStudyAgent] Diagram successfully attached to the output.`);
       } else {
         console.warn(`[MbbsStudyAgent] Could not generate diagram for "${input.topic}":`, imageResult.status === 'rejected' ? imageResult.reason : "No URL returned");
-        // Proceed without a diagram if image generation fails
       }
       
       console.log(`[MbbsStudyAgent] Final study package assembled successfully.`);
