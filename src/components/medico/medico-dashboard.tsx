@@ -4,13 +4,13 @@
 import React, { useState, Suspense, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  CheckSquare, Settings, Loader2, Star, BrainCircuit, Library
+  CheckSquare, Settings, Loader2, Star, BrainCircuit
 } from 'lucide-react';
 import { motion, Reorder } from 'framer-motion';
 import { allMedicoToolsList } from '@/config/medico-tools-config';
 import type { MedicoTool, ActiveToolId } from '@/types/medico-tools';
 import { MedicoToolCard } from '@/components/medico/medico-tool-card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { NeuralProgress } from "@/components/medico/NeuralProgress";
 import { KnowledgeHubSearch } from '@/components/medico/KnowledgeHubSearch';
@@ -47,6 +47,7 @@ export function MedicoDashboard() {
     }
 
      return (
+       <Dialog open={!!activeDialog} onOpenChange={(isOpen) => !isOpen && setActiveDialog(null)}>
         <div className="container mx-auto py-8">
             <div className="flex justify-between items-center mb-6">
                 <div className="text-left">
@@ -134,7 +135,6 @@ export function MedicoDashboard() {
                 )}
             </div>
             
-            <Dialog open={!!activeDialog} onOpenChange={(isOpen) => !isOpen && setActiveDialog(null)}>
               {currentTool && ToolComponent && (
                   <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] flex flex-col p-0">
                       <DialogHeader className="p-6 pb-4 sticky top-0 bg-background border-b z-10">
@@ -152,7 +152,7 @@ export function MedicoDashboard() {
                       </ScrollArea>
                   </DialogContent>
               )}
-            </Dialog>
         </div>
+       </Dialog>
     );
 };

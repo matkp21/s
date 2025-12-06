@@ -97,9 +97,9 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
   // If the tool has a component, it opens in a dialog via the dashboard.
   if (tool.component && tool.id) {
     return (
-       <DialogTrigger asChild onClick={handleLaunch} disabled={isEditMode || tool.comingSoon}>
+       <div onClick={handleLaunch} className="h-full">
          {cardContent}
-       </DialogTrigger>
+       </div>
     );
   }
   
