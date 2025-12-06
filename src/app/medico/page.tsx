@@ -32,7 +32,7 @@ export default function MedicoPage() {
       }
     } else if (userRole !== null) { // If role is defined but not 'medico', redirect
       router.push('/');
-    } else if (!userRole) { // Guest user
+    } else { // Guest user
       router.push('/');
     }
   }, [userRole, authLoading, router, isClient]);

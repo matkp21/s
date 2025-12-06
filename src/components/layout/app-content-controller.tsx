@@ -2,7 +2,7 @@
 // src/components/layout/app-content-controller.tsx
 "use client";
 
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { useClientState } from '@/contexts/client-state-provider';
@@ -23,11 +23,11 @@ export function AppContentController({ children }: { children: ReactNode }) {
 
   const pathname = usePathname();
 
-  const displayState = React.useMemo(() => {
+  const displayState = useMemo(() => {
     if (!isClient || authLoading) {
       return 'loading';
     }
-    // Auth pages should always render immediately without the main layout.
+    // Auth pages should always render immediately.
     if (['/login', '/signup'].includes(pathname)) {
         return 'auth';
     }
@@ -39,7 +39,7 @@ export function AppContentController({ children }: { children: ReactNode }) {
     if (user && onboardingComplete && !welcomeShownThisSession) {
       return 'welcome';
     }
-    // Otherwise, show the main app content within the AppLayout.
+    // Otherwise, show the main app content.
     return 'app';
   }, [isClient, authLoading, user, onboardingComplete, welcomeShownThisSession, pathname]);
 

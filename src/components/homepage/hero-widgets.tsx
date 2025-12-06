@@ -1,4 +1,3 @@
-
 // src/components/homepage/hero-widgets.tsx
 "use client";
 
@@ -25,6 +24,12 @@ interface HeroWidgetsProps {
   tasks: HeroTask[];
 }
 
+// Skeleton component for placeholder UI
+const Skeleton = ({ className }: { className?: string }) => (
+  <div className={cn("animate-pulse rounded-md bg-muted", className)} />
+);
+
+
 export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
   const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
@@ -33,6 +38,7 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
   const { toast } = useToast(); 
 
   useEffect(() => {
+    // This now only runs on the client, preventing hydration mismatch.
     setCurrentDateTime(new Date());
     const timerId = setInterval(() => {
       setCurrentDateTime(new Date());
@@ -154,8 +160,3 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
     </div>
   );
 };
-
-// Skeleton component for placeholder UI
-const Skeleton = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-md bg-muted", className)} />
-);

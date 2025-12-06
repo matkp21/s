@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+// Emojis are used directly in the JSX below.
 
 const smartWords = [
   "Smart", "Intelligent", "Caring", "Healing", "Diagnosing", "Supportive", "Better", "Helping", "Insightful", "Efficient", "Constructive", "Decisive"
@@ -21,9 +22,11 @@ export function AnimatedTagline({ className }: AnimatedTaglineProps) {
     setIsClient(true);
     const wordInterval = setInterval(() => {
       setCurrentWordIndex((prevIndex) => (prevIndex + 1) % smartWords.length);
-    }, 2500);
+    }, 2500); // Change word every 2.5 seconds
 
-    return () => clearInterval(wordInterval);
+    return () => {
+      clearInterval(wordInterval);
+    };
   }, []);
 
   const emojiVariants = {
@@ -32,7 +35,7 @@ export function AnimatedTagline({ className }: AnimatedTaglineProps) {
       opacity: [0.7, 1, 0.7],
       scale: [1, 1.15, 1],
       transition: {
-        duration: 1.5,
+        duration: 1.5, // Slower, more subtle pulse for emojis
         repeat: Infinity,
         ease: "easeInOut",
       }
@@ -49,12 +52,13 @@ export function AnimatedTagline({ className }: AnimatedTaglineProps) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="font-semibold firebase-gradient-text"
+          className="font-semibold firebase-gradient-text" // Keep gradient for the smart word
         >
           #{isClient ? smartWords[currentWordIndex] : smartWords[0]}
         </motion.span>
       </AnimatePresence>
       <span className="ml-1.5">. Always</span>
+      {/* Animated Emojis */}
       <motion.span
         className="ml-1.5 inline-block"
         variants={emojiVariants}
@@ -70,7 +74,7 @@ export function AnimatedTagline({ className }: AnimatedTaglineProps) {
          variants={emojiVariants}
          initial="initial"
          animate="animate"
-         transition={{ delay: 0.2 }}
+         transition={{ delay: 0.2 }} // Slightly delay the second emoji for a cascading effect
          role="img"
          aria-label="brain"
       >
