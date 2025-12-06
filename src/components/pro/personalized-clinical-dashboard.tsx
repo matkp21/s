@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAiAgent } from "@/hooks/use-ai-agent";
 import { getDashboardData, type ProDashboardData } from "@/ai/agents/pro/DashboardDataAgent";
 import type { TaskItem } from "@/ai/schemas/pro-schemas";
+import { HeroWidgets, type HeroTask } from '@/components/homepage/hero-widgets';
+import { addDays } from 'date-fns';
 
 interface DashboardWidget {
   id: string;
@@ -22,6 +24,13 @@ interface DashboardWidget {
   isFrequentlyUsed?: boolean; 
   colSpan?: string;
 }
+
+const sampleProTasks: HeroTask[] = [
+    { id: 'task-pro-1', date: new Date(), title: 'Review Mr. Smith\'s latest CBC results', description: 'Priority: High. Check for trends.' },
+    { id: 'task-pro-2', date: new Date(), title: 'On-call shift: 7 PM - 7 AM', description: 'Review handover notes before starting.' },
+    { id: 'task-pro-3', date: addDays(new Date(), 1), title: 'Follow-up call with Mrs. Jones', description: 'Re: medication adjustment for hypertension.' },
+];
+
 
 export function PersonalizedClinicalDashboard() {
   const [isEditMode, setIsEditMode] = useState(false);
@@ -131,6 +140,10 @@ export function PersonalizedClinicalDashboard() {
         return <p className="text-center text-muted-foreground py-10">No dashboard data available.</p>;
     }
     return (
+      <>
+        <div className="mb-8">
+            <HeroWidgets tasks={sampleProTasks} />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {widgetOrder.map(widgetId => {
             const widget = widgets.find(w => w.id === widgetId);
@@ -164,6 +177,7 @@ export function PersonalizedClinicalDashboard() {
             );
             })}
         </div>
+      </>
     )
   }
 
