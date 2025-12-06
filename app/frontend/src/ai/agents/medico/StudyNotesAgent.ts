@@ -23,11 +23,15 @@ export async function generateStudyNotes(input: StudyNotesGeneratorInput): Promi
   return result;
 }
 
-const studyNotesPrompt = ai.definePrompt({
-  name: 'medicoStudyNotesPrompt',
-  input: { schema: StudyNotesGeneratorInputSchema },
-  output: { schema: StudyNotesGeneratorOutputSchema },
-  prompt: `You are an AI medical expert. Your primary task is to generate a comprehensive JSON object containing structured study notes AND a list of relevant next study steps for a medical student.
+const studyNotesFlow = ai.defineFlow(
+  {
+    name: 'medicoStudyNotesFlow',
+    inputSchema: StudyNotesGeneratorInputSchema,
+    outputSchema: StudyNotesGeneratorOutputSchema,
+  },
+  async (input) => {
+    try {
+        const prompt = `You are an AI medical expert. Your primary task is to generate a comprehensive JSON object containing structured study notes AND a list of relevant next study steps for a medical student.
 
 The JSON object you generate MUST have four fields: 'notes', 'summaryPoints', 'diagram', and 'nextSteps'.
 
@@ -37,26 +41,26 @@ Example for 'nextSteps':
 [
   {
     "title": "Test Your Knowledge",
-    "description": "Generate MCQs to test your recall on {{{topic}}}.",
+    "description": "Generate MCQs to test your recall on ${input.topic}.",
     "toolId": "mcq",
-    "prefilledTopic": "{{{topic}}}",
+    "prefilledTopic": "${input.topic}",
     "cta": "Generate 5 MCQs"
   },
   {
     "title": "Create Flashcards",
-    "description": "Create flashcards for the key points of {{{topic}}}.",
+    "description": "Create flashcards for the key points of ${input.topic}.",
     "toolId": "flashcards",
-    "prefilledTopic": "{{{topic}}}",
+    "prefilledTopic": "${input.topic}",
     "cta": "Create Flashcards"
   }
 ]
 ---
 
 **Instructions for notes generation:**
-Topic/Question: {{{topic}}}
-Desired Answer Length: {{{answerLength}}}
-{{#if subject}}Subject: {{{subject}}}{{/if}}
-{{#if system}}System: {{{system}}}{{/if}}
+Topic/Question: ${input.topic}
+Desired Answer Length: ${input.answerLength}
+${input.subject ? `Subject: ${input.subject}` : ''}
+${input.system ? `System: ${input.system}` : ''}
 
 1.  **'notes' field**: Generate comprehensive notes on the topic. Strictly follow this 11-point format, using Markdown headings (e.g., '## 1. Definition'):
     1.  **Definition**: Provide a clear, concise definition.
@@ -77,26 +81,17 @@ Desired Answer Length: {{{answerLength}}}
 
 Constraint: For a '10-mark' answer, the 'notes' content should be around 500 words. For a '5-mark' answer, around 250 words.
 Ensure the entire response is a single valid JSON object conforming to the StudyNotesGeneratorOutputSchema.
-`,
-  config: {
-    temperature: 0.3, // Factual for notes
-  }
-});
+`;
 
-const studyNotesFlow = ai.defineFlow(
-  {
-    name: 'medicoStudyNotesFlow',
-    inputSchema: StudyNotesGeneratorInputSchema,
-    outputSchema: StudyNotesGeneratorOutputSchema,
-  },
-  async (input) => {
-    try {
       const { output } = await generate({
-          model: 'googleai/gemini-1.5-flash',
-          prompt: studyNotesPrompt.render(input),
+          model: 'googleai/gemini-1.5-pro-latest',
+          prompt: prompt,
           output: {
             format: 'json',
             schema: StudyNotesGeneratorOutputSchema,
+          },
+          config: {
+            temperature: 0.3, // Factual for notes
           }
       });
 
