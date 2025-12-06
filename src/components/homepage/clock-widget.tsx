@@ -1,3 +1,4 @@
+
 // src/components/homepage/clock-widget.tsx
 "use client";
 
@@ -9,10 +10,10 @@ import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlarmClockCheck, TimerIcon, BellRing, PlusCircle, Play, Pause, RotateCcw, Trash2 } from 'lucide-react';
+import { AlarmClockCheck, TimerIcon, BellRing, PlusCircle, Play, Pause, RotateCcw, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils'; // Added cn for potential conditional styling
+import { cn } from '@/lib/utils';
 
 interface Reminder {
   id: string;
@@ -21,17 +22,17 @@ interface Reminder {
 }
 
 interface ClockWidgetProps {
-  onClose?: () => void; // Made onClose optional as it might not always be needed by Popover
+  onClose?: () => void;
 }
 
 export function ClockWidget({ onClose }: ClockWidgetProps) {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const { toast } = useToast();
 
   const [timerInputHours, setTimerInputHours] = useState(0);
   const [timerInputMinutes, setTimerInputMinutes] = useState(5);
   const [timerInputSeconds, setTimerInputSeconds] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(0); // Initialize to 0
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerIntervalId, setTimerIntervalId] = useState<NodeJS.Timeout | null>(null);
 
@@ -40,6 +41,8 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
   const [newReminderDateTime, setNewReminderDateTime] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
+    // Set initial time and start interval only on the client
+    setCurrentTime(new Date());
     const clockInterval = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -47,8 +50,8 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
   }, []);
 
   const startTimer = useCallback(() => {
-    let initialTime = timeLeft; // Start from timeLeft if paused
-    if (!isTimerRunning && initialTime <= 0) { // Only reset if not running and timeLeft is 0
+    let initialTime = timeLeft;
+    if (!isTimerRunning && initialTime <= 0) {
         initialTime = timerInputHours * 3600 + timerInputMinutes * 60 + timerInputSeconds;
     }
 
@@ -68,9 +71,8 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
           setIsTimerRunning(false);
           toast({ title: "Timer Finished!", description: "Your timer has ended." });
           try {
-            // In a browser environment, you can use Audio API
             if (typeof window !== 'undefined') {
-              const audio = new Audio('/sounds/timer-finish.mp3'); 
+              const audio = new Audio('/sounds/timer-finish.mp3');
               audio.play().catch(e => console.warn("Audio play failed:", e));
             }
           } catch (e) {
@@ -126,7 +128,6 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
     };
     setReminders(prev => [...prev, newReminder].sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime()));
     setNewReminderText('');
-    // setNewReminderDateTime(new Date()); // Optionally reset date
     toast({ title: "Reminder Set", description: `Reminder "${newReminder.text}" scheduled.` });
   };
 
@@ -144,10 +145,18 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
           <TabsTrigger value="reminders" className="text-xs h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-tr-lg transition-colors duration-300"><BellRing className="mr-1 h-4 w-4" />Reminders</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="clock" className="p-4 pt-6 text-center">
-            <p className="text-5xl font-bold tabular-nums text-foreground">{format(currentTime, "HH:mm")}</p>
-            <p className="text-sm text-muted-foreground">{format(currentTime, "ss 'sec'")}</p>
-            <p className="text-lg text-foreground mt-1">{format(currentTime, "eeee, MMMM do")}</p>
+        <TabsContent value="clock" className="p-4 pt-6 text-center min-h-[108px]">
+            {currentTime ? (
+              <>
+                <p className="text-5xl font-bold tabular-nums text-foreground">{format(currentTime, "HH:mm")}</p>
+                <p className="text-sm text-muted-foreground">{format(currentTime, "ss 'sec'")}</p>
+                <p className="text-lg text-foreground mt-1">{format(currentTime, "eeee, MMMM do")}</p>
+              </>
+            ) : (
+              <div className="flex justify-center items-center h-full">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
         </TabsContent>
 
         <TabsContent value="timer" className="p-4 space-y-4">
