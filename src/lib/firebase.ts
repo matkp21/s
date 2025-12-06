@@ -1,10 +1,10 @@
-
 // src/lib/firebase.ts
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 import { getFunctions, type Functions } from "firebase/functions";
+import { getPerformance, type Performance } from "firebase/performance";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -27,5 +27,6 @@ const auth: Auth = getAuth(app);
 const firestore: Firestore = getFirestore(app);
 const storage: FirebaseStorage = getStorage(app);
 const functions: Functions = getFunctions(app);
+const performance: Performance = getPerformance(app);
 
-export { app, auth, firestore, storage, functions };
+export { app, auth, firestore, storage, functions, performance };
