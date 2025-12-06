@@ -106,13 +106,15 @@ export function MedicoDashboard() {
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         {frequentlyUsedTools.map((tool) => (
-                           <MedicoToolCard 
-                             key={`${tool.id}-freq-card`}
-                             tool={tool}
-                             onLaunch={handleLaunchTool}
-                             isFrequentlyUsed={true}
-                             isEditMode={isEditMode}
-                           />
+                            <DialogTrigger key={`${tool.id}-freq-trigger`} asChild>
+                               <MedicoToolCard 
+                                 key={`${tool.id}-freq-card`}
+                                 tool={tool}
+                                 onLaunch={handleLaunchTool}
+                                 isFrequentlyUsed={true}
+                                 isEditMode={isEditMode}
+                               />
+                            </DialogTrigger>
                         ))}
                         </div>
                     </section>
@@ -122,12 +124,14 @@ export function MedicoDashboard() {
                     <h2 className="text-2xl font-semibold text-foreground mb-5">All Medico Tools</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {otherTools.map((tool) => (
-                           <MedicoToolCard 
-                             key={`${tool.id}-card`}
-                             tool={tool} 
-                             onLaunch={handleLaunchTool} 
-                             isEditMode={isEditMode} 
-                           />
+                           <DialogTrigger key={`${tool.id}-trigger`} asChild>
+                               <MedicoToolCard 
+                                 key={`${tool.id}-card`}
+                                 tool={tool} 
+                                 onLaunch={handleLaunchTool} 
+                                 isEditMode={isEditMode} 
+                               />
+                            </DialogTrigger>
                         ))}
                     </div>
                     </section>
