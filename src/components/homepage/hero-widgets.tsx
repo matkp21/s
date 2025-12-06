@@ -44,7 +44,7 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
   return (
     <div 
       className={cn(
-        "relative mt-4 flex w-full max-w-md mx-auto items-center justify-between gap-2 md:gap-4 py-2 px-3 rounded-xl shadow-lg",
+        "relative mt-4 flex w-full max-w-md mx-auto items-center justify-between gap-2 md:gap-4 py-2 px-3 rounded-xl shadow-lg", // Added relative
         "bg-card border border-border/60" 
       )}
       aria-label="Date and Time Information Panel"
