@@ -14,7 +14,7 @@ export function KnowledgeHubSearch() {
   const { toast } = useToast();
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission
     if (!query.trim()) {
       toast({
         title: "Search Term Required",

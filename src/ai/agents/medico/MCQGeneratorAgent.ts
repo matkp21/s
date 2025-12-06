@@ -1,4 +1,3 @@
-
 // src/ai/agents/medico/MCQGeneratorAgent.ts
 'use server';
 /**
@@ -12,6 +11,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { MedicoMCQGeneratorInputSchema, MedicoMCQGeneratorOutputSchema, MCQOptionSchema, MCQSchema as SingleMCQSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
 import { generate } from 'genkit/ai';
@@ -78,7 +78,7 @@ For each MCQ:
 Ensure the final output is a single valid JSON object.
 `;
       const { output } = await generate({
-          model: 'googleai/gemini-1.5-pro-latest',
+          model: googleAI('gemini-1.5-pro-latest'),
           prompt,
           output: {
               format: 'json',
