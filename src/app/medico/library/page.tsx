@@ -1,13 +1,13 @@
 // src/app/medico/library/page.tsx
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { firestore } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, Timestamp, addDoc, serverTimestamp, doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
-import { Loader2, Library, BookOpen, FileQuestion, Users, UploadCloud, Bookmark, BookmarkCheck, Lightbulb, Workflow, Layers, UserCircle, ArrowRight, ChevronDown } from 'lucide-react';
+import { Loader2, Library, BookOpen, FileQuestion, Users, UploadCloud, Bookmark, BookmarkCheck, Lightbulb, Workflow, Layers, UserCircle, ArrowRight, ChevronDown, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
@@ -24,6 +24,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
+import KnowledgeAugmenter from '@/components/medico/knowledge-augmenter';
 
 
 // Define types for library items
@@ -409,36 +410,57 @@ export default function StudyLibraryPage() {
             <CardTitle className="text-2xl flex items-center gap-2 text-primary"><Library className="h-7 w-7" />Knowledge Hub</CardTitle>
             <CardDescription>Your personal and community-driven study library.</CardDescription>
             </div>
-             <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-            <DialogTrigger asChild>
-                 <Button className="mt-4 sm:mt-0 rounded-lg group">
-                    <UploadCloud className="mr-2 h-4 w-4 transition-transform group-hover:-translate-y-0.5"/>
-                    Contribute
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Contribute to the Community Library</DialogTitle>
-                    <DialogDescription>Share your notes or mnemonics with other students. Submissions are reviewed before publishing.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-2">
-                    <div><Label htmlFor="upload-topic">Topic</Label><Input id="upload-topic" value={uploadTopic} onChange={(e) => setUploadTopic(e.target.value)} placeholder="e.g., Brachial Plexus"/></div>
-                    <div><Label htmlFor="upload-type">Content Type</Label>
-                        <Select value={uploadType} onValueChange={(v) => setUploadType(v as 'communityNote' | 'communityMnemonic')}>
-                            <SelectTrigger id="upload-type"><SelectValue /></SelectTrigger>
-                            <SelectContent><SelectItem value="communityNote">Note</SelectItem><SelectItem value="communityMnemonic">Mnemonic</SelectItem></SelectContent>
-                        </Select>
-                    </div>
-                    <div><Label htmlFor="upload-content">Content</Label><Textarea id="upload-content" value={uploadContent} onChange={(e) => setUploadContent(e.target.value)} placeholder={`Enter your content here...`} className="min-h-[150px]"/></div>
-                </div>
-                <CardFooter className="p-0 pt-4">
-                    <Button onClick={handleUploadSubmit} disabled={isUploading} className="w-full">
-                        {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UploadCloud className="mr-2 h-4 w-4"/>}
-                        Submit for Review
+            <div className="flex gap-2 mt-4 sm:mt-0">
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" className="rounded-lg group">
+                            <Sparkles className="mr-2 h-4 w-4 transition-transform group-hover:scale-110"/>
+                            Augment with AI
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-3xl md:max-w-4xl max-h-[90vh] flex flex-col p-0">
+                        <DialogHeader className="p-6 pb-2">
+                           <DialogTitle className="text-2xl flex items-center gap-2"><Sparkles className="h-6 w-6 text-primary" /> AI Knowledge Augmenter</DialogTitle>
+                           <DialogDescription>Upload notes, ask a question, and get an AI-augmented answer.</DialogDescription>
+                        </DialogHeader>
+                        <ScrollArea className="flex-grow p-6 pt-0">
+                            <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin"/></div>}>
+                                <KnowledgeAugmenter />
+                            </Suspense>
+                        </ScrollArea>
+                    </DialogContent>
+                </Dialog>
+                 <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                <DialogTrigger asChild>
+                     <Button className="rounded-lg group">
+                        <UploadCloud className="mr-2 h-4 w-4 transition-transform group-hover:-translate-y-0.5"/>
+                        Contribute
                     </Button>
-                </CardFooter>
-            </DialogContent>
-          </Dialog>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Contribute to the Community Library</DialogTitle>
+                        <DialogDescription>Share your notes or mnemonics with other students. Submissions are reviewed before publishing.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div><Label htmlFor="upload-topic">Topic</Label><Input id="upload-topic" value={uploadTopic} onChange={(e) => setUploadTopic(e.target.value)} placeholder="e.g., Brachial Plexus"/></div>
+                        <div><Label htmlFor="upload-type">Content Type</Label>
+                            <Select value={uploadType} onValueChange={(v) => setUploadType(v as 'communityNote' | 'communityMnemonic')}>
+                                <SelectTrigger id="upload-type"><SelectValue /></SelectTrigger>
+                                <SelectContent><SelectItem value="communityNote">Note</SelectItem><SelectItem value="communityMnemonic">Mnemonic</SelectItem></SelectContent>
+                            </Select>
+                        </div>
+                        <div><Label htmlFor="upload-content">Content</Label><Textarea id="upload-content" value={uploadContent} onChange={(e) => setUploadContent(e.target.value)} placeholder={`Enter your content here...`} className="min-h-[150px]"/></div>
+                    </div>
+                    <CardFooter className="p-0 pt-4">
+                        <Button onClick={handleUploadSubmit} disabled={isUploading} className="w-full">
+                            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UploadCloud className="mr-2 h-4 w-4"/>}
+                            Submit for Review
+                        </Button>
+                    </CardFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-2 mb-4 p-2 border bg-muted/50 rounded-lg">
