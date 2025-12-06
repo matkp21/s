@@ -1,11 +1,9 @@
-
 // src/components/layout/animated-tagline.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-// Emojis are used directly in the JSX below.
 
 const smartWords = [
   "Smart", "Intelligent", "Caring", "Healing", "Diagnosing", "Supportive", "Better", "Helping", "Insightful", "Efficient", "Constructive", "Decisive"
@@ -17,15 +15,15 @@ interface AnimatedTaglineProps {
 
 export function AnimatedTagline({ className }: AnimatedTaglineProps) {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     const wordInterval = setInterval(() => {
       setCurrentWordIndex((prevIndex) => (prevIndex + 1) % smartWords.length);
-    }, 2500); // Change word every 2.5 seconds
+    }, 2500);
 
-    return () => {
-      clearInterval(wordInterval);
-    };
+    return () => clearInterval(wordInterval);
   }, []);
 
   const emojiVariants = {
@@ -34,7 +32,7 @@ export function AnimatedTagline({ className }: AnimatedTaglineProps) {
       opacity: [0.7, 1, 0.7],
       scale: [1, 1.15, 1],
       transition: {
-        duration: 1.5, // Slower, more subtle pulse for emojis
+        duration: 1.5,
         repeat: Infinity,
         ease: "easeInOut",
       }
@@ -46,18 +44,17 @@ export function AnimatedTagline({ className }: AnimatedTaglineProps) {
       <span className="mr-1.5">Simply</span>
       <AnimatePresence mode="wait">
         <motion.span
-          key={smartWords[currentWordIndex]}
+          key={isClient ? smartWords[currentWordIndex] : smartWords[0]}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="font-semibold firebase-gradient-text" // Keep gradient for the smart word
+          className="font-semibold firebase-gradient-text"
         >
-          #{smartWords[currentWordIndex]}
+          #{isClient ? smartWords[currentWordIndex] : smartWords[0]}
         </motion.span>
       </AnimatePresence>
       <span className="ml-1.5">. Always</span>
-      {/* Animated Emojis */}
       <motion.span
         className="ml-1.5 inline-block"
         variants={emojiVariants}
@@ -73,7 +70,7 @@ export function AnimatedTagline({ className }: AnimatedTaglineProps) {
          variants={emojiVariants}
          initial="initial"
          animate="animate"
-         transition={{ delay: 0.2 }} // Slightly delay the second emoji for a cascading effect
+         transition={{ delay: 0.2 }}
          role="img"
          aria-label="brain"
       >
