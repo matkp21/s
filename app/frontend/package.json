@@ -48,7 +48,7 @@
     "framer-motion": "11.5.1",
     "genkit": "1.8.0",
     "lucide-react": "0.490.0",
-    "next": "^15.0.1",
+    "next": "15.4.2",
     "react": "18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "18.3.1",
@@ -62,13 +62,13 @@
     "zod": "3.25.1"
   },
   "devDependencies": {
-    "@types/node": "20.14.9",
+    "@types/node": "22.16.5",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "autoprefixer": "10.4.19",
     "genkit-cli": "1.8.0",
     "postcss": "8.4.38",
     "tailwindcss": "3.4.4",
-    "typescript": "5.5.2"
+    "typescript": "5.5.4"
   }
 }
