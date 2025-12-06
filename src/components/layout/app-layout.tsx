@@ -1,4 +1,3 @@
-
 // src/components/layout/app-layout.tsx
 "use client";
 
@@ -8,37 +7,20 @@ import { useRouter, usePathname } from 'next/navigation';
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { SidebarNav } from './sidebar-nav';
 import { Button } from '@/components/ui/button';
-import {
-  Settings, LogOut, UserCircle, Sparkles, Info,
-  MessageSquareHeart, BriefcaseMedical, School, Stethoscope, UserCog, Bell, ChevronDown, Edit, HeartPulse,
-  Moon, Sun, Loader2
-} from 'lucide-react';
+import { Settings, LogOut, UserCircle, Bell, HeartPulse, Moon, Sun } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Footer } from './footer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useProMode, type UserRole } from '@/contexts/pro-mode-context';
+import { useProMode } from '@/contexts/pro-mode-context';
 import { useTheme } from '@/contexts/theme-provider'; 
 import { Badge } from '@/components/ui/badge';
 import { AnimatedTagline } from '@/components/layout/animated-tagline';
 import type { NotificationItem } from '@/types/notifications';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationPanelCompact } from './notification-panel-compact';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const ThemeToggleButton = () => {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -67,12 +49,11 @@ const ThemeToggleButton = () => {
   );
 };
 
-
 export function AppLayout({ children }: { children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
-  const { userRole, selectUserRole } = useProMode();
   const { toast } = useToast();
   const router = useRouter();
+  const { user } = useProMode(); // Simplified context
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -82,6 +63,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const notificationBellRef = useRef<HTMLButtonElement>(null);
   
   const fetchNotifications = useCallback(() => {
+    // Mock data remains the same
     const mockNotifications: NotificationItem[] = [
       { id: '1', type: 'medication_reminder', title: 'Medication Reminder', body: 'Time for Amoxicillin (500mg). Check instructions.', timestamp: new Date(Date.now() - 1000 * 60 * 5), isRead: false, deepLink: '/medications' },
       { id: 'sys-maint', type: 'system_update', title: 'System Maintenance Scheduled', body: 'Brief maintenance tonight at 2 AM. No impact expected.', timestamp: new Date(Date.now() - 1000 * 60 * 30), isRead: false, deepLink: '/' },
@@ -119,7 +101,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
     };
   }, [isNotificationPanelOpen]);
 
-
   const handleMarkAsRead = useCallback((id: string) => {
     setNotifications(prev => {
       const newNotifications = prev.map(n => n.id === id ? { ...n, isRead: true } : n);
@@ -142,28 +123,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   const handleLogout = () => {
     toast({ title: "Logged Out", description: "You have been successfully logged out. (Demo)" });
-    selectUserRole(null); 
-    setIsAccountMenuOpen(false); 
+    setIsAccountMenuOpen(false);
     setIsNotificationPanelOpen(false);
-    sessionStorage.removeItem('welcomeDisplayShown'); 
-    router.push('/login'); 
+    sessionStorage.clear();
+    localStorage.clear();
+    router.push('/login');
   };
 
-  const getRoleDisplayString = (role: UserRole | null): string => {
-    if (role === 'pro') return 'Professional';
-    if (role === 'medico') return 'Medical Student';
-    if (role === 'diagnosis') return 'Patient/User';
-    return 'Guest';
-  };
-  
   return (
     <SidebarProvider defaultOpen={true}>
-      <Sidebar
-        variant="sidebar"
-        collapsible="icon"
-        side="left"
-        className="border-r border-sidebar-border/50"
-      >
+      <Sidebar variant="sidebar" collapsible="icon" side="left" className="border-r border-sidebar-border/50">
         <SidebarNav unreadNotificationCount={unreadCount} />
       </Sidebar>
       <SidebarInset className="flex flex-col bg-background">
@@ -190,138 +159,80 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <nav className="flex items-center gap-2 sm:gap-3">
             <ThemeToggleButton /> 
             
-            <Button
-                ref={notificationBellRef}
-                variant="ghost"
-                size="icon"
-                className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full text-foreground/80 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                aria-label="Toggle notifications panel"
-                onClick={() => setIsNotificationPanelOpen(prev => !prev)}
-            >
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 min-w-0 p-0 flex items-center justify-center text-xs animate-pulse">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                </Badge>
-                )}
-            </Button>
-            {isNotificationPanelOpen && (
-                <div ref={notificationPanelRef}>
-                    <NotificationPanelCompact
-                    notifications={notifications.slice(0, 7)}
-                    hasUnreadNotifications={unreadCount > 0}
-                    onClose={() => setIsNotificationPanelOpen(false)}
-                    onMarkAllAsRead={handleMarkAllAsRead}
-                    onMarkAsRead={handleMarkAsRead}
-                    onViewAllNotifications={handleViewAllNotifications}
-                    className={unreadCount > 0 ? "notification-panel-animated-border" : ""}
-                    />
-                </div>
-            )}
-            
-            {userRole === 'pro' && (
-              <Badge variant="outline" className="border-primary/50 text-primary bg-primary/10 hidden sm:flex items-center gap-1.5 py-1 px-2.5">
-                <Sparkles className="h-3.5 w-3.5" />
-                Pro Features
-              </Badge>
-            )}
-            
-             <DropdownMenu open={isAccountMenuOpen} onOpenChange={setIsAccountMenuOpen}>
-                <DropdownMenuTrigger asChild>
-                   <Button
+            {user && (
+              <>
+                <Button
+                    ref={notificationBellRef}
                     variant="ghost"
-                    className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full text-foreground/80 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0"
-                    aria-label="Open user menu"
-                  >
-                    <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                        <AvatarImage src="https://picsum.photos/id/237/200/200" alt="User Avatar" data-ai-hint="user doctor" />
-                         <AvatarFallback className="bg-gradient-to-br from-primary via-accent to-primary/70 text-primary-foreground">
-                            <HeartPulse className="h-5 w-5"/>
-                        </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 rounded-xl shadow-lg border-border/50 bg-card">
-                    <DropdownMenuLabel className="px-3 py-2">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-9 w-9">
+                    size="icon"
+                    className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full text-foreground/80 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label="Toggle notifications panel"
+                    onClick={() => setIsNotificationPanelOpen(prev => !prev)}
+                >
+                    <Bell className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 min-w-0 p-0 flex items-center justify-center text-xs animate-pulse">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                    </Badge>
+                    )}
+                </Button>
+                {isNotificationPanelOpen && (
+                    <div ref={notificationPanelRef}>
+                        <NotificationPanelCompact
+                        notifications={notifications.slice(0, 7)}
+                        onClose={() => setIsNotificationPanelOpen(false)}
+                        onMarkAllAsRead={handleMarkAllAsRead}
+                        onMarkAsRead={handleMarkAsRead}
+                        onViewAllNotifications={handleViewAllNotifications}
+                        />
+                    </div>
+                )}
+              
+                <DropdownMenu open={isAccountMenuOpen} onOpenChange={setIsAccountMenuOpen}>
+                    <DropdownMenuTrigger asChild>
+                       <Button
+                        variant="ghost"
+                        className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full text-foreground/80 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0"
+                        aria-label="Open user menu"
+                      >
+                        <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
                             <AvatarImage src="https://picsum.photos/id/237/200/200" alt="User Avatar" data-ai-hint="user doctor" />
-                            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
-                                DR
+                             <AvatarFallback className="bg-gradient-to-br from-primary via-accent to-primary/70 text-primary-foreground">
+                                <HeartPulse className="h-5 w-5"/>
                             </AvatarFallback>
                         </Avatar>
-                        <div>
-                            <p className="text-sm font-medium text-foreground">Dr. Medi User</p>
-                            <p className="text-xs text-muted-foreground">medi.user@example.com</p>
-                        </div>
-                    </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile" className="flex items-center gap-2 cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}>
-                        <UserCircle className="h-4 w-4 text-muted-foreground" /> Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/settings" className="flex items-center gap-2 cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}>
-                        <Settings className="h-4 w-4 text-muted-foreground" /> Settings
-                      </Link>
-                    </DropdownMenuItem>
-                     <DropdownMenuItem asChild>
-                        <Link href="/notifications" className="flex items-center gap-2 cursor-pointer" onClick={() => { setIsAccountMenuOpen(false); setIsNotificationPanelOpen(false);}}>
-                           <Bell className="h-4 w-4 text-muted-foreground" /> Notifications
-                           {unreadCount > 0 && (
-                            <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-xs">
-                                {unreadCount}
-                            </Badge>
-                           )}
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSub>
-                    <DropdownMenuSubTrigger className="flex items-center justify-between gap-2 cursor-pointer">
-                        <div className="flex items-center gap-2">
-                            <UserCog className="h-4 w-4 text-muted-foreground" />
-                            <span>
-                                Role: <span className={cn(userRole !== null && "firebase-gradient-text-active-role font-semibold")}>{getRoleDisplayString(userRole)}</span>
-                            </span>
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground opacity-70" />
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                        <DropdownMenuRadioGroup value={userRole || ''} onValueChange={(role) => { selectUserRole(role as UserRole); setIsAccountMenuOpen(false);}}>
-                            <DropdownMenuRadioItem value="pro" className="flex items-center gap-2 cursor-pointer">
-                                <BriefcaseMedical className="h-4 w-4 text-purple-500" />
-                                <span className={cn(userRole === 'pro' && "firebase-gradient-text-active-role font-semibold")}>Professional</span>
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="medico" className="flex items-center gap-2 cursor-pointer">
-                                <School className="h-4 w-4 text-sky-500" />
-                                <span className={cn(userRole === 'medico' && "firebase-gradient-text-active-role font-semibold")}>Medical Student</span>
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="diagnosis" className="flex items-center gap-2 cursor-pointer">
-                                <Stethoscope className="h-4 w-4 text-green-500" />
-                                <span className={cn(userRole === 'diagnosis' && "firebase-gradient-text-active-role font-semibold")}>Patient/User</span>
-                            </DropdownMenuRadioItem>
-                             <DropdownMenuRadioItem value="" className="flex items-center gap-2 cursor-pointer">
-                                <UserCircle className="h-4 w-4 text-muted-foreground" />
-                                <span className={cn(userRole === null && "firebase-gradient-text-active-role font-semibold")}>Guest</span>
-                            </DropdownMenuRadioItem>
-                        </DropdownMenuRadioGroup>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                    </DropdownMenuSub>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
-                    <LogOut className="h-4 w-4" /> Log Out
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64 rounded-xl shadow-lg border-border/50 bg-card">
+                        <DropdownMenuLabel className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-9 w-9"><AvatarImage src="https://picsum.photos/id/237/200/200" alt="User Avatar" data-ai-hint="user doctor" /><AvatarFallback>DR</AvatarFallback></Avatar>
+                            <div>
+                                <p className="text-sm font-medium text-foreground">{user.displayName || "Medi User"}</p>
+                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                            </div>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild><Link href="/profile" className="cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}><UserCircle /> Profile</Link></DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link href="/settings" className="cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}><Settings /> Settings</Link></DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"><LogOut /> Log Out</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+            {!user && (
+              <Button asChild variant="outline" size="sm">
+                <Link href="/login">Log In</Link>
+              </Button>
+            )}
           </nav>
         </header>
         <main className="flex-1 flex flex-col overflow-auto relative">
-          <PageWrapper>
+          <div className="container mx-auto flex-grow py-6 sm:py-10">
             {children}
-          </PageWrapper>
+          </div>
         </main>
         <Footer />
       </SidebarInset>

@@ -1,19 +1,15 @@
-
 // src/components/pro/pro-dashboard.tsx
 "use client";
 
 import type { ReactNode } from 'react';
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 import {
   Brain, ClipboardCheck, ArrowRightLeft, Mic, BarChart3, BriefcaseMedical,
   FileText, Pill, MessageSquareHeart, PhoneForwarded, Library, FilePlus, Settings, Star, CheckSquare, ShieldCheck
 } from 'lucide-react';
 import { motion, Reorder } from 'framer-motion';
-
-// Import the actual components
 import { DifferentialDiagnosisAssistant } from './differential-diagnosis-assistant';
 import { DischargeSummaryGenerator } from './discharge-summary-generator';
 import { TreatmentProtocolNavigator } from './treatment-protocol-navigator';
@@ -24,10 +20,10 @@ import { PatientCommunicationDrafter } from './patient-communication-drafter';
 import { OnCallHandoverAssistant } from './on-call-handover-assistant';
 import { ResearchSummarizer } from './research-summarizer';
 import { TriageAndReferral } from './triage-and-referral';
-import { ProToolCard } from './pro-tool-card'; // Import the extracted component
+import { ProToolCard } from './pro-tool-card';
 import { Loader2 } from 'lucide-react';
 import { PersonalizedClinicalDashboard } from './personalized-clinical-dashboard';
-
+import { Button } from '../ui/button';
 
 type ActiveToolId =
   | 'diffDx'
@@ -39,7 +35,7 @@ type ActiveToolId =
   | 'onCallHandover'
   | 'research'
   | 'discharge'
-  | 'smartTriage' // New tool ID for the coordinator
+  | 'smartTriage'
   | null;
 
 export interface ProTool {
@@ -66,9 +62,6 @@ const allProToolsList: ProTool[] = [
   { id: 'patient-management', title: 'Patient Management Suite', description: 'Log round notes, track tasks, and view patient timelines.', icon: BriefcaseMedical, href: '/patient-management' },
 ];
 
-const frequentlyUsedToolIds: ActiveToolId[] = ['smartTriage', 'discharge', 'pharmacopeia', 'protocols'];
-
-
 export function ProModeDashboard() {
   const [activeDialog, setActiveDialog] = useState<ActiveToolId>(null);
   
@@ -89,7 +82,7 @@ export function ProModeDashboard() {
               key={tool.id} 
               tool={tool} 
               onLaunch={setActiveDialog} 
-              isFrequentlyUsed={frequentlyUsedToolIds.includes(tool.id)}
+              isFrequentlyUsed={tool.isFrequentlyUsed}
             />
           ))}
         </div>

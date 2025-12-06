@@ -1,11 +1,9 @@
 // src/components/homepage/mode-switcher.tsx
 "use client";
 
-import { useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Stethoscope, ScanSearch, BookOpenText, LayoutDashboard } from "lucide-react";
-import { useProMode } from "@/contexts/pro-mode-context";
+import { Stethoscope, ScanSearch, BookOpenText } from "lucide-react";
 
 export type ActiveMode = 'symptom' | 'image' | 'education' | 'dashboard';
 
@@ -15,21 +13,12 @@ interface ModeSwitcherProps {
 }
 
 export function ModeSwitcher({ activeMode, setActiveMode }: ModeSwitcherProps) {
-  const { userRole } = useProMode();
-
-  const modes = useMemo(() => {
-    let baseModes = [
-      { id: 'symptom' as const, label: 'Symptom Analysis', icon: Stethoscope, ariaLabel: 'Switch to Symptom Analysis mode' },
-      { id: 'image' as const, label: 'Image Processing', icon: ScanSearch, ariaLabel: 'Switch to Image Processing mode' },
-      { id: 'education' as const, label: 'Educational Support', icon: BookOpenText, ariaLabel: 'Switch to Educational Support mode' },
-    ];
-    
-    if (userRole === 'pro') {
-      baseModes.push({ id: 'dashboard' as const, label: 'Clinical Dashboard', icon: LayoutDashboard, ariaLabel: 'Switch to Clinical Dashboard mode' });
-    }
-    
-    return baseModes;
-  }, [userRole]);
+  // Simplified modes without role-based logic
+  const modes = [
+    { id: 'symptom' as const, label: 'Symptom Analysis', icon: Stethoscope, ariaLabel: 'Switch to Symptom Analysis mode' },
+    { id: 'image' as const, label: 'Image Processing', icon: ScanSearch, ariaLabel: 'Switch to Image Processing mode' },
+    { id: 'education' as const, label: 'Educational Support', icon: BookOpenText, ariaLabel: 'Switch to Educational Support mode' },
+  ];
 
   return (
     <div id="mode-switcher" className="flex justify-center slide-in-bottom fade-in-delay-7" role="tablist" aria-label="Application Modes">

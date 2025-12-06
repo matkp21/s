@@ -6,16 +6,14 @@ import Image from 'next/image';
 import { ImageUploader } from '@/components/image-analyzer/image-uploader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, ImageOff, ScanEye, Sparkles, TestTubeDiagonal, PencilRuler } from 'lucide-react';
-import type { AnalyzeImageOutput, Annotation } from '@/ai/agents/ImageAnalyzerAgent'; // Updated import for Annotation
-import { useProMode } from '@/contexts/pro-mode-context';
+import { Loader2, ImageOff, ScanEye } from 'lucide-react';
+import type { AnalyzeImageOutput, Annotation } from '@/ai/agents/ImageAnalyzerAgent';
 
 export function ImageProcessingMode() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeImageOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const { isProMode, userRole } = useProMode();
 
   const handleAnalysisComplete = (result: AnalyzeImageOutput | null, imageUrl?: string, err?: string) => {
     setAnalysisResult(result);
@@ -30,8 +28,7 @@ export function ImageProcessingMode() {
         <CardHeader>
           <CardTitle className="text-2xl">Upload Image</CardTitle>
           <CardDescription>
-            Upload a medical image (e.g., X-ray, CT scan). Our current AI provides general analysis.
-            We aim to integrate specialized models like MedGemma in the future for expert-level interpretation. For educational/research use.
+            Upload a medical image (e.g., X-ray, CT scan). Our current AI provides general analysis. For educational/research use only.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -43,7 +40,7 @@ export function ImageProcessingMode() {
         <CardHeader>
           <CardTitle className="text-2xl">Analysis & Annotations</CardTitle>
           <CardDescription>
-            AI-generated insights based on current models. Future enhancements aim for MedGemma-level detail. Not a substitute for professional medical advice.
+            AI-generated insights. Not a substitute for professional medical advice.
           </CardDescription>
         </CardHeader>
         <CardContent className="min-h-[300px] flex flex-col justify-start">
@@ -57,20 +54,6 @@ export function ImageProcessingMode() {
             <Alert variant="destructive" className="rounded-lg my-4">
               <AlertTitle>Analysis Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {userRole === 'medico' && (
-            <Alert variant="default" className="my-4 border-sky-500/50 bg-sky-500/10 rounded-lg">
-              <PencilRuler className="h-5 w-5 text-sky-600" />
-              <AlertTitle className="text-sky-700 dark:text-sky-500 font-semibold">Medico Study Tools</AlertTitle>
-              <AlertDescription className="text-sky-600/80 dark:text-sky-500/80 text-xs">
-                Study image annotations. For notes &amp; MCQs, use chat commands:
-                <ul className="list-disc pl-5 mt-1">
-                  <li><code>/notes &lt;topic&gt;</code></li>
-                  <li><code>/mcq &lt;topic&gt; [num]</code></li>
-                </ul>
-              </AlertDescription>
             </Alert>
           )}
 
@@ -98,16 +81,7 @@ export function ImageProcessingMode() {
                 </div>
               )}
               {analysisResult && analysisResult.annotations && analysisResult.annotations.length === 0 && !isLoading && (
-                <p className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-lg">AI analysis complete. No specific annotation points were identified or returned in the expected format.</p>
-              )}
-              {isProMode && userRole === 'pro' && analysisResult && (
-                <Alert variant="default" className="mt-4 border-primary/50 bg-primary/10 rounded-lg">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <AlertTitle className="text-primary font-semibold">Pro Mode Active</AlertTitle>
-                  <AlertDescription className="text-primary/80 text-xs">
-                    Advanced clinical annotations, detailed JSON data, and further analytical tools would be available, aspiring to MedGemma capabilities.
-                  </AlertDescription>
-                </Alert>
+                <p className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-lg">AI analysis complete. No specific annotation points were identified.</p>
               )}
               {!uploadedImage && !analysisResult && (
                  <div className="flex flex-col items-center justify-center text-muted-foreground py-10 flex-grow">

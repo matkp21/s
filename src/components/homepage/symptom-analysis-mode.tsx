@@ -5,9 +5,8 @@ import { useState } from 'react';
 import { SymptomForm } from '@/components/symptom-analyzer/symptom-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, ListChecks, Sparkles, Brain, Microscope, Stethoscope } from 'lucide-react';
+import { Loader2, ListChecks, Brain, Microscope, Stethoscope } from 'lucide-react';
 import { analyzeSymptoms, type SymptomAnalyzerOutput, type SymptomAnalyzerInput, type DiagnosisItem } from '@/ai/agents/SymptomAnalyzerAgent';
-import { useProMode } from '@/contexts/pro-mode-context';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -24,7 +23,6 @@ export function SymptomAnalysisMode() {
   const [analysisResult, setAnalysisResult] = useState<SymptomAnalyzerOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isProMode } = useProMode();
 
   const handleAnalysisStart = async (rawInput: SymptomAnalyzerInput) => {
     setIsLoading(true);
@@ -131,16 +129,6 @@ export function SymptomAnalysisMode() {
                       ))}
                     </ul>
                   </div>
-                )}
-                
-                {isProMode && (
-                  <Alert variant="default" className="mt-4 border-primary/50 bg-primary/10 rounded-lg">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    <AlertTitle className="text-primary font-semibold">Pro Mode Active</AlertTitle>
-                    <AlertDescription className="text-primary/80 text-xs">
-                      Advanced clinical annotations and further analytical tools are available.
-                    </AlertDescription>
-                  </Alert>
                 )}
               </div>
             </ScrollArea>
