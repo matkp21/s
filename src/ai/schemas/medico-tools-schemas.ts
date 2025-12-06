@@ -1,4 +1,3 @@
-
 // src/ai/schemas/medico-tools-schemas.ts
 
 /**
@@ -434,4 +433,21 @@ export const GuidedStudyOutputSchema = z.object({
   mcqs: MedicoMCQGeneratorOutputSchema,
   flashcards: MedicoFlashcardGeneratorOutputSchema,
   nextSteps: z.array(NextStepSchema).optional(),
+});
+
+// Schema for Knowledge Augmenter
+export const KnowledgeAugmenterInputSchema = z.object({
+  fileDataUri: z.string().describe("The student's notes file as a data URI."),
+  question: z.string().describe("The student's question about the notes."),
+});
+
+export const ShorthandKeySchema = z.object({
+  abbreviation: z.string(),
+  interpretation: z.string(),
+});
+
+export const KnowledgeAugmenterOutputSchema = z.object({
+  augmentedAnswer: z.string().describe("The complete, augmented answer to the student's question."),
+  missingInfo: z.array(z.string()).describe("A list of critical information that was missing from the student's notes."),
+  shorthandKey: z.array(ShorthandKeySchema).describe("A key for any medical shorthand interpreted from the notes."),
 });

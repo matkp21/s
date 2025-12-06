@@ -30,7 +30,8 @@ export type ActiveToolId =
   | 'diagnobot'
   | 'smart-search'
   | 'comprehensive-review'
-  | 'cbme-browser' // New ID for competency browser
+  | 'cbme-browser'
+  | 'knowledge-augmenter' // New tool ID
   | null;
 
 export interface MedicoTool {

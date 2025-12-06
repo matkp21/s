@@ -30,6 +30,7 @@ import {
   BellRing,
   Orbit,
   BookMarked,
+  Sparkles,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -59,6 +60,7 @@ const allNavItems = [
   { href: '/medico', label: 'Medico Hub', icon: GraduationCap, ariaLabel: 'Open Medico Study Hub', roles: ['medico'] },
   { href: '/medico/library', label: 'Study Library', icon: Library, ariaLabel: 'Open Study Library', roles: ['medico'] },
   { href: '/medico/cbme', label: 'Competency Browser', icon: BookMarked, ariaLabel: 'Open CBME Competency Browser', roles: ['medico']},
+  { id: 'knowledge-augmenter', href: '/medico/knowledge-augmenter', label: 'Knowledge Augmenter', icon: Sparkles, ariaLabel: 'Open Knowledge Augmenter', roles: ['medico'] },
   { href: '/notifications', label: 'Notifications', icon: BellRing, ariaLabel: 'View Notifications', roles: ['pro', 'medico', 'diagnosis'] },
   { href: '/feedback', label: 'Feedback', icon: Info, ariaLabel: 'Submit Feedback', roles: ['pro', 'medico', 'diagnosis'] },
 ];
