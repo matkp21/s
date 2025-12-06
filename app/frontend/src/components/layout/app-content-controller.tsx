@@ -1,7 +1,7 @@
 // src/components/layout/app-content-controller.tsx
 "use client";
 
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, useMemo, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { useClientState } from '@/contexts/client-state-provider';
@@ -21,9 +21,17 @@ export function AppContentController({ children }: { children: ReactNode }) {
   } = useClientState();
 
   const pathname = usePathname();
+  const [initialRenderComplete, setInitialRenderComplete] = useState(false);
 
-  const displayState = React.useMemo(() => {
-    if (!isClient || authLoading) {
+  useEffect(() => {
+    // This effect runs only on the client, after the initial render.
+    // We can now safely determine the display state.
+    setInitialRenderComplete(true);
+  }, []);
+
+  const displayState = useMemo(() => {
+    // During server render and initial client render, we show a loader.
+    if (!initialRenderComplete || authLoading) {
       return 'loading';
     }
     // Auth pages should always render immediately without the main layout.
@@ -40,7 +48,7 @@ export function AppContentController({ children }: { children: ReactNode }) {
     }
     // Otherwise, show the main app content within the AppLayout.
     return 'app';
-  }, [isClient, authLoading, user, onboardingComplete, welcomeShownThisSession, pathname]);
+  }, [initialRenderComplete, authLoading, user, onboardingComplete, welcomeShownThisSession, pathname]);
 
   const handleOnboardingClose = () => {
     setOnboardingComplete(true);

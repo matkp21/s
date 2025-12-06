@@ -14,6 +14,7 @@ export default function ProPage() {
   const router = useRouter();
   const [showProAnimation, setShowProAnimation] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -23,6 +24,7 @@ export default function ProPage() {
     if (authLoading || !isClient) return; // Wait for auth and client-side mount
 
     if (userRole === 'pro') {
+      setIsAuthorized(true);
       const animationShown = sessionStorage.getItem('proSuiteAnimationShown');
       if (!animationShown) {
         setShowProAnimation(true);
@@ -30,26 +32,17 @@ export default function ProPage() {
       }
     } else if (userRole !== null) { // If role is defined but not 'pro', redirect
       router.push('/');
+    } else if (!userRole) { // Guest user
+      router.push('/');
     }
   }, [userRole, authLoading, isClient, router]);
 
 
-  if (authLoading || !isClient) {
+  if (authLoading || !isClient || !isAuthorized) {
     return (
         <div className="flex justify-center items-center min-h-screen">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
-    );
-  }
-  
-  if (userRole !== 'pro') {
-    return (
-      <PageWrapper title="Access Denied">
-        <div className="text-center p-8">
-          <p className="text-lg">You must be in Professional mode to access this page.</p>
-          <p className="text-sm text-muted-foreground">Redirecting to homepage...</p>
-        </div>
-      </PageWrapper>
     );
   }
 
