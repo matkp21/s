@@ -61,7 +61,7 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await generate({
-      model: googleAI('gemini-1.5-pro-latest'),
+      model: googleAI('gemini-1.5-pro-preview'),
       prompt: input.message,
       tools: [symptomAnalyzerTool, studyNotesTool, mcqGeneratorTool],
       config: {
@@ -84,7 +84,7 @@ const chatFlow = ai.defineFlow(
 
       // Generate a final response based on the tool's output
       const finalResponse = await generate({
-        model: googleAI('gemini-1.5-pro-latest'),
+        model: googleAI('gemini-1.5-pro-preview'),
         prompt: `Based on the user's message "${input.message}" and the result from the tool "${toolCall.name}", which is: ${JSON.stringify(toolResponse)}, formulate a user-facing response. Present the data clearly and conversationally.`,
       });
       output.response = finalResponse.text();

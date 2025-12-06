@@ -1,4 +1,3 @@
-// src/ai/agents/medico/VideoSummarizerAgent.ts
 'use server';
 /**
  * @fileOverview A Genkit flow for summarizing YouTube videos.
@@ -81,7 +80,7 @@ Summary:`;
       
       const { text } = await generate({
         prompt: summaryPrompt,
-        model: googleAI('gemini-1.5-flash'),
+        model: googleAI('gemini-1.5-flash-preview'),
         config: {
           temperature: 0.2, // Lower temperature for factual summarization
         },

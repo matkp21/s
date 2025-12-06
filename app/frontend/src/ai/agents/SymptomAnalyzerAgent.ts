@@ -28,7 +28,7 @@ const symptomAnalyzerFlow = ai.defineFlow(
   async (input) => {
     try {
       const { output } = await generate({
-          model: googleAI('gemini-1.5-pro-latest'),
+          model: googleAI('gemini-1.5-pro-preview'),
           prompt: `You are an expert medical AI assistant. Your primary task is to generate a list of potential differential diagnoses based on the provided symptoms and patient context.
 For each diagnosis, include a 'name', a 'confidence' level ('High', 'Medium', 'Low', 'Possible'), and a 'rationale'.
 

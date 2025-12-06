@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Utility function for making direct calls to the Google Gemini API.
@@ -50,7 +49,7 @@ const GeminiApiResponseSchema = z.object({
 
 export async function callGeminiApiDirectly(promptText: string): Promise<string> {
   const apiKey = process.env.GOOGLE_API_KEY;
-  const apiEndpoint = process.env.NEXT_PUBLIC_GEMINI_API_ENDPOINT || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent';
+  const apiEndpoint = process.env.NEXT_PUBLIC_GEMINI_API_ENDPOINT || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-preview:generateContent';
 
   if (!apiKey) {
     console.error('Google API key (GOOGLE_API_KEY) is not configured in environment variables.');
