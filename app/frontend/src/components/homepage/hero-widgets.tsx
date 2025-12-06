@@ -24,14 +24,22 @@ interface HeroWidgetsProps {
   tasks: HeroTask[];
 }
 
+// Skeleton component for placeholder UI
+const Skeleton = ({ className }: { className?: string }) => (
+  <div className={cn("animate-pulse rounded-md bg-muted", className)} />
+);
+
+
 export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
   const [isCalendarPopoverOpen, setIsCalendarPopoverOpen] = useState(false);
   const [isClockWidgetPopoverOpen, setIsClockWidgetPopoverOpen] = useState(false);
   const { toast } = useToast(); 
 
   useEffect(() => {
+    // This now only runs on the client, preventing hydration mismatch.
+    setCurrentDateTime(new Date());
     const timerId = setInterval(() => {
       setCurrentDateTime(new Date());
     }, 1000); 
@@ -58,7 +66,11 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
             aria-label="Open calendar and tasks"
           >
             <CalendarDays className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            <span className="font-semibold text-foreground">{format(currentDateTime, "E, MMM d")}</span>
+            {currentDateTime ? (
+              <span className="font-semibold text-foreground">{format(currentDateTime, "E, MMM d")}</span>
+            ) : (
+              <Skeleton className="h-4 w-20" />
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 rounded-xl shadow-xl border border-border/50 bg-card" align="start">
@@ -133,12 +145,15 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
             className="flex-1 justify-center text-left font-normal text-xs sm:text-sm rounded-md h-auto p-2 text-foreground hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             aria-label="Open clock, timer, and reminders widget"
           >
-            <span className="font-semibold text-foreground">{format(currentDateTime, "p")}</span>
+           {currentDateTime ? (
+              <span className="font-semibold text-foreground">{format(currentDateTime, "p")}</span>
+           ) : (
+             <Skeleton className="h-4 w-16" />
+           )}
             <Clock className="ml-1.5 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0 rounded-xl shadow-xl border border-border/50 bg-card" align="end">
-          {/* Reverted ClockWidget with full functionality (tabs, timer, reminders) */}
           <ClockWidget onClose={() => setIsClockWidgetPopoverOpen(false)} />
         </PopoverContent>
       </Popover>
