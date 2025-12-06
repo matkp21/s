@@ -29,7 +29,8 @@ export type ActiveToolId =
   | 'micromate'
   | 'diagnobot'
   | 'smart-search'
-  | 'comprehensive-review' // New tool ID
+  | 'comprehensive-review'
+  | 'cbme-browser' // New ID for competency browser
   | null;
 
 export interface MedicoTool {
