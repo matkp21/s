@@ -84,7 +84,7 @@ Ensure the entire response is a single valid JSON object conforming to the Study
 `;
 
       const { output } = await generate({
-          model: googleAI('gemini-1.5-pro-latest'),
+          model: googleAI('gemini-3-pro-preview'),
           prompt: prompt,
           output: {
             format: 'json',

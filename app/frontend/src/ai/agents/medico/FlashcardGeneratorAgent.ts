@@ -68,7 +68,7 @@ Format the entire output as a valid JSON object.
 `;
 
       const { output } = await generate({
-        model: googleAI('gemini-1.5-pro-latest'),
+        model: googleAI('gemini-2.5-flash-preview'),
         prompt,
         output: {
           format: 'json',

@@ -53,7 +53,7 @@ const analyzeImageFlow = ai.defineFlow(
   async input => {
     try {
         const llmResponse = await generate({
-          model: 'googleai/gemini-1.5-pro-latest',
+          model: 'googleai/gemini-3-pro-preview',
           prompt: [
             media({ url: input.imageDataUri }),
             `You are a medical imaging analysis AI. You are provided with a medical image. Your task is to identify key areas of interest or potential abnormalities.
