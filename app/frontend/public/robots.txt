@@ -1,8 +1,7 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-#
-# Allow crawling of all content by default
+# Allow all user agents to crawl the site
 User-agent: *
 Allow: /
 
-# Disallow crawling of API routes
+# Disallow crawling of API routes and Next.js internal paths
 Disallow: /api/
+Disallow: /_next/
