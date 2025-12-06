@@ -19,11 +19,9 @@ import {
   StudyNotesGeneratorInputSchema,
 } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
-import { generate, type ModelReference } from 'genkit/ai';
+import { generate } from 'genkit/ai';
+import { googleAI } from '@genkit-ai/google-genai';
 import { vertexAI } from '@genkit-ai/vertexai';
-
-// Define a reference to your custom MedGemma model on Vertex AI
-const medGemma: ModelReference = vertexAI.model('medGemma');
 
 export type MbbsStudyInput = z.infer<typeof MbbsStudyInputSchema>;
 export type MbbsStudyOutput = z.infer<typeof MbbsStudyOutputSchema>;
@@ -80,14 +78,13 @@ const mbbsStudyFlow = ai.defineFlow(
             console.log(`[MbbsStudyAgent] Invoking MedGemma via Vertex AI for text generation...`);
 
             const { output } = await generate({
-              model: medGemma,
+              model: vertexAI('medGemma'),
               prompt: medGemmaPrompt,
               output: {
                 format: 'json',
                 schema: MedGemmaTextOutputSchema,
               },
               config: {
-                // These are now standard Genkit config, not custom VLLM params
                 temperature: 0.2, 
                 maxOutputTokens: 2048, 
               }
@@ -105,7 +102,7 @@ const mbbsStudyFlow = ai.defineFlow(
              const imageGenPrompt = `A simple, clear, modern medical textbook-style educational diagram illustrating the key concepts of "${input.topic}". Ensure labels are clear and concise.`;
              console.log(`[MbbsStudyAgent] Invoking image generation model...`);
              const { media } = await generate({
-                model: 'googleai/imagen-4.0-fast-generate-001',
+                model: googleAI('imagen-4.0-fast-generate-001'),
                 prompt: imageGenPrompt
             });
             console.log(`[MbbsStudyAgent] Image generation successful.`);

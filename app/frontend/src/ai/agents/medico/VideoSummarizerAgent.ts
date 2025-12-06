@@ -1,4 +1,3 @@
-
 // src/ai/agents/medico/VideoSummarizerAgent.ts
 'use server';
 /**
@@ -9,6 +8,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
 import { YoutubeTranscript } from 'youtube-transcript';
 import { generate } from 'genkit/ai';
@@ -81,7 +81,7 @@ Summary:`;
       
       const { text } = await generate({
         prompt: summaryPrompt,
-        model: 'googleai/gemini-1.5-flash',
+        model: googleAI('gemini-1.5-flash'),
         config: {
           temperature: 0.2, // Lower temperature for factual summarization
         },

@@ -1,4 +1,3 @@
-
 // src/ai/agents/medico/StudyNotesAgent.ts
 'use server';
 /**
@@ -11,6 +10,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { StudyNotesGeneratorInputSchema, StudyNotesGeneratorOutputSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
 import { generate } from 'genkit/ai';
@@ -84,7 +84,7 @@ Ensure the entire response is a single valid JSON object conforming to the Study
 `;
 
       const { output } = await generate({
-          model: 'googleai/gemini-1.5-pro-latest',
+          model: googleAI('gemini-1.5-pro-latest'),
           prompt: prompt,
           output: {
             format: 'json',

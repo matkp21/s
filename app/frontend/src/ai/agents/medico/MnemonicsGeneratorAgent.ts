@@ -1,4 +1,3 @@
-
 // src/ai/agents/medico/MnemonicsGeneratorAgent.ts
 'use server';
 /**
@@ -12,6 +11,7 @@
 
 import { ai } from '@/ai/genkit';
 import { generate } from 'genkit/ai';
+import { googleAI } from '@genkit-ai/google-genai';
 import { MedicoMnemonicsGeneratorInputSchema, MedicoMnemonicsGeneratorOutputSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
 
@@ -65,7 +65,7 @@ Format the entire output as a valid JSON object.
 
       // Step 1: Generate the mnemonic text and explanation
       const textResponse = await generate({
-        model: 'googleai/gemini-1.5-pro-latest',
+        model: googleAI('gemini-1.5-pro-latest'),
         prompt: textPrompt,
         output: {
           format: 'json',
@@ -88,7 +88,7 @@ Format the entire output as a valid JSON object.
         const imageGenPrompt = `A simple, clear, and memorable visual diagram or cartoon that illustrates the medical mnemonic: "${textOutput.mnemonic}". The style should be like a clean, modern medical textbook illustration with clear, simple labels if necessary. Focus on making the visual connection to the mnemonic's words obvious.`;
         
         const { media } = await generate({
-            model: 'googleai/imagen-4.0-fast-generate-001',
+            model: googleAI('imagen-4.0-fast-generate-001'),
             prompt: imageGenPrompt,
         });
         

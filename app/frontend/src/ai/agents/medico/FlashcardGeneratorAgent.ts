@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for generating flashcards on medical topics for medico users.
@@ -9,6 +8,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { MedicoFlashcardGeneratorInputSchema, MedicoFlashcardGeneratorOutputSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
 import { generate } from 'genkit/ai';
@@ -68,7 +68,7 @@ Format the entire output as a valid JSON object.
 `;
 
       const { output } = await generate({
-        model: 'googleai/gemini-1.5-pro-latest',
+        model: googleAI('gemini-1.5-pro-latest'),
         prompt,
         output: {
           format: 'json',
