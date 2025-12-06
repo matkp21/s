@@ -4,7 +4,7 @@
 import React, { useState, Suspense, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  CheckSquare, Settings, Loader2, Star, BrainCircuit
+  CheckSquare, Settings, Loader2, Star, BrainCircuit, Library
 } from 'lucide-react';
 import { motion, Reorder } from 'framer-motion';
 import { allMedicoToolsList } from '@/config/medico-tools-config';
@@ -47,7 +47,7 @@ export function MedicoDashboard() {
     }
 
      return (
-        <>
+        <div className="container mx-auto py-8">
             <div className="flex justify-between items-center mb-6">
                 <div className="text-left">
                     <h1 className="text-3xl font-bold tracking-tight text-foreground mb-1 firebase-gradient-text">Medico Study Hub</h1>
@@ -153,6 +153,6 @@ export function MedicoDashboard() {
                   </DialogContent>
               )}
             </Dialog>
-        </>
+        </div>
     );
 };
