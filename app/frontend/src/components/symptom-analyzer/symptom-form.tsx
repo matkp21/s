@@ -11,21 +11,15 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { SymptomAnalyzerInputSchema } from '@/ai/schemas/symptom-analyzer-schemas';
 import type { z } from 'zod';
-import { useAiAgent } from '@/hooks/use-ai-agent';
-import { analyzeSymptoms, type SymptomAnalyzerInput, type SymptomAnalyzerOutput } from '@/ai/agents/SymptomAnalyzerAgent';
 
 type SymptomFormValues = z.infer<typeof SymptomAnalyzerInputSchema>;
 
 interface SymptomFormProps {
-  onAnalysisComplete: (result: SymptomAnalyzerOutput | null, error?: string) => void;
+  onAnalysisStart: (rawInput: SymptomFormValues) => void;
+  isLoading: boolean;
 }
 
-export function SymptomForm({ onAnalysisComplete }: SymptomFormProps) {
-  const { mutate: runAnalysis, isPending: isLoading } = useAiAgent<SymptomAnalyzerInput, SymptomAnalyzerOutput>(analyzeSymptoms, {
-    onSuccess: (data) => onAnalysisComplete(data),
-    onError: (error) => onAnalysisComplete(null, error),
-  });
-
+export function SymptomForm({ onAnalysisStart, isLoading }: SymptomFormProps) {
   const form = useForm<SymptomFormValues>({
     resolver: zodResolver(SymptomAnalyzerInputSchema),
     defaultValues: {
@@ -39,8 +33,7 @@ export function SymptomForm({ onAnalysisComplete }: SymptomFormProps) {
   });
 
   const onSubmit: SubmitHandler<SymptomFormValues> = async (data) => {
-    onAnalysisComplete(null); // Clear previous results
-    runAnalysis(data);
+    onAnalysisStart(data);
   };
 
   return (

@@ -1,4 +1,3 @@
-
 // src/components/pro/triage-and-referral.tsx
 "use client";
 
@@ -26,9 +25,9 @@ function getConfidenceColor(confidence?: DiagnosisItem['confidence']): string {
 
 
 export function TriageAndReferral() {
-  const [analysisResult, setAnalysisResult = useState<TriageAndReferralOutput | null>(null);
-  const [isLoading, setIsLoading = useState(false);
-  const [error, setError = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<TriageAndReferralOutput | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSymptomFormSubmit = async (rawInput: SymptomAnalyzerInput) => {
@@ -63,16 +62,7 @@ export function TriageAndReferral() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            {/* The SymptomForm's onAnalysisComplete is repurposed to just trigger the orchestrator */}
-            <SymptomForm 
-                onAnalysisComplete={(_, __, rawInput) => {
-                    if (rawInput) {
-                        handleSymptomFormSubmit(rawInput);
-                    }
-                }}
-                setIsLoading={setIsLoading} 
-                isLoading={isLoading}
-            />
+            <SymptomForm onAnalysisStart={handleSymptomFormSubmit} isLoading={isLoading}/>
         </CardContent>
       </Card>
       

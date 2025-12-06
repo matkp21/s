@@ -22,12 +22,15 @@ export async function generateMnemonic(input: MedicoMnemonicsGeneratorInput): Pr
   return mnemonicsGeneratorFlow(input);
 }
 
-const mnemonicsTextPrompt = ai.definePrompt({
-  name: 'medicoMnemonicsTextPrompt',
-  input: { schema: MedicoMnemonicsGeneratorInputSchema },
-  // Output only the text part first
-  output: { schema: MedicoMnemonicsGeneratorOutputSchema.omit({ imageUrl: true }) },
-  prompt: `You are an AI expert in creating mnemonics for medical students. Your primary task is to generate a JSON object containing a mnemonic, its explanation, AND a list of relevant next study steps for the topic: {{{topic}}}.
+const mnemonicsGeneratorFlow = ai.defineFlow(
+  {
+    name: 'medicoMnemonicsGeneratorFlow',
+    inputSchema: MedicoMnemonicsGeneratorInputSchema,
+    outputSchema: MedicoMnemonicsGeneratorOutputSchema,
+  },
+  async (input) => {
+    try {
+      const textPrompt = `You are an AI expert in creating mnemonics for medical students. Your primary task is to generate a JSON object containing a mnemonic, its explanation, AND a list of relevant next study steps for the topic: ${input.topic}.
 
 The JSON object you generate MUST have a 'mnemonic' field, an 'explanation' field, a 'topicGenerated' field, and a 'nextSteps' field.
 
@@ -39,41 +42,40 @@ Example for 'nextSteps':
     "title": "Create Flashcards",
     "description": "Create flashcards for the items covered by this mnemonic to reinforce learning.",
     "toolId": "flashcards",
-    "prefilledTopic": "{{{topic}}}",
+    "prefilledTopic": "${input.topic}",
     "cta": "Create Flashcards"
   },
   {
     "title": "Generate Study Notes",
     "description": "Generate detailed notes to understand the clinical context behind the topic.",
     "toolId": "notes-generator",
-    "prefilledTopic": "{{{topic}}}",
+    "prefilledTopic": "${input.topic}",
     "cta": "Generate Notes"
   }
 ]
 ---
 
 **Instructions for mnemonic generation:**
-The mnemonic should be creative and easy-to-remember for the topic: {{{topic}}}.
+The mnemonic should be creative and easy-to-remember for the topic: ${input.topic}.
 The explanation should detail what each part of the mnemonic stands for.
-The 'topicGenerated' field must be set to "{{{topic}}}".
+The 'topicGenerated' field must be set to "${input.topic}".
 
 Format the entire output as a valid JSON object.
-`,
-  config: {
-    temperature: 0.7, // Creative for mnemonics
-  }
-});
+`;
 
-const mnemonicsGeneratorFlow = ai.defineFlow(
-  {
-    name: 'medicoMnemonicsGeneratorFlow',
-    inputSchema: MedicoMnemonicsGeneratorInputSchema,
-    outputSchema: MedicoMnemonicsGeneratorOutputSchema,
-  },
-  async (input) => {
-    try {
       // Step 1: Generate the mnemonic text and explanation
-      const { output: textOutput } = await mnemonicsTextPrompt(input);
+      const textResponse = await generate({
+        model: 'googleai/gemini-1.5-pro-latest',
+        prompt: textPrompt,
+        output: {
+          format: 'json',
+          schema: MedicoMnemonicsGeneratorOutputSchema.omit({ imageUrl: true })
+        },
+        config: {
+          temperature: 0.7, // Creative for mnemonics
+        }
+      });
+      const textOutput = textResponse.output();
 
       if (!textOutput || !textOutput.mnemonic) {
         console.error('MedicoMnemonicsGeneratorPrompt did not return a valid mnemonic for topic:', input.topic);
@@ -86,7 +88,7 @@ const mnemonicsGeneratorFlow = ai.defineFlow(
         const imageGenPrompt = `A simple, clear, and memorable visual diagram or cartoon that illustrates the medical mnemonic: "${textOutput.mnemonic}". The style should be like a clean, modern medical textbook illustration with clear, simple labels if necessary. Focus on making the visual connection to the mnemonic's words obvious.`;
         
         const { media } = await generate({
-            model: 'googleai/imagen-3.0-generate-preview',
+            model: 'googleai/imagen-4.0-fast-generate-001',
             prompt: imageGenPrompt,
         });
         

@@ -18,11 +18,11 @@ export const PatientContextSchema = z.object({
   age: z.coerce.number().int().positive().optional().describe('Patient age in years.'),
   sex: z.enum(['male', 'female', 'other']).optional().describe('Patient biological sex.'),
   history: z.string().optional().describe('Brief relevant medical history or context.'),
-});
+}).optional();
 
 export const SymptomAnalyzerInputSchema = z.object({
   symptoms: z.string().min(10, { message: "Symptoms description must be at least 10 characters." }).describe('The symptoms the user is experiencing.'),
-  patientContext: PatientContextSchema.optional(),
+  patientContext: PatientContextSchema,
 });
 export type SymptomAnalyzerInput = z.infer<typeof SymptomAnalyzerInputSchema>;
 

@@ -1,3 +1,4 @@
+
 // src/components/chat/symptom-analysis-result-card.tsx
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, ListChecks, Microscope, Stethoscope } from 'lucide-react';

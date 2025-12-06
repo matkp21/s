@@ -10,7 +10,7 @@ export default function MedicoLayout({
 }) {
   return (
     <div className={cn("flex flex-col min-h-screen", "medico-layout-background")}>
-        {children}
+        <PageWrapper>{children}</PageWrapper>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 // src/ai/agents/medico/MbbsStudyAgent.ts
 'use server';
 /**
@@ -100,7 +101,7 @@ const mbbsStudyFlow = ai.defineFlow(
              const imageGenPrompt = `A simple, clear, modern medical textbook-style educational diagram illustrating the key concepts of "${input.topic}". Ensure labels are clear and concise.`;
              console.log(`[MbbsStudyAgent] Invoking Imagen for image generation...`);
              const { media } = await generate({
-                model: 'googleai/imagen-3.0-generate-preview',
+                model: 'googleai/imagen-4.0-fast-generate-001',
                 prompt: imageGenPrompt
             });
             console.log(`[MbbsStudyAgent] Imagen image generation successful.`);

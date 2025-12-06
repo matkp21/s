@@ -13,6 +13,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { generate } from 'genkit/ai';
+import { media } from 'genkit/content';
 
 const AnalyzeImageInputSchema = z.object({
   imageDataUri: z
@@ -43,30 +44,6 @@ export async function analyzeImage(input: AnalyzeImageInput): Promise<AnalyzeIma
   return analyzeImageFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'analyzeImagePrompt',
-  input: {schema: AnalyzeImageInputSchema},
-  output: {schema: AnalyzeImageOutputSchema},
-  prompt: `You are a medical imaging analysis AI. You are provided with a medical image. Your task is to identify key areas of interest or potential abnormalities.
-For each finding, provide:
-1. A concise textual description ('text').
-2. A normalized position ('position') for where this finding is located on the image. The position should be an object with 'x' and 'y' coordinates, where both x and y are numbers between 0.0 (top/left) and 1.0 (bottom/right), representing the center of the finding.
-
-Image: {{media url=imageDataUri}}
-
-Format your output as a JSON object strictly conforming to the AnalyzeImageOutputSchema, specifically:
-{
-  "annotations": [
-    { "text": "Description of finding 1", "position": { "x": 0.25, "y": 0.3 } },
-    { "text": "Description of finding 2", "position": { "x": 0.7, "y": 0.65 } }
-    // ... more annotations if relevant
-  ]
-}
-If no specific findings are apparent, return an empty "annotations" array: { "annotations": [] }.
-Focus on identifying 2-3 key points if possible.
-`,
-});
-
 const analyzeImageFlow = ai.defineFlow(
   {
     name: 'analyzeImageFlow',
@@ -75,15 +52,33 @@ const analyzeImageFlow = ai.defineFlow(
   },
   async input => {
     try {
-        const { output } = await generate({
-          model: 'googleai/gemini-1.5-flash',
-          prompt: prompt.render(input),
+        const llmResponse = await generate({
+          model: 'googleai/gemini-1.5-pro-latest',
+          prompt: [
+            media({ url: input.imageDataUri }),
+            `You are a medical imaging analysis AI. You are provided with a medical image. Your task is to identify key areas of interest or potential abnormalities.
+For each finding, provide:
+1. A concise textual description ('text').
+2. A normalized position ('position') for where this finding is located on the image. The position should be an object with 'x' and 'y' coordinates, where both x and y are numbers between 0.0 (top/left) and 1.0 (bottom/right), representing the center of the finding.
+
+Format your output as a JSON object strictly conforming to the AnalyzeImageOutputSchema, specifically:
+{
+  "annotations": [
+    { "text": "Description of finding 1", "position": { "x": 0.25, "y": 0.3 } },
+    { "text": "Description of finding 2", "position": { "x": 0.7, "y": 0.65 } }
+  ]
+}
+If no specific findings are apparent, return an empty "annotations" array: { "annotations": [] }.
+Focus on identifying 2-3 key points if possible.
+`,
+          ],
           output: {
             format: 'json',
             schema: AnalyzeImageOutputSchema,
           }
         });
 
+        const output = llmResponse.output();
         if (!output) {
         console.error("Image analysis prompt did not return an output for image:", input.imageDataUri ? input.imageDataUri.substring(0,50) + "..." : "undefined");
         return { annotations: [] };

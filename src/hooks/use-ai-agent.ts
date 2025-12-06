@@ -14,18 +14,15 @@ interface UseAiAgentOptions<T, R> {
   successMessage?: string;
 }
 
-// Return type is extended to include 'execute' for clarity, which is the mutate function.
-type AiAgentMutationResult<T, R> = UseMutationResult<R, Error, T> & { execute: UseMutationResult<R, Error, T>['mutate'] };
-
 export function useAiAgent<T, R>(
   agentFunction: AgentFunction<T, R>,
   // We can pass the Zod schema for response validation
   responseSchema?: z.ZodType<R>,
   options?: UseAiAgentOptions<T, R>
-): AiAgentMutationResult<T, R> {
+): UseMutationResult<R, Error, T> {
   const { toast } = useToast();
 
-  const mutation = useMutation<R, Error, T>({
+  return useMutation<R, Error, T>({
     mutationFn: async (input: T) => {
       const result = await agentFunction(input);
       // Validate the response against the Zod schema if provided
@@ -64,6 +61,4 @@ export function useAiAgent<T, R>(
       }
     },
   });
-  
-  return { ...mutation, execute: mutation.mutate };
 }

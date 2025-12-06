@@ -21,19 +21,20 @@ import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '../markdown/markdown-renderer';
 import { MedicoExamPaperInputSchema } from '@/ai/schemas/medico-tools-schemas';
 import { NextStepsDisplay } from './next-steps-display';
+import React from 'react';
 
 type ExamPaperFormValues = z.infer<typeof MedicoExamPaperInputSchema>;
 
-interface SolvedQuestionPapersViewerProps {
+interface SolvedQuestionPapersViewerComponentProps {
     content: MedicoExamPaperOutput;
     title: string;
     description: string;
     children?: React.ReactNode;
 }
 
-export const SolvedQuestionPapersViewerComponent: React.FC<SolvedQuestionPapersViewerProps> = ({ content, title, description, children }) => {
+export const SolvedQuestionPapersViewerComponent: React.FC<SolvedQuestionPapersViewerComponentProps> = ({ content, title, description, children }) => {
     return (
-        <Card className="shadow-md rounded-xl mt-6 border-green-500/30 bg-gradient-to-br from-card to-green-500/5 relative">
+        <Card className="shadow-md rounded-xl mt-6 border-green-500/30 bg-gradient-to-br from-card via-card to-green-500/5 relative">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <BookCopy className="h-6 w-6 text-green-600" />
@@ -49,18 +50,24 @@ export const SolvedQuestionPapersViewerComponent: React.FC<SolvedQuestionPapersV
                     <h3 className="font-semibold text-lg mb-2">Multiple Choice Questions</h3>
                     <div className="space-y-4">
                       {content.mcqs.map((mcq, index) => (
-                        <Card key={index} className="p-3 bg-card/80 shadow-sm rounded-lg">
+                        <Card key={index} className="p-4 bg-card/80 shadow-sm rounded-lg">
                           <p className="font-semibold mb-2 text-foreground text-sm">Q{index + 1}: {mcq.question}</p>
                           <ul className="space-y-1.5 text-xs">
                             {mcq.options.map((opt, optIndex) => (
-                              <li key={optIndex} className={cn("p-2 border rounded-md transition-colors", opt.isCorrect ? "border-green-500 bg-green-500/10 text-green-700 dark:text-green-400 font-medium" : "border-border")}>
+                              <li 
+                                key={optIndex} 
+                                className={cn(
+                                  "p-2 border rounded-md transition-colors",
+                                  opt.isCorrect ? "border-green-500 bg-green-500/10 text-green-700 dark:text-green-400 font-medium" : "border-border hover:bg-muted/50"
+                                )}
+                              >
                                 {String.fromCharCode(65 + optIndex)}. {opt.text}
                               </li>
                             ))}
                           </ul>
                           {mcq.explanation && (
-                            <div className="text-xs mt-2 text-muted-foreground italic border-t pt-2">
-                              <MarkdownRenderer content={`**Explanation:** ${mcq.explanation}`} />
+                            <div className="text-xs mt-3 text-muted-foreground italic border-t pt-2">
+                               <MarkdownRenderer content={`**Explanation:** ${mcq.explanation}`} />
                             </div>
                           )}
                         </Card>
@@ -73,7 +80,7 @@ export const SolvedQuestionPapersViewerComponent: React.FC<SolvedQuestionPapersV
                     <h3 className="font-semibold text-lg mb-2">Essay Questions</h3>
                      <div className="space-y-4">
                       {content.essays.map((essay, index) => (
-                        <Card key={`essay-${index}`} className="p-3 bg-card/80 shadow-sm rounded-lg">
+                        <Card key={`essay-${index}`} className="p-4 bg-card/80 shadow-sm rounded-lg">
                           <p className="font-semibold mb-2 text-foreground text-sm">Essay Q{index + 1}: {essay.question}</p>
                           <div className="text-xs mt-2 text-muted-foreground italic border-t pt-2">
                              <MarkdownRenderer content={`**Answer Outline:** ${essay.answer_outline}`} />
@@ -94,7 +101,7 @@ export const SolvedQuestionPapersViewerComponent: React.FC<SolvedQuestionPapersV
 export function SolvedQuestionPapersViewer() {
   const { toast } = useToast();
   const { user } = useProMode();
-  const { mutate: runGenerateExam, data: examData, isPending: isLoading, error, reset } = useAiAgent(generateExamPaper, {
+  const { mutate: runGenerateExam, data: examData, isPending: isLoading, error, reset } = useAiAgent(generateExamPaper, MedicoExamPaperOutputSchema, {
     onSuccess: (data, input) => {
       if (!data || (!data.mcqs?.length && !data.essays?.length)) {
         toast({
