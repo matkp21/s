@@ -7,20 +7,37 @@ import { useRouter, usePathname } from 'next/navigation';
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { SidebarNav } from './sidebar-nav';
 import { Button } from '@/components/ui/button';
-import { Settings, LogOut, UserCircle, Bell, HeartPulse, Moon, Sun } from 'lucide-react';
+import {
+  Settings, LogOut, UserCircle, Sparkles, Info,
+  MessageSquareHeart, BriefcaseMedical, School, Stethoscope, UserCog, Bell, ChevronDown, Edit, HeartPulse,
+  Moon, Sun, Loader2
+} from 'lucide-react';
 import { Logo } from '@/components/logo';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Footer } from './footer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useProMode } from '@/contexts/pro-mode-context';
+import { useProMode, type UserRole } from '@/contexts/pro-mode-context';
 import { useTheme } from '@/contexts/theme-provider'; 
 import { Badge } from '@/components/ui/badge';
 import { AnimatedTagline } from '@/components/layout/animated-tagline';
 import type { NotificationItem } from '@/types/notifications';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationPanelCompact } from './notification-panel-compact';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
 
 const ThemeToggleButton = () => {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -49,11 +66,12 @@ const ThemeToggleButton = () => {
   );
 };
 
+
 export function AppLayout({ children }: { children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
+  const { userRole, selectUserRole, user } = useProMode();
   const { toast } = useToast();
   const router = useRouter();
-  const { user } = useProMode(); // Simplified context
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -63,7 +81,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const notificationBellRef = useRef<HTMLButtonElement>(null);
   
   const fetchNotifications = useCallback(() => {
-    // Mock data remains the same
     const mockNotifications: NotificationItem[] = [
       { id: '1', type: 'medication_reminder', title: 'Medication Reminder', body: 'Time for Amoxicillin (500mg). Check instructions.', timestamp: new Date(Date.now() - 1000 * 60 * 5), isRead: false, deepLink: '/medications' },
       { id: 'sys-maint', type: 'system_update', title: 'System Maintenance Scheduled', body: 'Brief maintenance tonight at 2 AM. No impact expected.', timestamp: new Date(Date.now() - 1000 * 60 * 30), isRead: false, deepLink: '/' },
@@ -101,6 +118,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     };
   }, [isNotificationPanelOpen]);
 
+
   const handleMarkAsRead = useCallback((id: string) => {
     setNotifications(prev => {
       const newNotifications = prev.map(n => n.id === id ? { ...n, isRead: true } : n);
@@ -123,13 +141,21 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   const handleLogout = () => {
     toast({ title: "Logged Out", description: "You have been successfully logged out. (Demo)" });
-    setIsAccountMenuOpen(false);
+    selectUserRole(null); 
+    setIsAccountMenuOpen(false); 
     setIsNotificationPanelOpen(false);
     sessionStorage.clear();
     localStorage.clear();
     router.push('/login');
   };
 
+  const getRoleDisplayString = (role: UserRole | null): string => {
+    if (role === 'pro') return 'Professional';
+    if (role === 'medico') return 'Medical Student';
+    if (role === 'diagnosis') return 'Patient/User';
+    return 'Guest';
+  };
+  
   return (
     <SidebarProvider defaultOpen={true}>
       <Sidebar variant="sidebar" collapsible="icon" side="left" className="border-r border-sidebar-border/50">
@@ -217,6 +243,19 @@ export function AppLayout({ children }: { children: ReactNode }) {
                         <DropdownMenuItem asChild><Link href="/profile" className="cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}><UserCircle /> Profile</Link></DropdownMenuItem>
                         <DropdownMenuItem asChild><Link href="/settings" className="cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}><Settings /> Settings</Link></DropdownMenuItem>
                         <DropdownMenuSeparator />
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger className="cursor-pointer"><UserCog/><span>Role: {getRoleDisplayString(userRole)}</span></DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                              <DropdownMenuSubContent>
+                                  <DropdownMenuRadioGroup value={userRole || ''} onValueChange={(role) => { selectUserRole(role as UserRole); setIsAccountMenuOpen(false);}}>
+                                      <DropdownMenuRadioItem value="pro"><BriefcaseMedical/>Professional</DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="medico"><School/>Medical Student</DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="diagnosis"><Stethoscope/>Patient/User</DropdownMenuRadioItem>
+                                  </DropdownMenuRadioGroup>
+                              </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"><LogOut /> Log Out</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -230,9 +269,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </header>
         <main className="flex-1 flex flex-col overflow-auto relative">
-          <div className="container mx-auto flex-grow py-6 sm:py-10">
             {children}
-          </div>
         </main>
         <Footer />
       </SidebarInset>

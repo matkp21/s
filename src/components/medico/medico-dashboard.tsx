@@ -17,7 +17,6 @@ import { NeuralProgress } from "@/components/medico/NeuralProgress";
 import { KnowledgeHubSearch } from '@/components/medico/KnowledgeHubSearch';
 import { HeroWidgets, type HeroTask } from '@/components/homepage/hero-widgets';
 import { addDays } from 'date-fns';
-import { useRouter } from 'next/navigation';
 
 const sampleMedicoTasks: HeroTask[] = [
     { id: 'task-med-1', date: new Date(), title: 'Review Anatomy Lecture', description: 'Focus on brachial plexus.' },
@@ -27,16 +26,20 @@ const sampleMedicoTasks: HeroTask[] = [
 ];
 
 function MedicoDashboardContent() {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const [isEditMode, setIsEditMode] = useState(false);
     const [displayedTools, setDisplayedTools] = useState<MedicoTool[]>(allMedicoToolsList);
-    
-    const handleLaunchTool = (href?: string) => {
-        if (href) {
-            router.push(href);
+    const [activeDialog, setActiveDialog] = useState<ActiveToolId>(null);
+    const [initialTopic, setInitialTopic] = useState<string | null>(null);
+
+    useEffect(() => {
+        const toolId = searchParams.get('tool') as ActiveToolId;
+        const topic = searchParams.get('topic');
+        if (toolId && allMedicoToolsList.some(t => t.id === toolId)) {
+            setActiveDialog(toolId);
+            setInitialTopic(topic);
         }
-    };
+    }, [searchParams]);
 
     const frequentlyUsedToolIds = useMemo(() => allMedicoToolsList
         .filter(t => t.isFrequentlyUsed)
@@ -45,8 +48,23 @@ function MedicoDashboardContent() {
     const frequentlyUsedTools = useMemo(() => displayedTools.filter(tool => frequentlyUsedToolIds.includes(tool.id)), [displayedTools, frequentlyUsedToolIds]);
     const otherTools = useMemo(() => displayedTools.filter(tool => !frequentlyUsedToolIds.includes(tool.id)), [displayedTools, frequentlyUsedToolIds]);
     
+    const currentTool = useMemo(() => allMedicoToolsList.find(tool => tool.id === activeDialog), [activeDialog]);
+    const ToolComponent = currentTool?.component;
+    
+    const handleLaunchTool = (toolId: ActiveToolId, topic: string | null = null) => {
+        setInitialTopic(topic);
+        setActiveDialog(toolId);
+    }
+    
+    const handleDialogChange = (isOpen: boolean) => {
+      if (!isOpen) {
+        setActiveDialog(null);
+        setInitialTopic(null);
+      }
+    };
 
      return (
+        <Dialog open={!!activeDialog} onOpenChange={handleDialogChange}>
           <div className="container mx-auto py-8">
               <div className="flex justify-between items-center mb-6">
                   <div className="text-left">
@@ -133,7 +151,24 @@ function MedicoDashboardContent() {
                   </>
                   )}
               </div>
+              
+                {currentTool && ToolComponent && (
+                    <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] flex flex-col p-0">
+                        <DialogHeader className="p-6 pb-4 sticky top-0 bg-background border-b z-10">
+                            <DialogTitle className="text-2xl flex items-center gap-2">
+                                <currentTool.icon className="h-6 w-6 text-primary" /> {currentTool.title}
+                            </DialogTitle>
+                            <DialogDescription className="text-sm">{currentTool.description}</DialogDescription>
+                        </DialogHeader>
+                        <ScrollArea className="flex-grow overflow-y-auto">
+                            <div className="p-6 pt-2">
+                                <ToolComponent initialTopic={initialTopic}/>
+                            </div>
+                        </ScrollArea>
+                    </DialogContent>
+                )}
           </div>
+        </Dialog>
     );
 }
 

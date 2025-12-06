@@ -12,15 +12,15 @@ import Link from 'next/link';
 
 interface MedicoToolCardProps {
   tool: MedicoTool;
-  onLaunch: (href?: string) => void;
+  onLaunch: (toolId: ActiveToolId, topic?: string | null) => void;
   isFrequentlyUsed?: boolean;
   isEditMode?: boolean;
 }
 
 const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch, isFrequentlyUsed, isEditMode }) => {
   const handleLaunch = () => {
-    if (!isEditMode && !tool.comingSoon) {
-      onLaunch(tool.href);
+    if (!isEditMode && !tool.comingSoon && tool.id) {
+      onLaunch(tool.id);
     }
   };
 
@@ -86,6 +86,16 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
     </motion.div>
   );
 
+  // If the tool has an href, it navigates to a new page.
+  if (tool.href && !isEditMode && !tool.comingSoon) {
+    return (
+      <Link href={tool.href} className="no-underline h-full flex">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  // Fallback for tools with no action defined yet or in edit mode.
   return cardContent;
 };
 
