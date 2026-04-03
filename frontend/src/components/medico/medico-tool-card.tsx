@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Star, GripVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { DialogTrigger } from '@/components/ui/dialog';
 import type { MedicoTool, ActiveToolId } from '@/types/medico-tools';
 import Link from 'next/link';
 
@@ -30,6 +29,7 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
         tool.comingSoon && "opacity-60 hover:shadow-md cursor-not-allowed",
         isEditMode && "cursor-grab border-dashed border-muted-foreground/50"
       )}
+      onClick={() => !isEditMode && !tool.comingSoon && !tool.href && onLaunch(tool.id)}
       role="button"
       tabIndex={tool.comingSoon || isEditMode ? -1 : 0}
       aria-disabled={!!(tool.comingSoon || isEditMode)}
@@ -66,36 +66,24 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
           </div>
         ) : (
            <div className="w-full text-right">
-              <Button variant="link" size="sm" disabled={isEditMode} className={cn(
-                  "text-primary group-hover:underline p-0 h-auto text-xs",
+              <span className={cn(
+                  "text-primary group-hover:underline p-0 h-auto text-xs font-semibold flex items-center justify-end",
                    !isEditMode && "group-hover:text-foreground group-hover:hover:text-primary",
                    isEditMode && "text-muted-foreground cursor-default"
                   )}>
                  Open Tool <ArrowRight className="ml-1 h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Button>
+              </span>
            </div>
         )}
       </CardContent>
     </motion.div>
   );
 
-  if (tool.href) {
+  if (tool.href && !isEditMode && !tool.comingSoon) {
     return <Link href={tool.href} className="no-underline h-full flex">{cardContent}</Link>;
   }
 
-  // If the tool doesn't have a component, it can't open a dialog
-  if (!tool.component) {
-      return <div>{cardContent}</div>;
-  }
-
-  return (
-    <DialogTrigger asChild onClick={(e) => {
-        if (isEditMode || tool.comingSoon) e.preventDefault(); // Prevent dialog from opening in edit mode
-        else onLaunch(tool.id);
-    }}>
-      {cardContent}
-    </DialogTrigger>
-  );
+  return cardContent;
 };
 
 export const MedicoToolCard = React.memo(MedicoToolCardComponent);
