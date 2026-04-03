@@ -1,14 +1,13 @@
 'use server';
 /**
- * @fileOverview The Knowledge Augmenter agent.
- * This agent analyzes a student's notes to answer a question and augment the answer
- * with critical missing information, using Gemini 3 Pro.
+ * @fileOverview The Knowledge Augmenter agent using the hybrid model.
+ * It leverages Gemini 1.5 Pro for multi-modal analysis and textbook validation.
  */
 
 import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
 import { KnowledgeAugmenterInputSchema, KnowledgeAugmenterOutputSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
+import { generate } from 'genkit/ai';
 
 export type KnowledgeAugmenterInput = z.infer<typeof KnowledgeAugmenterInputSchema>;
 export type KnowledgeAugmenterOutput = z.infer<typeof KnowledgeAugmenterOutputSchema>;
@@ -24,33 +23,17 @@ const knowledgeAugmenterFlow = ai.defineFlow(
     outputSchema: KnowledgeAugmenterOutputSchema,
   },
   async (input) => {
-    const systemInstruction = `
-      You are an expert Medical Tutor and a Textbook Validator. Your primary goal is to 
-      ensure the student's knowledge is complete and clinically accurate.
-
-      Follow this three-step process precisely:
-      1. DECODE: Accurately read and interpret the attached notes, including handwritten text and medical shorthand.
-      2. VALIDATE: Compare the content from the student's notes against your comprehensive medical knowledge to identify critical missing information related to the student's question.
-      3. AUGMENT: Provide the final answer by combining the information from the student's notes WITH the missing critical details.
-      
-      Always present the output clearly in the required JSON structure.
-    `;
-
-    const mainPrompt = `
-      Based on the attached file, analyze the content relevant to the student's question.
-
-      Student's Question: **${input.question}**
-
-      Your response must be a JSON object with the following three fields: "augmentedAnswer", "missingInfo", and "shorthandKey".
-    `;
-
     try {
-      const llmResponse = await ai.generate({
-        model: googleAI('gemini-3-pro-preview'),
-        system: systemInstruction,
+      const llmResponse = await generate({
+        model: 'googleai/gemini-1.5-pro',
+        system: `You are an expert Medical Tutor. 
+        1. DECODE: Read notes including medical shorthand.
+        2. VALIDATE: Compare against expert medical knowledge.
+        3. AUGMENT: Provide an answer integrating notes with missing safety or clinical details.`,
         prompt: [
           { media: { url: input.fileDataUri } },
-          { text: mainPrompt },
+          { text: `Analyze the attached notes to answer this question: "${input.question}". 
+          Return a structured JSON object with augmentedAnswer, missingInfo list, and shorthandKey list.` },
         ],
         output: {
           format: 'json',
@@ -62,14 +45,11 @@ const knowledgeAugmenterFlow = ai.defineFlow(
       });
       
       const output = llmResponse.output;
-      if (!output) {
-        throw new Error("The AI model did not return a valid response.");
-      }
-
+      if (!output) throw new Error("The AI model did not return a valid response.");
       return output;
 
     } catch (err) {
-      console.error(`[KnowledgeAugmenterAgent] Error: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(`[KnowledgeAugmenterAgent] Error:`, err);
       throw new Error('An unexpected error occurred during knowledge augmentation.');
     }
   }
