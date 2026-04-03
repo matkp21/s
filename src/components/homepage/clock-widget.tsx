@@ -1,6 +1,4 @@
-
-// src/components/homepage/clock-widget.tsx
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +11,6 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlarmClockCheck, TimerIcon, BellRing, PlusCircle, Play, Pause, RotateCcw, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 interface Reminder {
   id: string;
@@ -38,11 +35,12 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
 
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [newReminderText, setNewReminderText] = useState('');
-  const [newReminderDateTime, setNewReminderDateTime] = useState<Date | undefined>(new Date());
+  const [newReminderDateTime, setNewReminderDateTime] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
-    // Set initial time and start interval only on the client
+    // Correctly handle hydration by only setting initial state on mount
     setCurrentTime(new Date());
+    setNewReminderDateTime(new Date());
     const clockInterval = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -70,14 +68,6 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
           clearInterval(newIntervalId);
           setIsTimerRunning(false);
           toast({ title: "Timer Finished!", description: "Your timer has ended." });
-          try {
-            if (typeof window !== 'undefined') {
-              const audio = new Audio('/sounds/timer-finish.mp3');
-              audio.play().catch(e => console.warn("Audio play failed:", e));
-            }
-          } catch (e) {
-            console.warn("Could not play timer sound", e);
-          }
           return 0;
         }
         return prev - 1;
@@ -101,14 +91,6 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
     setTimeLeft(totalSecondsFromInput > 0 ? totalSecondsFromInput : 0);
   };
   
-  const clearTimerInputsAndReset = () => {
-    pauseTimer();
-    setTimerInputHours(0);
-    setTimerInputMinutes(5); 
-    setTimerInputSeconds(0);
-    setTimeLeft(0); 
-  }
-
   const formatTime = (totalSeconds: number): string => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -140,9 +122,9 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
     <Card className="border-none shadow-none bg-transparent w-full">
       <Tabs defaultValue="clock" className="w-full">
         <TabsList className="grid w-full grid-cols-3 h-12 rounded-t-lg rounded-b-none bg-muted border-b border-border/50">
-          <TabsTrigger value="clock" className="text-xs h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-tl-lg transition-colors duration-300"><AlarmClockCheck className="mr-1 h-4 w-4" />Clock</TabsTrigger>
-          <TabsTrigger value="timer" className="text-xs h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors duration-300"><TimerIcon className="mr-1 h-4 w-4" />Timer</TabsTrigger>
-          <TabsTrigger value="reminders" className="text-xs h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-tr-lg transition-colors duration-300"><BellRing className="mr-1 h-4 w-4" />Reminders</TabsTrigger>
+          <TabsTrigger value="clock" className="text-xs h-full"><AlarmClockCheck className="mr-1 h-4 w-4" />Clock</TabsTrigger>
+          <TabsTrigger value="timer" className="text-xs h-full"><TimerIcon className="mr-1 h-4 w-4" />Timer</TabsTrigger>
+          <TabsTrigger value="reminders" className="text-xs h-full"><BellRing className="mr-1 h-4 w-4" />Reminders</TabsTrigger>
         </TabsList>
         
         <TabsContent value="clock" className="p-4 pt-6 text-center min-h-[108px]">
@@ -160,47 +142,42 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
         </TabsContent>
 
         <TabsContent value="timer" className="p-4 space-y-4">
-          <CardHeader className="p-0 mb-2">
-            <CardTitle className="text-lg text-center text-primary">Timer</CardTitle>
-          </CardHeader>
            <div className="text-center my-4">
             <p className="text-4xl font-bold tabular-nums text-foreground">
               {formatTime(timeLeft > 0 ? timeLeft : (timerInputHours * 3600 + timerInputMinutes * 60 + timerInputSeconds))}
             </p>
           </div>
           <div className="flex gap-2 items-end">
-            <div><Label htmlFor="timer-hours" className="text-xs">H</Label><Input id="timer-hours" type="number" min="0" max="23" value={timerInputHours} onChange={e => setTimerInputHours(Math.max(0, parseInt(e.target.value)) || 0)} className="h-8 text-sm rounded-md border-input focus:border-primary" disabled={isTimerRunning}/></div>
-            <div><Label htmlFor="timer-minutes" className="text-xs">M</Label><Input id="timer-minutes" type="number" min="0" max="59" value={timerInputMinutes} onChange={e => setTimerInputMinutes(Math.max(0, parseInt(e.target.value)) || 0)} className="h-8 text-sm rounded-md border-input focus:border-primary" disabled={isTimerRunning}/></div>
-            <div><Label htmlFor="timer-seconds" className="text-xs">S</Label><Input id="timer-seconds" type="number" min="0" max="59" value={timerInputSeconds} onChange={e => setTimerInputSeconds(Math.max(0, parseInt(e.target.value)) || 0)} className="h-8 text-sm rounded-md border-input focus:border-primary" disabled={isTimerRunning}/></div>
+            <div><Label className="text-xs">H</Label><Input type="number" min="0" max="23" value={timerInputHours} onChange={e => setTimerInputHours(parseInt(e.target.value) || 0)} className="h-8" disabled={isTimerRunning}/></div>
+            <div><Label className="text-xs">M</Label><Input type="number" min="0" max="59" value={timerInputMinutes} onChange={e => setTimerInputMinutes(parseInt(e.target.value) || 0)} className="h-8" disabled={isTimerRunning}/></div>
+            <div><Label className="text-xs">S</Label><Input type="number" min="0" max="59" value={timerInputSeconds} onChange={e => setTimerInputSeconds(parseInt(e.target.value) || 0)} className="h-8" disabled={isTimerRunning}/></div>
           </div>
           <div className="flex justify-center gap-2 mt-3">
             {!isTimerRunning || timeLeft === 0 ? (
-              <Button onClick={startTimer} size="sm" className="rounded-md bg-primary hover:bg-primary/90 text-primary-foreground"><Play className="mr-1 h-4 w-4"/> Start</Button>
+              <Button onClick={startTimer} size="sm" className="rounded-md bg-primary"><Play className="mr-1 h-4 w-4"/> Start</Button>
             ) : (
-              <Button onClick={pauseTimer} size="sm" className="rounded-md bg-amber-500 hover:bg-amber-600 text-white"><Pause className="mr-1 h-4 w-4"/> Pause</Button>
+              <Button onClick={pauseTimer} size="sm" className="rounded-md bg-amber-500"><Pause className="mr-1 h-4 w-4"/> Pause</Button>
             )}
-            <Button onClick={resetTimer} variant="outline" size="sm" className="rounded-md border-primary text-primary hover:bg-primary/10" disabled={timeLeft === 0 && !isTimerRunning}><RotateCcw className="mr-1 h-4 w-4"/> Reset</Button>
+            <Button onClick={resetTimer} variant="outline" size="sm" className="rounded-md"><RotateCcw className="mr-1 h-4 w-4"/> Reset</Button>
           </div>
-           <Button onClick={clearTimerInputsAndReset} variant="ghost" size="sm" className="w-full text-xs text-muted-foreground rounded-md mt-1 hover:bg-muted/70" disabled={isTimerRunning}>Clear & Reset Duration</Button>
         </TabsContent>
 
         <TabsContent value="reminders" className="p-4 space-y-3">
-          <CardHeader className="p-0 mb-2"><CardTitle className="text-lg text-center text-primary">Reminders</CardTitle></CardHeader>
           <div className="space-y-2">
-            <div><Label htmlFor="reminder-text" className="text-xs">Reminder Note</Label><Input id="reminder-text" value={newReminderText} onChange={e => setNewReminderText(e.target.value)} placeholder="e.g., Call patient Smith" className="h-8 text-sm rounded-md border-input focus:border-primary" /></div>
+            <div><Label className="text-xs">Note</Label><Input value={newReminderText} onChange={e => setNewReminderText(e.target.value)} placeholder="e.g., Call patient" className="h-8" /></div>
             <div className="flex gap-2">
-              <div className="flex-grow"><Label htmlFor="reminder-date-picker" className="text-xs">Date</Label><DatePicker date={newReminderDateTime} setDate={setNewReminderDateTime} buttonId="reminder-date-picker" buttonClassName="h-8 text-sm rounded-md w-full border-input focus:border-primary" /></div>
-              <div className="w-28"><Label htmlFor="reminder-time-input" className="text-xs">Time</Label><Input type="time" id="reminder-time-input" className="h-8 text-sm rounded-md w-full border-input focus:border-primary" value={newReminderDateTime ? format(newReminderDateTime, "HH:mm") : ""} onChange={(e) => {const newDate = newReminderDateTime ? new Date(newReminderDateTime) : new Date();const [hours, minutes] = e.target.value.split(':');newDate.setHours(parseInt(hours, 10));newDate.setMinutes(parseInt(minutes, 10));setNewReminderDateTime(newDate);}}/></div>
+              <div className="flex-grow"><Label className="text-xs">Date</Label><DatePicker date={newReminderDateTime} setDate={setNewReminderDateTime} buttonClassName="h-8" /></div>
+              <div className="w-28"><Label className="text-xs">Time</Label><Input type="time" className="h-8" value={newReminderDateTime ? format(newReminderDateTime, "HH:mm") : ""} onChange={(e) => {const newDate = newReminderDateTime ? new Date(newReminderDateTime) : new Date();const [hours, minutes] = e.target.value.split(':');newDate.setHours(parseInt(hours, 10));newDate.setMinutes(parseInt(minutes, 10));setNewReminderDateTime(newDate);}}/></div>
             </div>
-            <Button onClick={handleAddReminder} size="sm" className="w-full rounded-md bg-primary hover:bg-primary/90 text-primary-foreground"><PlusCircle className="mr-1 h-4 w-4"/> Add Reminder</Button>
+            <Button onClick={handleAddReminder} size="sm" className="w-full rounded-md"><PlusCircle className="mr-1 h-4 w-4"/> Add Reminder</Button>
           </div>
-          <ScrollArea className="h-32 border border-border/50 rounded-md p-2 bg-muted/30">
+          <ScrollArea className="h-32 border rounded-md p-2 bg-muted/30">
             {reminders.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No reminders set.</p>}
             <ul className="space-y-1.5">
               {reminders.map(reminder => (
-                <li key={reminder.id} className="text-xs p-1.5 bg-background rounded-md shadow-sm flex justify-between items-center border border-border/40">
-                  <div><p className="font-medium text-foreground">{reminder.text}</p><p className="text-muted-foreground">{format(reminder.dateTime, "MMM d, yyyy 'at' HH:mm")}</p></div>
-                  <Button variant="ghost" size="iconSm" onClick={() => deleteReminder(reminder.id)} className="text-destructive hover:bg-destructive/10 h-6 w-6 rounded-full"><Trash2 className="h-3.5 w-3.5" /></Button>
+                <li key={reminder.id} className="text-xs p-1.5 bg-background rounded-md shadow-sm flex justify-between items-center border">
+                  <div><p className="font-medium">{reminder.text}</p><p className="text-muted-foreground">{format(reminder.dateTime, "MMM d, HH:mm")}</p></div>
+                  <Button variant="ghost" size="iconSm" onClick={() => deleteReminder(reminder.id)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
                 </li>
               ))}
             </ul>

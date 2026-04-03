@@ -5,13 +5,12 @@ import {
   Users, Eye, Brain, TrendingUp, Calculator, Workflow, Award, Star, Settings, CheckSquare, GripVertical, FileText, Youtube, Mic, FlaskConical, Microscope, TestTubeDiagonal, Swords, Library, Trophy, PackageCheck, Search, BrainCircuit, BookMarked, Sparkles
 } from 'lucide-react';
 
-// Lazy load components
+// Lazy load components for performance and consistent dialog-based UI
 import { lazy } from 'react';
 const StudyNotesGenerator = lazy(() => import('@/components/medico/study-notes-generator').then(module => ({ default: module.StudyNotesGenerator })));
 const McqGenerator = lazy(() => import('@/components/medico/mcq-generator').then(module => ({ default: module.McqGenerator })));
 const StudyTimetableCreator = lazy(() => import('@/components/medico/study-timetable-creator').then(module => ({ default: module.StudyTimetableCreator })));
 const FlashcardGenerator = lazy(() => import('@/components/medico/flashcard-generator').then(module => ({ default: module.FlashcardGenerator })));
-const SolvedQuestionPapersViewer = lazy(() => import('@/components/medico/solved-question-papers-viewer').then(module => ({ default: module.SolvedQuestionPapersViewer })));
 const MnemonicsGenerator = lazy(() => import('@/components/medico/mnemonics-generator').then(module => ({ default: module.MnemonicsGenerator })));
 const ClinicalCaseSimulator = lazy(() => import('@/components/medico/clinical-case-simulator').then(module => ({ default: module.ClinicalCaseSimulator })));
 const DifferentialDiagnosisTrainer = lazy(() => import('@/components/medico/differential-diagnosis-trainer').then(module => ({ default: module.DifferentialDiagnosisTrainer })));
@@ -37,21 +36,18 @@ const KnowledgeAugmenter = lazy(() => import('@/components/medico/knowledge-augm
 
 
 // Define the full list of tools
+// Tools with 'component' will open in a Dialog on the /medico page to prevent 404s.
 export const allMedicoToolsList: MedicoTool[] = [
   { id: 'guided-study', title: 'Guided Study Session', description: 'AI orchestrates a full study session (notes, MCQs, flashcards) from one topic.', icon: PackageCheck, component: GuidedStudyFlow, isFrequentlyUsed: true },
   { id: 'notes-generator', title: 'Study Notes Generator', description: 'Generate structured notes for medical topics in a university exam format.', icon: NotebookText, component: StudyNotesGenerator, isFrequentlyUsed: true },
-  { id: 'advanced-notes', title: 'Advanced Notes (MedGemma)', description: 'Generate multi-modal study notes using a specialized medical AI and image generation.', icon: BrainCircuit, component: MedicoAdvancedNotes, isFrequentlyUsed: false },
+  { id: 'advanced-notes', title: 'Advanced Notes (MedGemma)', description: 'Generate multi-modal study notes using specialized AI.', icon: BrainCircuit, component: MedicoAdvancedNotes, isFrequentlyUsed: false },
   { id: 'mcq', title: 'MCQ Generator', description: 'Create multiple-choice questions for exam practice.', icon: FileQuestion, component: McqGenerator, isFrequentlyUsed: true },
   { id: 'flashcards', title: 'Flashcard Generator', description: 'Create digital flashcards for quick revision.', icon: Layers, component: FlashcardGenerator, isFrequentlyUsed: true },
-  { id: 'knowledge-augmenter', title: 'Knowledge Augmenter', description: 'Upload notes to validate, augment, and get answers with AI.', icon: Sparkles, component: KnowledgeAugmenter, isFrequentlyUsed: true },
-  { id: 'challenges', title: 'Gamified Case Challenges', description: 'Solve timed diagnostic challenges and compete on leaderboards.', icon: Swords, component: GamifiedCaseChallenges, isFrequentlyUsed: false },
-  { id: 'comprehensive-review', title: 'Comprehensive Topic Review', description: 'Generate notes, MCQs, and a flowchart for a topic all at once.', icon: BookCopy, component: ComprehensiveTopicReview, isFrequentlyUsed: false },
-  { id: 'smart-search', title: 'Smart Search (RAG)', description: 'Ask questions and get grounded answers from your knowledge base.', icon: Search, component: SmartSearch, isFrequentlyUsed: false },
-  { id: 'library', title: 'Knowledge Hub', description: 'Your personal library of notes, MCQs, and community content.', icon: Library, href: '/medico/library', isFrequentlyUsed: false },
-  { id: 'cbme-browser', title: 'CBME Competency Browser', description: 'Explore and search for competencies aligned with the MBBS curriculum.', icon: BookMarked, href: '/medico/cbme', isFrequentlyUsed: false },
-  { id: 'q-bank', title: 'Exam Paper Generator', description: "Generate mock exam papers simulating previous years, with MCQs and essay questions.", icon: BookCopy, href: '/medico/mock-pyqs' },
+  { id: 'knowledge-augmenter', title: 'Knowledge Augmenter', description: 'Upload notes to validate and augment with AI.', icon: Sparkles, href: '/medico/library', isFrequentlyUsed: true },
+  { id: 'challenges', title: 'Gamified Case Challenges', description: 'Solve timed diagnostic challenges.', icon: Swords, component: GamifiedCaseChallenges, isFrequentlyUsed: false },
+  { id: 'flowcharts', title: 'Flowchart Creator', description: 'Generate medical flowcharts to aid revision.', icon: Workflow, component: FlowchartCreator, isFrequentlyUsed: false },
   { id: 'mnemonics', title: 'Mnemonic Generator', description: 'Create memory aids with AI-generated visuals.', icon: Lightbulb, component: MnemonicsGenerator },
-  { id: 'pathomind', title: 'PathoMind', description: 'Explain any disease pathophysiology with diagrams.', icon: Brain, component: PathoMindExplainer },
+  { id: 'pathomind', title: 'PathoMind', description: 'Explain disease pathophysiology with diagrams.', icon: Brain, component: PathoMindExplainer },
   { id: 'pharmagenie', title: 'PharmaGenie', description: 'Drug classification, mechanisms, side effects.', icon: FlaskConical, component: PharmaGenie },
   { id: 'micromate', title: 'MicroMate', description: 'Bugs, virulence factors, lab diagnosis.', icon: Microscope, component: MicroMate },
   { id: 'diagnobot', title: 'DiagnoBot', description: 'Interpret labs, ECGs, X-rays, ABG, etc.', icon: TestTubeDiagonal, component: DiagnoBot },
@@ -60,14 +56,16 @@ export const allMedicoToolsList: MedicoTool[] = [
   { id: 'ddx', title: 'Differential Diagnosis Trainer', description: 'List diagnoses based on symptoms with feedback.', icon: Brain, component: DifferentialDiagnosisTrainer },
   { id: 'anatomy', title: 'Interactive Anatomy Visualizer', description: 'Explore anatomical structures.', icon: Eye, component: AnatomyVisualizer },
   { id: 'dosage', title: 'Drug Dosage Calculator', description: 'Practice calculating drug doses.', icon: Calculator, component: DrugDosageCalculator },
-  { id: 'flowcharts', title: 'Flowchart Creator', description: 'Generate flowcharts for medical topics to aid revision.', icon: Workflow, component: FlowchartCreator, comingSoon: false },
-  { id: 'dictation', title: 'Smart Dictation', description: 'Use your voice to dictate notes, which AI can help structure.', icon: Mic, component: SmartDictation },
-  { id: 'summarizer', title: 'Smart Note Summarizer', description: 'Upload notes (PDF/TXT) and get AI-powered summaries.', icon: FileText, component: NoteSummarizer },
+  { id: 'dictation', title: 'Smart Dictation', description: 'AI-assisted voice-to-text notes.', icon: Mic, component: SmartDictation },
+  { id: 'summarizer', title: 'Smart Note Summarizer', description: 'Upload notes and get AI-powered summaries.', icon: FileText, component: NoteSummarizer },
   { id: 'timetable', title: 'Study Timetable Creator', description: 'Plan personalized study schedules.', icon: CalendarClock, component: StudyTimetableCreator },
-  { id: 'topics', title: 'High-Yield Topic Predictor', description: 'Suggest priority topics for study based on exam trends or user performance.', icon: TrendingUp, component: HighYieldTopicPredictor },
-  { id: 'rounds', title: 'Virtual Patient Rounds', description: 'Simulate ward rounds with patient cases.', icon: Users, component: VirtualPatientRounds },
-  { id: 'progress', title: 'Progress Tracker', description: 'Track study progress with rewards (gamification).', icon: Award, component: ProgressTracker },
-  { id: 'videos', title: 'Video Lecture Library', description: 'Search and find relevant medical video lectures.', icon: Youtube, href: '/medico/videos' },
+  { id: 'topics', title: 'High-Yield Topic Predictor', description: 'AI-predicted priority topics for study.', icon: TrendingUp, component: HighYieldTopicPredictor },
+  { id: 'rounds', title: 'Virtual Patient Rounds', description: 'Simulate ward rounds with patient cases.', icon: UsersIcon, component: VirtualPatientRounds },
+  { id: 'progress', title: 'Progress Tracker', description: 'Track study progress with rewards.', icon: Award, component: ProgressTracker },
+  { id: 'videos', title: 'Video Lecture Library', description: 'Curated medical video lectures.', icon: Youtube, href: '/medico/videos' },
+  { id: 'library', title: 'Knowledge Hub', description: 'Your personal library of saved content.', icon: Library, href: '/medico/library', isFrequentlyUsed: false },
+  { id: 'cbme-browser', title: 'CBME Competency Browser', description: 'Explore competencies aligned with MBBS.', icon: BookMarked, href: '/medico/cbme', isFrequentlyUsed: false },
+  { id: 'q-bank', title: 'Exam Paper Generator', description: "Generate mock university exam papers.", icon: BookCopy, href: '/medico/mock-pyqs' },
 ];
 
 export const frequentlyUsedMedicoToolIds: ActiveToolId[] = allMedicoToolsList

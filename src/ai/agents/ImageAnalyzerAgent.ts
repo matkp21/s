@@ -1,9 +1,6 @@
-
 'use server';
 /**
  * @fileOverview AI-powered medical image annotation flow.
- * Aims for general analysis, with future aspirations to integrate specialized models
- * like MedGemma for expert-level interpretation in fields like radiology.
  *
  * - analyzeImage - A function that analyzes a medical image and provides annotations.
  * - AnalyzeImageInput - The input type for the analyzeImage function.
@@ -11,9 +8,8 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'genkit';
-import { generate } from 'genkit/ai';
-import { media } from 'genkit/content';
 
 const AnalyzeImageInputSchema = z.object({
   imageDataUri: z
@@ -52,11 +48,11 @@ const analyzeImageFlow = ai.defineFlow(
   },
   async input => {
     try {
-        const llmResponse = await generate({
-          model: 'googleai/gemini-1.5-pro-latest',
+        const llmResponse = await ai.generate({
+          model: googleAI('gemini-3-pro-preview'),
           prompt: [
-            media({ url: input.imageDataUri }),
-            `You are a medical imaging analysis AI. You are provided with a medical image. Your task is to identify key areas of interest or potential abnormalities.
+            { media: { url: input.imageDataUri } },
+            { text: `You are a medical imaging analysis AI. You are provided with a medical image. Your task is to identify key areas of interest or potential abnormalities.
 For each finding, provide:
 1. A concise textual description ('text').
 2. A normalized position ('position') for where this finding is located on the image. The position should be an object with 'x' and 'y' coordinates, where both x and y are numbers between 0.0 (top/left) and 1.0 (bottom/right), representing the center of the finding.
@@ -69,8 +65,7 @@ Format your output as a JSON object strictly conforming to the AnalyzeImageOutpu
   ]
 }
 If no specific findings are apparent, return an empty "annotations" array: { "annotations": [] }.
-Focus on identifying 2-3 key points if possible.
-`,
+Focus on identifying 2-3 key points if possible.` },
           ],
           output: {
             format: 'json',
@@ -78,10 +73,10 @@ Focus on identifying 2-3 key points if possible.
           }
         });
 
-        const output = llmResponse.output();
+        const output = llmResponse.output;
         if (!output) {
-        console.error("Image analysis prompt did not return an output for image:", input.imageDataUri ? input.imageDataUri.substring(0,50) + "..." : "undefined");
-        return { annotations: [] };
+          console.error("Image analysis prompt did not return an output.");
+          return { annotations: [] };
         }
         return output;
     } catch (err) {

@@ -1,28 +1,19 @@
-// src/ai/agents/medico/MCQGeneratorAgent.ts
 'use server';
 /**
  * @fileOverview A Genkit flow for generating Multiple Choice Questions (MCQs) on medical topics for medico users.
- * This flow takes a topic and a desired number of MCQs, then returns structured MCQs
- * with options, correct answers, and explanations.
- *
- * - generateMCQs - A function that handles the MCQ generation process.
- * - MedicoMCQGeneratorInput - The input type for the generateMCQs function.
- * - MedicoMCQGeneratorOutput - The return type for the generateMCQs function.
  */
 
 import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/google-genai';
-import { MedicoMCQGeneratorInputSchema, MedicoMCQGeneratorOutputSchema, MCQOptionSchema, MCQSchema as SingleMCQSchema } from '@/ai/schemas/medico-tools-schemas';
+import { googleAI } from '@genkit-ai/googleai';
+import { MedicoMCQGeneratorInputSchema, MedicoMCQGeneratorOutputSchema, MCQSchema as SingleMCQSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
-import { generate } from 'genkit/ai';
 
 export type MedicoMCQGeneratorInput = z.infer<typeof MedicoMCQGeneratorInputSchema>;
 export type MedicoMCQGeneratorOutput = z.infer<typeof MedicoMCQGeneratorOutputSchema>;
-export type MCQSchema = z.infer<typeof SingleMCQSchema>; // For easier usage in chat component
+export type MCQSchema = z.infer<typeof SingleMCQSchema>; 
 
 export async function generateMCQs(input: MedicoMCQGeneratorInput): Promise<MedicoMCQGeneratorOutput> {
-  const result = await mcqGeneratorFlow(input);
-  return result;
+  return mcqGeneratorFlow(input);
 }
 
 const mcqGeneratorFlow = ai.defineFlow(
@@ -39,23 +30,6 @@ The JSON object you generate MUST have an 'mcqs' array, a 'topicGenerated' strin
 
 **CRITICAL: The 'nextSteps' field is mandatory and must not be omitted.** Generate at least two relevant suggestions based on the topic.
 
-Example for 'nextSteps':
-[
-  {
-    "title": "Deepen Understanding",
-    "description": "Generate structured study notes to review the core concepts of ${input.topic}.",
-    "toolId": "notes-generator",
-    "prefilledTopic": "${input.topic}",
-    "cta": "Generate Study Notes"
-  },
-  {
-    "title": "Visualize It",
-    "description": "Create a flowchart to understand the clinical pathway or algorithm for ${input.topic}.",
-    "toolId": "flowcharts",
-    "prefilledTopic": "${input.topic}",
-    "cta": "Create Flowchart"
-  }
-]
 ---
 
 **Instructions for quiz generation:**
@@ -68,17 +42,16 @@ Exam Style: ${input.examType}
 Number of MCQs to generate: ${input.count}
 
 For each MCQ:
-1.  Create a clear and unambiguous question based on the medical topic, tailored to the specified difficulty, exam style, subject, and system.
+1.  Create a clear and unambiguous question based on the medical topic.
 2.  Provide exactly four distinct options (A, B, C, D).
 3.  Ensure one option is clearly the correct answer.
-4.  The other three options should be plausible distractors, relevant to the topic but incorrect.
-5.  Provide a brief explanation for why the correct answer is correct and, if relevant, why common distractors are incorrect.
-6. The 'topicGenerated' field must be set to "${input.topic}".
+4.  Provide a brief explanation.
+5. The 'topicGenerated' field must be set to "${input.topic}".
 
 Ensure the final output is a single valid JSON object.
 `;
-      const { output } = await generate({
-          model: googleAI('gemini-1.5-pro-latest'),
+      const llmResponse = await ai.generate({
+          model: googleAI('gemini-2.5-flash-preview'),
           prompt,
           output: {
               format: 'json',
@@ -89,14 +62,15 @@ Ensure the final output is a single valid JSON object.
           }
       });
 
+      const output = llmResponse.output;
       if (!output || !output.mcqs || output.mcqs.length === 0) {
         console.error('MedicoMCQGeneratorPrompt did not return valid MCQs for topic:', input.topic);
-        throw new Error('Failed to generate MCQs. The AI model did not return the expected output or returned an empty set. Please try a different topic or adjust the count.');
+        throw new Error('Failed to generate MCQs. The AI model did not return the expected output.');
       }
       return {...output, topicGenerated: input.topic };
     } catch (err) {
       console.error(`[MCQGeneratorAgent] Error: ${err instanceof Error ? err.message : String(err)}`);
-      throw new Error('An unexpected error occurred while generating MCQs. Please check your connection and try again.');
+      throw new Error('An unexpected error occurred while generating MCQs. Please try again.');
     }
   }
 );

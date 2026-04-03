@@ -1,10 +1,9 @@
-
 'use server';
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import { GuidelineRetrievalInputSchema, GuidelineRetrievalOutputSchema } from '../schemas/guideline-retrieval-schemas';
 import type { GuidelineRetrievalInput, GuidelineRetrievalOutput } from './types';
-import { generate } from 'genkit/ai';
 
 
 // Define the Genkit flow within the agent file itself
@@ -15,16 +14,16 @@ export const guidelineRetrievalFlow = ai.defineFlow(
     outputSchema: GuidelineRetrievalOutputSchema,
   },
   async (input) => {
-    const llmResponse = await generate({
+    const llmResponse = await ai.generate({
       prompt: `Based on the query "${input.query}", provide a list of relevant medical guidelines. For each guideline, provide a title, a concise summary, and the source. Also include key investigations and management steps if available in the source.`,
-      model: 'googleai/gemini-2.5-pro-preview',
+      model: googleAI('gemini-2.5-flash-preview'),
       output: {
         format: 'json',
         schema: GuidelineRetrievalOutputSchema,
       },
     });
     
-    const output = llmResponse.output();
+    const output = llmResponse.output;
     if (!output) {
       return { results: [] };
     }

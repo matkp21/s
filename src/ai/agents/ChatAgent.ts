@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Defines a Genkit flow for handling chat interactions.
@@ -10,11 +9,11 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import {z} from 'genkit';
 import { symptomAnalyzerTool } from '@/ai/tools/symptom-analyzer-tool';
 import { studyNotesTool, mcqGeneratorTool } from '@/ai/tools/medico-tools';
 import { callGeminiApiDirectly } from '@/ai/utils/direct-gemini-call';
-import { generate } from 'genkit/ai';
 
 // Define input schema for a chat message
 const ChatMessageInputSchema = z.object({
@@ -60,8 +59,8 @@ const chatFlow = ai.defineFlow(
     outputSchema: ChatMessageOutputSchema,
   },
   async (input) => {
-    const llmResponse = await generate({
-      model: 'googleai/gemini-2.5-pro-preview',
+    const llmResponse = await ai.generate({
+      model: googleAI('gemini-3-pro-preview'),
       prompt: input.message,
       tools: [symptomAnalyzerTool, studyNotesTool, mcqGeneratorTool],
       config: {
@@ -69,13 +68,13 @@ const chatFlow = ai.defineFlow(
       },
     });
 
-    const outputText = llmResponse.text();
-    const toolCalls = llmResponse.toolCalls();
+    const outputText = llmResponse.text;
+    const toolCalls = llmResponse.toolCalls;
     
     // Default response if no tool is called.
     const output: ChatMessageOutput = { response: outputText };
 
-    if (toolCalls.length > 0) {
+    if (toolCalls && toolCalls.length > 0) {
       const toolCall = toolCalls[0];
       const toolResponse = await toolCall.run();
 
@@ -83,11 +82,11 @@ const chatFlow = ai.defineFlow(
       output.toolName = toolCall.name;
 
       // Generate a final response based on the tool's output
-      const finalResponse = await generate({
-        model: 'googleai/gemini-2.5-pro-preview',
+      const finalResponse = await ai.generate({
+        model: googleAI('gemini-3-pro-preview'),
         prompt: `Based on the user's message "${input.message}" and the result from the tool "${toolCall.name}", which is: ${JSON.stringify(toolResponse)}, formulate a user-facing response. Present the data clearly and conversationally.`,
       });
-      output.response = finalResponse.text();
+      output.response = finalResponse.text;
     }
     
     if (!output.response) {
