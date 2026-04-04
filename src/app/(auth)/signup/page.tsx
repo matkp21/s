@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -37,7 +37,7 @@ const SignUpPage = () => {
         title: "Account Created!",
         description: "Welcome to MediAssistant. Please log in.",
       });
-      router.push("/login"); // Redirect to login page after successful signup
+      router.push("/login");
     } catch (err: any) {
       let errorMessage = "Failed to create an account.";
       if (err && err.code) {
@@ -74,7 +74,7 @@ const SignUpPage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-card p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-sm z-10 border"
+        className="bg-card p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-sm z-10 border border-border/50"
       >
         <div className="flex flex-col items-center mb-6">
           <motion.div
@@ -85,45 +85,45 @@ const SignUpPage = () => {
             <HeartPulse size={40} />
           </motion.div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Create Account</h2>
-          <p className="text-sm text-muted-foreground mt-1">Join MediAssistant today</p>
+          <p className="text-sm text-muted-foreground mt-1 text-center">Join the MediAssistant community</p>
         </div>
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4 text-center"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4 text-center border border-destructive/20"
           >
             {error}
           </motion.div>
         )}
         <form onSubmit={handleSignUp} className="space-y-4">
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 rounded-lg"
+              className="rounded-lg"
               disabled={isLoading}
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Create a password (min. 6 characters)"
+              placeholder="Create a password (min. 6 chars)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 rounded-lg"
+              className="rounded-lg"
               disabled={isLoading}
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
               id="confirmPassword"
@@ -132,7 +132,7 @@ const SignUpPage = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="mt-1 rounded-lg"
+              className="rounded-lg"
               disabled={isLoading}
             />
           </div>

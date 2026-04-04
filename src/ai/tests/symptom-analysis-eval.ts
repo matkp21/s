@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileoverview Defines an evaluation flow for the symptom analyzer agent.
@@ -6,16 +5,12 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { symptomAnalyzerFlow } from '@/ai/agents/SymptomAnalyzerAgent';
+import { analyzeSymptoms as symptomAnalyzerFlow } from '@/ai/agents/SymptomAnalyzerAgent';
 import { z } from 'zod';
-import {
-  googleAI,
-  geminiPro,
-} from '@genkit-ai/googleai';
+import { googleAI } from '@genkit-ai/google-genai';
 import {
   answerRelevancy,
   faithfulness,
-  EvaluationMetric,
 } from 'genkit/eval';
 
 // Define the schema for our test cases

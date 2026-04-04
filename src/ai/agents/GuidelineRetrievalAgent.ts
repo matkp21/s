@@ -1,10 +1,9 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { googleAI } from '@genkit-ai/google-genai';
 import { GuidelineRetrievalInputSchema, GuidelineRetrievalOutputSchema } from '../schemas/guideline-retrieval-schemas';
 import type { GuidelineRetrievalInput, GuidelineRetrievalOutput } from './types';
-
 
 // Define the Genkit flow within the agent file itself
 export const guidelineRetrievalFlow = ai.defineFlow(

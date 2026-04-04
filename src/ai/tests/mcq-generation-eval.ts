@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileoverview Defines an evaluation flow for the Medico MCQ Generator agent.
@@ -8,9 +7,7 @@
 import { ai } from '@/ai/genkit';
 import { generateMCQs } from '@/ai/agents/medico/MCQGeneratorAgent';
 import { z } from 'zod';
-import {
-  googleAI,
-} from '@genkit-ai/googleai';
+import { googleAI } from '@genkit-ai/google-genai';
 import {
   answerRelevancy,
   faithfulness,

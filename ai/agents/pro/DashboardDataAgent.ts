@@ -1,0 +1,35 @@
+'use server';
+
+import { ai } from '@/ai/genkit';
+import { ProDashboardDataSchema } from '@/ai/schemas/pro-schemas';
+import { z } from 'genkit';
+
+export type ProDashboardData = z.infer<typeof ProDashboardDataSchema>;
+
+export async function getDashboardData(): Promise<ProDashboardData> {
+  return getDashboardDataFlow();
+}
+
+const getDashboardDataFlow = ai.defineFlow(
+  {
+    name: 'getDashboardDataFlow',
+    inputSchema: z.void(),
+    outputSchema: ProDashboardDataSchema,
+  },
+  async () => {
+    const mockTasks = [
+      { id: 'task1', text: "Review Mr. Smith's latest CBC results", category: 'Lab Review', dueDate: 'Today', priority: 'High', completed: false },
+      { id: 'task2', text: 'Follow-up call with Mrs. Jones re: medication adjustment', category: 'Follow-up', dueDate: 'Tomorrow', priority: 'Medium', completed: false },
+      { id: 'task3', text: 'Patient Alert: John Doe - Critical lab value (K+ 2.5)', category: 'Patient Alert', priority: 'High', completed: false },
+      { id: 'task4', text: 'On-call shift: 7 PM - 7 AM', category: 'Schedule', dueDate: 'Today', completed: false },
+      { id: 'task5', text: 'Review imaging for Patient X', category: 'Lab Review', dueDate: 'Today', priority: 'Medium', completed: true },
+    ];
+    
+    const mockActivity = [
+      { id: 'act1', text: 'You generated a discharge summary for patient Jane Doe.', timestamp: '2 hours ago' },
+      { id: 'act2', text: 'Medico-legal documentation for Case #456 was updated.', timestamp: '5 hours ago' },
+    ];
+
+    return { tasks: mockTasks, recentActivity: mockActivity };
+  }
+);

@@ -1,13 +1,12 @@
 'use server';
 /**
  * @fileOverview The Knowledge Augmenter agent using the hybrid model.
- * It leverages Gemini 1.5 Pro for multi-modal analysis and textbook validation.
+ * It leverages Gemini 3 Pro for multi-modal analysis and textbook validation.
  */
 
 import { ai } from '@/ai/genkit';
 import { KnowledgeAugmenterInputSchema, KnowledgeAugmenterOutputSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
-import { generate } from 'genkit/ai';
 
 export type KnowledgeAugmenterInput = z.infer<typeof KnowledgeAugmenterInputSchema>;
 export type KnowledgeAugmenterOutput = z.infer<typeof KnowledgeAugmenterOutputSchema>;
@@ -24,8 +23,8 @@ const knowledgeAugmenterFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const llmResponse = await generate({
-        model: 'googleai/gemini-1.5-pro',
+      const llmResponse = await ai.generate({
+        model: 'googleai/gemini-3-pro-preview',
         system: `You are an expert Medical Tutor. 
         1. DECODE: Read notes including medical shorthand.
         2. VALIDATE: Compare against expert medical knowledge.

@@ -3,7 +3,6 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Star, GripVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -18,12 +17,6 @@ interface MedicoToolCardProps {
 }
 
 const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch, isFrequentlyUsed, isEditMode }) => {
-  const handleLaunch = () => {
-    if (!isEditMode && !tool.comingSoon && tool.id) {
-      onLaunch(tool.id);
-    }
-  };
-
   const cardContent = (
     <motion.div
       whileHover={!isEditMode ? { y: -5, boxShadow: "0px 10px 20px hsla(var(--primary) / 0.1)" } : {}}
@@ -39,8 +32,8 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
       tabIndex={tool.comingSoon || isEditMode ? -1 : 0}
       aria-disabled={!!(tool.comingSoon || isEditMode)}
       aria-label={`Launch ${tool.title}`}
-      onClick={handleLaunch}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleLaunch()}
+      onClick={() => !isEditMode && !tool.comingSoon && !tool.href && onLaunch(tool.id)}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && !isEditMode && !tool.comingSoon && !tool.href && onLaunch(tool.id)}
     >
       {isEditMode && (
         <GripVertical className="absolute top-2 right-2 h-5 w-5 text-muted-foreground z-10" title="Drag to reorder" />
@@ -86,7 +79,6 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
     </motion.div>
   );
 
-  // If the tool has an href, it navigates to a new page.
   if (tool.href && !isEditMode && !tool.comingSoon) {
     return (
       <Link href={tool.href} className="no-underline h-full flex">
@@ -95,7 +87,6 @@ const MedicoToolCardComponent: React.FC<MedicoToolCardProps> = ({ tool, onLaunch
     );
   }
 
-  // Fallback for tools with no action defined yet or in edit mode.
   return cardContent;
 };
 

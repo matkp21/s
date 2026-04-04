@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A comprehensive study agent for MBBS students, using a hybrid AI model.
@@ -15,22 +16,16 @@ import {
   StudyNotesGeneratorOutputSchema,
   StudyNotesGeneratorInputSchema,
 } from '@/ai/schemas/medico-tools-schemas';
-import type { z } from 'zod';
+import { z } from 'genkit';
 import { generate } from 'genkit/ai';
 
 export type MbbsStudyInput = z.infer<typeof MbbsStudyInputSchema>;
 export type MbbsStudyOutput = z.infer<typeof MbbsStudyOutputSchema>;
 
-/**
- * Main function to generate study notes using the hybrid model.
- */
 export async function generateComprehensiveNotes(input: MbbsStudyInput): Promise<MbbsStudyOutput> {
   return mbbsStudyFlow(input);
 }
 
-/**
- * Compatible wrapper for the StudyNotes tool.
- */
 export async function generateStudyNotes(input: z.infer<typeof StudyNotesGeneratorInputSchema>): Promise<z.infer<typeof StudyNotesGeneratorOutputSchema>> {
   const result = await mbbsStudyFlow({
     topic: input.topic,
@@ -58,18 +53,14 @@ const mbbsStudyFlow = ai.defineFlow(
     try {
       console.log(`[MbbsStudyAgent] Starting hybrid generation for: "${input.topic}"`);
       
-      // Step 1: Expert Analysis using MedGemma (Vertex AI)
-      console.log(`[MbbsStudyAgent] Phase 1: MedGemma Clinical Analysis...`);
       const medGemmaResponse = await generate({
-        model: 'vertexai/medGemma', // Assumes MedGemma endpoint is configured in Vertex
+        model: 'vertexai/medGemma',
         prompt: `You are MedGemma, a specialized medical AI. Provide a detailed clinical breakdown of "${input.topic}" for an MBBS student. 
         Focus on pathophysiology, diagnostic criteria, and management protocols. 
         Subject: ${input.subject}.`,
       });
       const clinicalBase = medGemmaResponse.text;
 
-      // Step 2: Parallel processing for Summarization (Gemma 2) and Visuals (Imagen)
-      console.log(`[MbbsStudyAgent] Phase 2: Summarization and Image Generation...`);
       const [summaryResult, imageResult] = await Promise.allSettled([
         generate({
           model: 'vertexai/gemma2',
@@ -87,8 +78,6 @@ const mbbsStudyFlow = ai.defineFlow(
 
       const diagramUrl = imageResult.status === 'fulfilled' ? imageResult.value.media?.url : undefined;
 
-      // Step 3: Final Assembly and Enrichment using Gemini 1.5 Pro (Google AI)
-      console.log(`[MbbsStudyAgent] Phase 3: Final Assembly with Gemini 1.5 Pro...`);
       const finalResponse = await generate({
         model: 'googleai/gemini-1.5-pro',
         prompt: `Combine the following clinical data and summary points into a beautifully structured MBBS study note for the topic "${input.topic}".
@@ -107,12 +96,10 @@ const mbbsStudyFlow = ai.defineFlow(
       const output = finalResponse.output;
       if (!output) throw new Error("Final assembly failed to produce structured output.");
 
-      // Attach the generated diagram if available
       if (diagramUrl) {
         output.enhancedContent.diagramUrl = diagramUrl;
       }
 
-      console.log(`[MbbsStudyAgent] Hybrid generation successful.`);
       return output;
 
     } catch (err) {

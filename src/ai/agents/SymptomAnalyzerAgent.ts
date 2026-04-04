@@ -1,17 +1,14 @@
+
 'use server';
 /**
  * @fileOverview An AI agent that analyzes symptoms and provides potential diagnoses.
- * This is a Genkit flow that now uses a guideline retrieval tool to enhance its output.
- *
- * - analyzeSymptoms - A function that takes user-provided symptoms and returns a detailed analysis.
  */
 
-import {ai} from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 import { SymptomAnalyzerInputSchema, SymptomAnalyzerOutputSchema } from '../schemas/symptom-analyzer-schemas';
+import { generate } from 'genkit/ai';
 
-// Export types for use in other modules
 export type { SymptomAnalyzerInput, SymptomAnalyzerOutput, DiagnosisItem, InvestigationItem } from '../schemas/symptom-analyzer-schemas';
 
 export async function analyzeSymptoms(input: z.infer<typeof SymptomAnalyzerInputSchema>): Promise<z.infer<typeof SymptomAnalyzerOutputSchema>> {
@@ -26,8 +23,8 @@ const symptomAnalyzerFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const llmResponse = await ai.generate({
-          model: googleAI('gemini-3-pro-preview'),
+      const llmResponse = await generate({
+          model: 'googleai/gemini-1.5-pro',
           prompt: `You are an expert medical AI assistant. Your primary task is to generate a list of potential differential diagnoses based on the provided symptoms and patient context.
 For each diagnosis, include a 'name', a 'confidence' level ('High', 'Medium', 'Low', 'Possible'), and a 'rationale'.
 

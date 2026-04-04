@@ -1,14 +1,14 @@
+
 'use server';
 /**
- * @fileOverview Defines a Genkit flow for handling chat interactions using the hybrid model.
+ * @fileOverview Defines a Genkit flow for handling chat interactions.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 import { symptomAnalyzerTool } from '@/ai/tools/symptom-analyzer-tool';
 import { studyNotesTool, mcqGeneratorTool } from '@/ai/tools/medico-tools';
 import { callGeminiApiDirectly } from '@/ai/utils/direct-gemini-call';
-import { generate } from 'genkit/ai';
 
 const ChatMessageInputSchema = z.object({
   message: z.string().describe('The user message in the chat conversation.'),
@@ -25,11 +25,16 @@ export type ChatMessageOutput = z.infer<typeof ChatMessageOutputSchema>;
 export async function processChatMessage(input: ChatMessageInput): Promise<ChatMessageOutput> {
   try {
     return chatFlow(input);
-  } catch (error: any) {
-    console.warn("Genkit chatFlow failed, attempting direct Gemini API call as fallback:", error.message);
-    const directPrompt = `You are MediAssistant, a helpful and friendly AI medical assistant. The user says: "${input.message}". Respond conversationally and helpfully.`;
-    const fallbackResponseText = await callGeminiApiDirectly(directPrompt);
-    return { response: fallbackResponseText };
+  } catch (genkitError: any) {
+    console.warn("Genkit chatFlow failed, attempting direct Gemini API call as fallback:", genkitError.message || genkitError);
+    try {
+      const directPrompt = `You are MediAssistant, a helpful and friendly AI medical assistant. The user says: "${input.message}". Respond conversationally and helpfully.`;
+      const fallbackResponseText = await callGeminiApiDirectly(directPrompt);
+      return { response: fallbackResponseText };
+    } catch (fallbackError: any) {
+      console.error("Direct Gemini API call (fallback) also failed:", fallbackError.message || fallbackError);
+      return { response: "I'm currently experiencing technical difficulties. Please try again later." };
+    }
   }
 }
 
@@ -40,7 +45,7 @@ const chatFlow = ai.defineFlow(
     outputSchema: ChatMessageOutputSchema,
   },
   async (input) => {
-    const llmResponse = await generate({
+    const llmResponse = await ai.generate({
       model: 'googleai/gemini-1.5-pro',
       prompt: input.message,
       tools: [symptomAnalyzerTool, studyNotesTool, mcqGeneratorTool],
@@ -61,8 +66,8 @@ const chatFlow = ai.defineFlow(
       output.toolResponse = toolResponse;
       output.toolName = toolCall.name;
 
-      const finalResponse = await generate({
-        model: 'googleai/gemini-1.5-flash',
+      const finalResponse = await ai.generate({
+        model: 'googleai/gemini-1.5-pro',
         prompt: `Based on the user's message "${input.message}" and the result from the tool "${toolCall.name}", which is: ${JSON.stringify(toolResponse)}, formulate a user-facing response. Present the data clearly and conversationally.`,
       });
       output.response = finalResponse.text;

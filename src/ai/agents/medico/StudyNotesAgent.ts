@@ -1,10 +1,10 @@
+
 'use server';
 /**
- * @fileOverview A Genkit flow for generating structured, exam-style study notes on medical topics.
+ * @fileOverview A Genkit flow for generating structured, exam-style study notes.
  */
 
 import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
 import { StudyNotesGeneratorInputSchema, StudyNotesGeneratorOutputSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
 
@@ -37,15 +37,15 @@ Desired Answer Length: ${input.answerLength}
 ${input.subject ? `Subject: ${input.subject}` : ''}
 ${input.system ? `System: ${input.system}` : ''}
 
-1.  **'notes' field**: Generate comprehensive notes on the topic. Strictly follow a structured clinical format with Markdown headings.
-2.  **'summaryPoints' field**: Create a separate array of 3-5 key, high-yield summary points for quick revision.
-3.  **'diagram' field**: Generate Mermaid.js syntax for a flowchart or classification table.
+1.  **'notes' field**: Generate comprehensive notes on the topic. Use Markdown headings.
+2.  **'summaryPoints' field**: Create a separate array of 3-5 key, high-yield summary points.
+3.  **'diagram' field**: Generate Mermaid.js syntax for a flowchart or table.
 
-Ensure the entire response is a single valid JSON object.
+Ensure the response conforms to the StudyNotesGeneratorOutputSchema.
 `;
 
       const llmResponse = await ai.generate({
-          model: googleAI('gemini-3-pro-preview'),
+          model: 'googleai/gemini-1.5-pro',
           prompt: prompt,
           output: {
             format: 'json',
@@ -58,13 +58,12 @@ Ensure the entire response is a single valid JSON object.
 
       const output = llmResponse.output;
       if (!output || !output.notes) {
-        console.error('StudyNotesPrompt did not return an output for topic:', input.topic);
         throw new Error('Failed to generate study notes. The AI model did not return the expected output.');
       }
       return output;
     } catch (err) {
-      console.error(`[StudyNotesAgent] Error: ${err instanceof Error ? err.message : String(err)}`);
-      throw new Error('An unexpected error occurred while generating study notes. Please try again.');
+      console.error(`[StudyNotesAgent] Error:`, err);
+      throw new Error('An unexpected error occurred while generating study notes.');
     }
   }
 );

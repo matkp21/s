@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { HeartHandshake, LogIn } from "lucide-react";
+import { HeartPulse, LogIn } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +38,7 @@ const LoginPage = () => {
         sessionStorage.removeItem('proSuiteAnimationShown');
         sessionStorage.removeItem('medicoHubAnimationShown');
       }
-      router.push("/"); // Redirect to homepage or dashboard
+      router.push("/");
     } catch (err: any) {
       let errorMessage = "Failed to log in. Please check your credentials.";
       if (err && err.code) {
@@ -75,7 +74,7 @@ const LoginPage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-card p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-sm z-10 border"
+        className="bg-card p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-sm z-10 border border-border/50"
       >
         <div className="flex flex-col items-center mb-6">
           <motion.div
@@ -83,44 +82,44 @@ const LoginPage = () => {
             transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
             className="text-primary mb-3 p-3 bg-primary/10 rounded-full"
           >
-            <HeartHandshake size={40} />
+            <HeartPulse size={40} />
           </motion.div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Welcome Back</h2>
-          <p className="text-sm text-muted-foreground mt-1">Log in to MediAssistant</p>
+          <p className="text-sm text-muted-foreground mt-1 text-center">Log in to your MediAssistant account</p>
         </div>
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4 text-center"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4 text-center border border-destructive/20"
           >
             {error}
           </motion.div>
         )}
         <form onSubmit={handleLogin} className="space-y-4">
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 rounded-lg"
+              className="rounded-lg"
               disabled={isLoading}
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 rounded-lg"
+              className="rounded-lg"
               disabled={isLoading}
             />
           </div>

@@ -1,3 +1,4 @@
+
 // src/components/homepage/hero-widgets.tsx
 "use client";
 
@@ -24,21 +25,16 @@ interface HeroWidgetsProps {
   tasks: HeroTask[];
 }
 
-// Skeleton component for placeholder UI
-const Skeleton = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-md bg-muted", className)} />
-);
-
-
 export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
   const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
   const [isCalendarPopoverOpen, setIsCalendarPopoverOpen] = useState(false);
   const [isClockWidgetPopoverOpen, setIsClockWidgetPopoverOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast(); 
 
   useEffect(() => {
-    // Safe client-side initialization to prevent hydration mismatch
+    setIsMounted(true);
     setCurrentDateTime(new Date());
     setSelectedCalendarDate(new Date());
     const timerId = setInterval(() => {
@@ -49,6 +45,8 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
 
   const tasksForSelectedDate = tasks.filter(task => selectedCalendarDate && isSameDay(task.date, selectedCalendarDate));
 
+  if (!isMounted) return <div className="mt-4 flex w-full max-w-md mx-auto items-center justify-center p-4 border rounded-xl bg-card"><Loader2 className="animate-spin text-primary" /></div>;
+
   return (
     <div 
       className={cn(
@@ -57,21 +55,16 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
       )}
       aria-label="Date and Time Information Panel"
     >
-
-      {/* Left Side: Compact Functional Calendar */}
+      {/* Left Side: Compact Functional Calendar - Apple Theme */}
       <Popover open={isCalendarPopoverOpen} onOpenChange={setIsCalendarPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="ghost" 
-            className="flex-1 justify-center text-left font-normal text-xs sm:text-sm rounded-md h-auto p-2 text-foreground hover:bg-accent/10"
+            className="flex-1 justify-center text-left font-normal text-xs sm:text-sm rounded-md h-auto p-2 text-foreground hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             aria-label="Open calendar and tasks"
           >
             <CalendarDays className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            {currentDateTime ? (
-              <span className="font-semibold text-foreground">{format(currentDateTime, "E, MMM d")}</span>
-            ) : (
-              <Skeleton className="h-4 w-20" />
-            )}
+            {currentDateTime && <span className="font-semibold text-foreground">{format(currentDateTime, "E, MMM d")}</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 rounded-xl shadow-xl border border-border/50 bg-card" align="start">
@@ -82,6 +75,20 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
             initialFocus
             modifiers={{
               taskDay: tasks.map(task => task.date),
+            }}
+            modifiersStyles={{
+              taskDay: { position: 'relative' },
+            }}
+            classNames={{
+              caption_label: "text-sm font-medium",
+              nav_button: cn(
+                buttonVariants({ variant: "ghost" }),
+                "h-7 w-7 bg-transparent p-0 opacity-70 hover:opacity-100 text-muted-foreground hover:text-foreground"
+              ),
+              day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+              day_today: "ring-1 ring-primary text-primary font-semibold",
+              cell: "h-9 w-9 text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 [&:has([aria-selected].day-outside)]:bg-accent/30 [&:has([aria-selected])]:bg-accent/50",
+              day_outside: "day-outside text-muted-foreground/50 aria-selected:text-muted-foreground/70",
             }}
             components={{
               DayContent: (props) => {
@@ -115,24 +122,24 @@ export const HeroWidgets: React.FC<HeroWidgetsProps> = ({ tasks }) => {
                    <p className="text-xs text-muted-foreground">No tasks for {format(selectedCalendarDate, "PPP")}.</p>
               </div>
           )}
+           <div className="p-2 border-t border-border/50 text-center">
+               <Button variant="link" size="sm" className="text-xs text-primary hover:text-primary/80">View Full Schedule</Button>
+           </div>
         </PopoverContent>
       </Popover>
 
+      {/* Separator */}
       <div className="h-6 w-px bg-border/70" />
 
-      {/* Right Side: Clock Popover */}
+      {/* Right Side: Clock Popover - Apple Theme Trigger, Original Functional ClockWidget Content */}
       <Popover open={isClockWidgetPopoverOpen} onOpenChange={setIsClockWidgetPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="ghost" 
-            className="flex-1 justify-center text-left font-normal text-xs sm:text-sm rounded-md h-auto p-2 text-foreground hover:bg-accent/10"
+            className="flex-1 justify-center text-left font-normal text-xs sm:text-sm rounded-md h-auto p-2 text-foreground hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
             aria-label="Open clock, timer, and reminders widget"
           >
-           {currentDateTime ? (
-              <span className="font-semibold text-foreground">{format(currentDateTime, "p")}</span>
-           ) : (
-             <Skeleton className="h-4 w-16" />
-           )}
+           {currentDateTime && <span className="font-semibold text-foreground">{format(currentDateTime, "p")}</span>}
             <Clock className="ml-1.5 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </Button>
         </PopoverTrigger>

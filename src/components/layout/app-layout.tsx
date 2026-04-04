@@ -206,6 +206,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     <div ref={notificationPanelRef}>
                         <NotificationPanelCompact
                         notifications={notifications.slice(0, 7)}
+                        hasUnreadNotifications={unreadCount > 0}
                         onClose={() => setIsNotificationPanelOpen(false)}
                         onMarkAllAsRead={handleMarkAllAsRead}
                         onMarkAsRead={handleMarkAsRead}
@@ -240,23 +241,23 @@ export function AppLayout({ children }: { children: ReactNode }) {
                           </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild><Link href="/profile" className="cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}><UserCircle /> Profile</Link></DropdownMenuItem>
-                        <DropdownMenuItem asChild><Link href="/settings" className="cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}><Settings /> Settings</Link></DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link href="/profile" className="cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}><UserCircle className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link href="/settings" className="cursor-pointer" onClick={() => setIsAccountMenuOpen(false)}><Settings className="mr-2 h-4 w-4"/> Settings</Link></DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuSub>
-                          <DropdownMenuSubTrigger className="cursor-pointer"><UserCog/><span>Role: {getRoleDisplayString(userRole)}</span></DropdownMenuSubTrigger>
+                          <DropdownMenuSubTrigger className="cursor-pointer"><UserCog className="mr-2 h-4 w-4"/><span>Role: {getRoleDisplayString(userRole)}</span></DropdownMenuSubTrigger>
                           <DropdownMenuPortal>
                               <DropdownMenuSubContent>
                                   <DropdownMenuRadioGroup value={userRole || ''} onValueChange={(role) => { selectUserRole(role as UserRole); setIsAccountMenuOpen(false);}}>
-                                      <DropdownMenuRadioItem value="pro"><BriefcaseMedical/>Professional</DropdownMenuRadioItem>
-                                      <DropdownMenuRadioItem value="medico"><School/>Medical Student</DropdownMenuRadioItem>
-                                      <DropdownMenuRadioItem value="diagnosis"><Stethoscope/>Patient/User</DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="pro"><BriefcaseMedical className="mr-2 h-4 w-4"/>Professional</DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="medico"><School className="mr-2 h-4 w-4"/>Medical Student</DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="diagnosis"><Stethoscope className="mr-2 h-4 w-4"/>Patient/User</DropdownMenuRadioItem>
                                   </DropdownMenuRadioGroup>
                               </DropdownMenuSubContent>
                           </DropdownMenuPortal>
                         </DropdownMenuSub>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"><LogOut /> Log Out</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"><LogOut className="mr-2 h-4 w-4"/> Log Out</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
               </>

@@ -1,10 +1,10 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating Multiple Choice Questions (MCQs) on medical topics for medico users.
  */
 
 import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
 import { MedicoMCQGeneratorInputSchema, MedicoMCQGeneratorOutputSchema, MCQSchema as SingleMCQSchema } from '@/ai/schemas/medico-tools-schemas';
 import type { z } from 'zod';
 
@@ -51,7 +51,7 @@ For each MCQ:
 Ensure the final output is a single valid JSON object.
 `;
       const llmResponse = await ai.generate({
-          model: googleAI('gemini-2.5-flash-preview'),
+          model: 'googleai/gemini-2.5-flash-preview',
           prompt,
           output: {
               format: 'json',

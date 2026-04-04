@@ -1,15 +1,11 @@
+
 'use server';
 /**
  * @fileOverview AI-powered medical image annotation flow.
- *
- * - analyzeImage - A function that analyzes a medical image and provides annotations.
- * - AnalyzeImageInput - The input type for the analyzeImage function.
- * - AnalyzeImageOutput - The return type for the analyzeImage function.
  */
 
-import {ai} from '@/ai/genkit';
-import {googleAI} from '@genkit-ai/googleai';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 const AnalyzeImageInputSchema = z.object({
   imageDataUri: z
@@ -20,7 +16,6 @@ const AnalyzeImageInputSchema = z.object({
 });
 export type AnalyzeImageInput = z.infer<typeof AnalyzeImageInputSchema>;
 
-// Updated Annotation structure
 const AnnotationSchema = z.object({
   text: z.string().describe("A textual description of the finding or area of interest."),
   position: z.object({
@@ -29,7 +24,6 @@ const AnnotationSchema = z.object({
   }).describe("The normalized position of the annotation on the image."),
 });
 export type Annotation = z.infer<typeof AnnotationSchema>;
-
 
 const AnalyzeImageOutputSchema = z.object({
   annotations: z.array(AnnotationSchema).describe('AI-powered annotations highlighting key areas of interest. Each annotation includes text and a normalized position (x, y).'),
@@ -49,7 +43,7 @@ const analyzeImageFlow = ai.defineFlow(
   async input => {
     try {
         const llmResponse = await ai.generate({
-          model: googleAI('gemini-3-pro-preview'),
+          model: 'googleai/gemini-3-pro-preview',
           prompt: [
             { media: { url: input.imageDataUri } },
             { text: `You are a medical imaging analysis AI. You are provided with a medical image. Your task is to identify key areas of interest or potential abnormalities.

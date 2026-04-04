@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -23,7 +24,8 @@ interface ClockWidgetProps {
 }
 
 export function ClockWidget({ onClose }: ClockWidgetProps) {
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [currentTime, setCurrentDateTime] = useState<Date | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
 
   const [timerInputHours, setTimerInputHours] = useState(0);
@@ -38,11 +40,11 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
   const [newReminderDateTime, setNewReminderDateTime] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
-    // Correctly handle hydration by only setting initial state on mount
-    setCurrentTime(new Date());
+    setIsMounted(true);
+    setCurrentDateTime(new Date());
     setNewReminderDateTime(new Date());
     const clockInterval = setInterval(() => {
-      setCurrentTime(new Date());
+      setCurrentDateTime(new Date());
     }, 1000);
     return () => clearInterval(clockInterval);
   }, []);
@@ -118,13 +120,15 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
     toast({ title: "Reminder Deleted" });
   };
 
+  if (!isMounted) return <div className="p-10 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>;
+
   return (
     <Card className="border-none shadow-none bg-transparent w-full">
       <Tabs defaultValue="clock" className="w-full">
         <TabsList className="grid w-full grid-cols-3 h-12 rounded-t-lg rounded-b-none bg-muted border-b border-border/50">
-          <TabsTrigger value="clock" className="text-xs h-full"><AlarmClockCheck className="mr-1 h-4 w-4" />Clock</TabsTrigger>
-          <TabsTrigger value="timer" className="text-xs h-full"><TimerIcon className="mr-1 h-4 w-4" />Timer</TabsTrigger>
-          <TabsTrigger value="reminders" className="text-xs h-full"><BellRing className="mr-1 h-4 w-4" />Reminders</TabsTrigger>
+          <TabsTrigger value="clock" className="text-xs h-full">Clock</TabsTrigger>
+          <TabsTrigger value="timer" className="text-xs h-full">Timer</TabsTrigger>
+          <TabsTrigger value="reminders" className="text-xs h-full">Reminders</TabsTrigger>
         </TabsList>
         
         <TabsContent value="clock" className="p-4 pt-6 text-center min-h-[108px]">
@@ -154,11 +158,11 @@ export function ClockWidget({ onClose }: ClockWidgetProps) {
           </div>
           <div className="flex justify-center gap-2 mt-3">
             {!isTimerRunning || timeLeft === 0 ? (
-              <Button onClick={startTimer} size="sm" className="rounded-md bg-primary"><Play className="mr-1 h-4 w-4"/> Start</Button>
+              <Button onClick={startTimer} size="sm" className="rounded-md bg-primary">Start</Button>
             ) : (
-              <Button onClick={pauseTimer} size="sm" className="rounded-md bg-amber-500"><Pause className="mr-1 h-4 w-4"/> Pause</Button>
+              <Button onClick={pauseTimer} size="sm" className="rounded-md bg-amber-500">Pause</Button>
             )}
-            <Button onClick={resetTimer} variant="outline" size="sm" className="rounded-md"><RotateCcw className="mr-1 h-4 w-4"/> Reset</Button>
+            <Button onClick={resetTimer} variant="outline" size="sm" className="rounded-md">Reset</Button>
           </div>
         </TabsContent>
 

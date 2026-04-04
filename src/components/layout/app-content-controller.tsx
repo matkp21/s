@@ -1,8 +1,6 @@
+'use client';
 
-// src/components/layout/app-content-controller.tsx
-"use client";
-
-import React, { type ReactNode, useMemo } from 'react';
+import React, { type ReactNode, useMemo, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useProMode } from '@/contexts/pro-mode-context';
 import { useClientState } from '@/contexts/client-state-provider';
@@ -22,26 +20,27 @@ export function AppContentController({ children }: { children: ReactNode }) {
   } = useClientState();
 
   const pathname = usePathname();
+  const [initialRenderComplete, setInitialRenderComplete] = useState(false);
+
+  useEffect(() => {
+    setInitialRenderComplete(true);
+  }, []);
 
   const displayState = useMemo(() => {
-    if (!isClient || authLoading) {
+    if (!initialRenderComplete || authLoading) {
       return 'loading';
     }
-    // Auth pages should always render immediately.
     if (['/login', '/signup'].includes(pathname)) {
         return 'auth';
     }
-    // If we have a user but they haven't finished onboarding, show it.
     if (user && !onboardingComplete) {
       return 'onboarding';
     }
-    // If the user exists, onboarding is done, but they haven't seen the welcome screen this session, show it.
     if (user && onboardingComplete && !welcomeShownThisSession) {
       return 'welcome';
     }
-    // Otherwise, show the main app content.
     return 'app';
-  }, [isClient, authLoading, user, onboardingComplete, welcomeShownThisSession, pathname]);
+  }, [initialRenderComplete, authLoading, user, onboardingComplete, welcomeShownThisSession, pathname]);
 
   const handleOnboardingClose = () => {
     setOnboardingComplete(true);
